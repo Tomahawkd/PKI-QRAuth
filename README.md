@@ -16,4 +16,4 @@ This project is divided into several permission:
 - Read: Everyone
 
 ## Project Member
-@Tomahawkd, @Vshows, @Dracula1998, 
+@Tomahawkd, @Vshows, @Dracula1998, @zhangxu1814
