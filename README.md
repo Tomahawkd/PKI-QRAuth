@@ -23,7 +23,46 @@ PKI based QR code authentication system
           | -- .gitignore
           | -- OWNERS (Directory permission controll)
    | -- android (for android client)
-          | --  
+          | -- app
+                | -- build
+                | -- release
+                | --  src (source code)
+                       | -- main
+                              | -- java
+                                     | -- com.Vshows.PKI
+                                             | -- Check (confirm login)
+                                             | -- Login 
+                                             | -- Register 
+                                             | -- Scan 
+                              | -- res
+                                     | -- drawable
+                                     | -- layout
+                                     | -- mipmap-anydpi-v26
+                                     | -- mipmap-hdpi
+                                     | -- mipmap-mdpi
+                                     | -- mipmap-xhdpi
+                                     | -- mipmap-xxhdpi
+                                     | -- mipmap-xxxhdpi
+                                     | -- values
+                              | -- AndriodManifest.xml
+                | -- .gitignore
+                | -- app.iml
+                | -- build.gradle
+                | -- proguard-rules.pro
+                | -- zxing.jks
+          | -- gradle
+          | -- img
+          | -- zxinglibrary (library for scanning QRcode)
+          | -- .gitignore
+          | -- build.properties
+          | -- gradlew
+          | -- gradlew.bat
+          | -- local.properties
+          | -- PKI_SCAN.iml
+          | -- README.md
+          | -- settings.gradle
+          | -- sh.exe.stackdump
+                                     
 ```
 ## Permission
 This project is divided into several permissions:
