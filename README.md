@@ -9,7 +9,7 @@ PKI based QR code authentication system
           | --  
 ```
 ## Permission
-This project is divided into several permission:
+This project is divided into several permissions:
 
 - Management: @Tomahawkd
 - Write: Depends on directory
@@ -17,3 +17,13 @@ This project is divided into several permission:
 
 ## Project Member
 @Tomahawkd, @Vshows, @Dracula1998, @zhangxu1814
+
+### Contribution
+
+1. Fork the project
+
+2. Contribute code
+
+3. **Check repo update and merge into your code**
+
+4. pull request
