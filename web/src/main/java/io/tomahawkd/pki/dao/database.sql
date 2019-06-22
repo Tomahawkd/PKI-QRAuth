@@ -44,7 +44,7 @@ create table if not exists system_user
     `user_index`   int auto_increment primary key,
     `system_index` int,
 
-    constraint system_api_fk
+    constraint system_api_user_fk
         foreign key (`system_index`) references system_api_index (`system_index`)
 );
 
@@ -59,7 +59,7 @@ create table if not exists user_log
 
     constraint user_system_index
         primary key (`user_index`, `system_index`),
-    constraint system_api_fk
+    constraint system_api_user_log_fk
         foreign key (`system_index`) references system_api_index (`system_index`) on delete cascade
 
 );
