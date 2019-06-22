@@ -32,21 +32,20 @@ create table if not exists user_info
 );
 
 # v2.0
-create table if not exists system_user
-(
-    `user_index`   int auto_increment primary key,
-    `system_index` int,
-
-    constraint system_api_fk
-        foreign key (`system_index`) references system_api_index (`system_index`)
-);
-
-
 create table if not exists system_api_index
 (
     `system_index`  int primary key, # framework api index
     `system_api`    varchar(255) unique                 not null,
     `register_date` timestamp default CURRENT_TIMESTAMP not null
+);
+
+create table if not exists system_user
+(
+    `user_index`   int auto_increment primary key,
+    `system_index` int,
+
+    constraint system_api_user_fk
+        foreign key (`system_index`) references system_api_index (`system_index`)
 );
 
 create table if not exists user_log
@@ -60,7 +59,7 @@ create table if not exists user_log
 
     constraint user_system_index
         primary key (`user_index`, `system_index`),
-    constraint system_api_fk
+    constraint system_api_user_log_fk
         foreign key (`system_index`) references system_api_index (`system_index`) on delete cascade
 
 );
