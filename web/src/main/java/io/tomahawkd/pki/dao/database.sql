@@ -5,7 +5,7 @@ create table if not exists system_log
 (
     `index`   int auto_increment primary key,
     `module`  varchar(255)                           not null,
-    `level`   varchar(10)                            not null,
+    `level`   int                                    not null,
     `date`    timestamp    default CURRENT_TIMESTAMP not null,
     `message` varchar(255) default ''
 );
@@ -32,8 +32,9 @@ create table if not exists user_info
 );
 
 # v2.0
-create table if not exists system_user (
-    `user_index` int auto_increment primary key,
+create table if not exists system_user
+(
+    `user_index`   int auto_increment primary key,
     `system_index` int,
 
     constraint system_api_fk
