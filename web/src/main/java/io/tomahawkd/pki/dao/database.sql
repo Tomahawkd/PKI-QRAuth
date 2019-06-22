@@ -11,13 +11,6 @@ create table if not exists system_log
     `message` varchar(255) default ''
 );
 
-create table if not exists user_key
-(
-    `user_index`  int primary key,
-    `public_key`  varchar(255) not null,
-    `private_key` varchar(255) not null
-);
-
 # conventional user management
 create table if not exists user_info
 (
@@ -35,7 +28,7 @@ create table if not exists user_info
 # v2.0
 create table if not exists system_api_index
 (
-    `system_index`  int primary key, # framework api index
+    `system_index`  int auto_increment primary key, # framework api index
     `system_api`    varchar(255) unique                 not null,
     `register_date` timestamp default CURRENT_TIMESTAMP not null
 );
@@ -47,6 +40,20 @@ create table if not exists system_user
 
     constraint system_api_user_fk
         foreign key (`system_index`) references system_api_index (`system_index`)
+);
+
+
+create table if not exists user_key
+(
+    `system_index` int        not null,
+    `user_index`   int        not null,
+    `public_key`   mediumtext not null,
+    `private_key`  mediumtext not null,
+
+    constraint user_pk primary key (`system_index`, `user_index`),
+    constraint system_api_user_key_fk
+        foreign key (`system_index`) references system_api_index (`system_index`)
+
 );
 
 create table if not exists user_log
