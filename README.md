@@ -16,7 +16,7 @@ PKI based QR code authentication system
                        | -- resources
                               | -- static (js/css dir)
                               | -- templates (html dir)
-                              | -- application.properties (springboot configuration)
+                              | -- application.properties (springboot configuration， ignored in github)
                 | -- test
           | -- pom.xml (dependency)
           | -- README.md (Directory explanation)
