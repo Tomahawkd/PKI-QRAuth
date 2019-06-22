@@ -11,13 +11,6 @@ create table if not exists system_log
     `message` varchar(255) default ''
 );
 
-create table if not exists user_key
-(
-    `user_index`  int primary key,
-    `public_key`  varchar(255) not null,
-    `private_key` varchar(255) not null
-);
-
 # conventional user management
 create table if not exists user_info
 (
@@ -30,6 +23,16 @@ create table if not exists user_info
     `phone`      char(11),
     `bio`        varchar(255) default '',
     `image_path` varchar(255)
+);
+
+create table if not exists user_key
+(
+    `user_index`  int primary key,
+    `public_key`  varchar(255) not null,
+    `private_key` varchar(255) not null,
+
+    constraint user_key_info_fk
+        foreign key (`user_index`) references user_info (`index`)
 );
 
 # v2.0
