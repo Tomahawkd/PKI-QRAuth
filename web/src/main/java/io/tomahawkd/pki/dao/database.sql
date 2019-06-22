@@ -37,6 +37,8 @@ create table if not exists system_user
 (
     `user_index`   int auto_increment primary key,
     `system_index` int,
+    `username`     varchar(255) unique not null,
+    `password`     varchar(255)        not null,
 
     constraint system_api_user_fk
         foreign key (`system_index`) references system_api_index (`system_index`)
