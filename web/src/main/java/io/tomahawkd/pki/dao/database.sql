@@ -28,7 +28,7 @@ create table if not exists user_info
 # v2.0
 create table if not exists system_api_index
 (
-    `system_index`  int primary key, # framework api index
+    `system_index`  int auto_increment primary key, # framework api index
     `system_api`    varchar(255) unique                 not null,
     `register_date` timestamp default CURRENT_TIMESTAMP not null
 );
