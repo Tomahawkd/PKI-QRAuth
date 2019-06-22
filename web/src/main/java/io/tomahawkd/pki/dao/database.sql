@@ -45,10 +45,10 @@ create table if not exists system_user
 
 create table if not exists user_key
 (
-    `system_index` int          not null,
-    `user_index`   int          not null,
-    `public_key`   varchar(255) not null,
-    `private_key`  varchar(255) not null,
+    `system_index` int        not null,
+    `user_index`   int        not null,
+    `public_key`   mediumtext not null,
+    `private_key`  mediumtext not null,
 
     constraint user_pk primary key (`system_index`, `user_index`),
     constraint system_api_user_key_fk
