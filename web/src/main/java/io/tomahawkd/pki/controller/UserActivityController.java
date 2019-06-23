@@ -26,7 +26,7 @@ public class UserActivityController {
 			Map<String, Integer> bodyData =
 					new Gson().fromJson(body, new TypeToken<Map<String, Integer>>() {}.getType());
 
-			return userLogService.getUserActivitiesById((int) bodyData.get("user"), (int) bodyData.get("system"));
+			return userLogService.getUserActivitiesById(bodyData.get("user"), bodyData.get("system"));
 		} catch (JsonSyntaxException e) {
 			throw new MalformedJsonException("Malformed Json: " + body);
 		} catch (NullPointerException e) {
