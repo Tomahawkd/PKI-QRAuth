@@ -1,6 +1,5 @@
 package io.tomahawkd.pki.controller.base;
 
-import com.google.gson.Gson;
 import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.base.UserInfoModel;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/user/info")
 public class UserInfoController {
 
 	@Resource
@@ -23,7 +22,7 @@ public class UserInfoController {
 	private SystemLogService systemLogService;
 
 	// http://127.0.0.1/user/info/liucheng
-	@GetMapping("/info/{user}")
+	@GetMapping("/data/{user}")
 	public String getInfoPageById(@PathVariable String user) throws NotFoundException {
 		systemLogService.insertLogRecord(UserInfoController.class.getName(),
 				"getInfoPageById", SystemLogModel.INFO, "Accept username: " + user);
