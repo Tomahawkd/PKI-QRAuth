@@ -10,9 +10,10 @@ public class SystemLogModel {
 
     public static final int DEBUG = -1;
     public static final int OK = 0;
-    public static final int LOW = 1;
-    public static final int WARN = 2;
-    public static final int FATAL = 3;
+    public static final int INFO = 1;
+    public static final int LOW = 2;
+    public static final int WARN = 3;
+    public static final int FATAL = 4;
 
     public SystemLogModel(String module, int level,String message) {
         this.module = module;
