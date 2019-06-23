@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.controller;
+package io.tomahawkd.pki.controller.user;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -23,7 +23,8 @@ public class UserActivityController {
 	@RequestMapping(value = "/info", method = RequestMethod.POST)
 	public String getUserLogById(@RequestBody String body) throws MalformedJsonException {
 		try {
-			Map bodyData = new Gson().fromJson(body, new TypeToken<Map<String, Integer>>() {}.getType());
+			Map<String, Integer> bodyData =
+					new Gson().fromJson(body, new TypeToken<Map<String, Integer>>() {}.getType());
 
 			return userLogService.getUserActivitiesById((int) bodyData.get("user"), (int) bodyData.get("system"));
 		} catch (JsonSyntaxException e) {

@@ -1,9 +1,12 @@
 package io.tomahawkd.pki.model;
 
+import com.google.gson.Gson;
+
 public class UserInfoModel {
-    private int index;
-    private String username;
-    private String password;
+
+    private transient int index;
+    private transient String username;
+    private transient String password;
     private String name;
     private int sex;
     private String email;
@@ -60,8 +63,6 @@ public class UserInfoModel {
     }
 
     public String toString(){
-        return "{\"index\":" + index + ",\"username\":\"" + username + "\",\"password\":\"" + password + "\",\"name\":\""
-                + name + "\",\"sex\":" + sex + ",\"email\":\"" + email + "\",\"phone\":\"" + phone + "\",\"bio\":\"" + bio
-                + "\",\"image_path\":\"" + image_path + "\"}";
+        return new Gson().toJson(this);
     }
 }
