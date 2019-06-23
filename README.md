@@ -3,9 +3,26 @@ PKI based QR code authentication system
 
 ## Project Structure
 ```
-   / -- /web (for web service)
-          | --   
-   | -- /android (for android client)
+   / -- web (for web service)
+          | -- src (source code)
+                | -- main
+                       | -- java
+                              | -- io/tomahawkd/pki
+                                        | -- controller (backend request interface)
+                                        | -- dao (database interface)
+                                        | -- model (database model)
+                                        | -- service
+                                        | -- PkiApplication.java (Startup class)
+                       | -- resources
+                              | -- static (js/css dir)
+                              | -- templates (html dir)
+                              | -- application.properties (springboot configuration， ignored in github)
+                | -- test
+          | -- pom.xml (dependency)
+          | -- README.md (Directory explanation)
+          | -- .gitignore
+          | -- OWNERS (Directory permission controll)
+   | -- android (for android client)
           | --  
 ```
 ## Permission
