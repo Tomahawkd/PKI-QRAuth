@@ -1,10 +1,10 @@
-package io.tomahawkd.pki.controller.user;
+package io.tomahawkd.pki.controller.base;
 
 import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.SystemLogModel;
-import io.tomahawkd.pki.model.UserInfoModel;
+import io.tomahawkd.pki.model.base.UserInfoModel;
 import io.tomahawkd.pki.service.SystemLogService;
-import io.tomahawkd.pki.service.UserInfoService;
+import io.tomahawkd.pki.service.base.UserInfoService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
