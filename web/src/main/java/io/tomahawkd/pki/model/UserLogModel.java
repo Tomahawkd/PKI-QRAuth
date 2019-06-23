@@ -48,6 +48,6 @@ public class UserLogModel {
 
 	@Override
 	public String toString() {
-		return new Gson().toJson(UserLogModel.class);
+		return new Gson().toJson(this);
 	}
 }
