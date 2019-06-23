@@ -3,6 +3,7 @@ package com.Vshows.PKI;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -19,6 +20,9 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private TextView forget_re;
     private TextView login_re;
     private jwt jwt = new jwt();
+    private String s = jwt.init();
+
+
 
 
 
@@ -48,13 +52,15 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 String password1 = password_r.getText().toString();
                 String password2 = re_password_r.getText().toString();
                 if(password1.equals(password2)){
-                    Toast.makeText(this, jwt.init(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
                 }
                 else {
-                    Toast.makeText(this, "两次输入的密码不一致，请重新输入！", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"s" , Toast.LENGTH_LONG).show();
+                    jwt.read(s);
                 }
                 break;
             case R.id.forget_re:
+
                 break;
             case R.id.login_re_:
                 Intent intent1 = new Intent(this,Login.class);
