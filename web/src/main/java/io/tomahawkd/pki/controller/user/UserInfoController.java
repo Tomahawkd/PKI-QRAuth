@@ -25,13 +25,15 @@ public class UserInfoController {
 	@GetMapping("/info/{user}")
 	public String getInfoPageById(@PathVariable String user) throws NotFoundException {
 		systemLogService.insertLogRecord(UserInfoController.class.getName(),
-				"getInfo", SystemLogModel.INFO, "Accept username: " + user);
+				"getInfoPageById", SystemLogModel.INFO, "Accept username: " + user);
 		UserInfoModel model = userInfoService.getUserInfo(user);
 		if (model == null) {
-			systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfo",
+			systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
 							SystemLogModel.FATAL, "User not found");
 			throw new NotFoundException("User not found");
 		}
+		systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
+				SystemLogModel.DEBUG, "User found: " + model.toString());
 		return model.toString();
 	}
 }
