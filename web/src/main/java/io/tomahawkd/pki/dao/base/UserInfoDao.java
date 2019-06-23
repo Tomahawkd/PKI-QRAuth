@@ -1,10 +1,8 @@
-package io.tomahawkd.pki.dao;
+package io.tomahawkd.pki.dao.base;
 
-import io.tomahawkd.pki.model.SystemLogModel;
-import io.tomahawkd.pki.model.UserInfoModel;
+import io.tomahawkd.pki.model.base.UserInfoModel;
 import org.apache.ibatis.annotations.*;
 
-import java.util.List;
 @Mapper
 public interface UserInfoDao {
     //查询获取用户信息

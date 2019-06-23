@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.model;
+package io.tomahawkd.pki.model.base;
 
 import com.google.gson.Gson;
 

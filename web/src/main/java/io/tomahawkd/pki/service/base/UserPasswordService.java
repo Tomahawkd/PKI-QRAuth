@@ -1,8 +1,6 @@
-package io.tomahawkd.pki.service;
+package io.tomahawkd.pki.service.base;
 
-import io.tomahawkd.pki.model.UserPasswordModel;
-
-import java.util.List;
+import io.tomahawkd.pki.model.base.UserPasswordModel;
 
 public interface UserPasswordService {
     UserPasswordModel getUserPassword(String username,String password);

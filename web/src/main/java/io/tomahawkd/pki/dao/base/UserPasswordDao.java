@@ -1,10 +1,8 @@
-package io.tomahawkd.pki.dao;
+package io.tomahawkd.pki.dao.base;
 
-import io.tomahawkd.pki.model.SystemLogModel;
-import io.tomahawkd.pki.model.UserPasswordModel;
+import io.tomahawkd.pki.model.base.UserPasswordModel;
 import org.apache.ibatis.annotations.*;
 
-import java.util.List;
 @Mapper
 public interface UserPasswordDao {
     //查用户登录

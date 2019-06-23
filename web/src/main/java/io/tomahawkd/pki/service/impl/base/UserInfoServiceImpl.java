@@ -1,13 +1,12 @@
-package io.tomahawkd.pki.service.impl;
+package io.tomahawkd.pki.service.impl.base;
 
-import io.tomahawkd.pki.dao.UserInfoDao;
-import io.tomahawkd.pki.model.UserInfoModel;
-import io.tomahawkd.pki.service.UserInfoService;
+import io.tomahawkd.pki.dao.base.UserInfoDao;
+import io.tomahawkd.pki.model.base.UserInfoModel;
+import io.tomahawkd.pki.service.base.UserInfoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)

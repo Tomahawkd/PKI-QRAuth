@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.controller.user;
+package io.tomahawkd.pki.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
