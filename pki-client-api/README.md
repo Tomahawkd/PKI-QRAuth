@@ -1,11 +1,11 @@
-# PKI QR Auth API
+# PKI QR Auth Client side API
 This directory is for API implementation
 
 ## Permission
 The directory is covered by root management owned by 
-@Tomahawkd and @Vshows, and the main management is owned by @Tomahawkd.
+@Vshows, and the main management is owned by @Tomahawkd.
 
-@Tomahawkd and @Vshows can edit OWNERS file to authorize write permission
+@Vshows can edit OWNERS file to authorize write permission
 to others
 
 ### Contribution

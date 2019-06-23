@@ -12,8 +12,9 @@
 	</properties>
 
 	<modules>
-		<module>pkiapi</module>
+		<module>pki-server-api</module>
 		<module>pkiservice</module>
+		<module>pki-client-api</module>
 		<module>web</module>
 	</modules>
 </project>
