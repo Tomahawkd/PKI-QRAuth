@@ -8,4 +8,6 @@ public interface SystemApiDataService {
 
 	// return system id
 	int registerSystemApi();
+
+	boolean checkApi(SystemApiDataModel data, String systemApi);
 }
