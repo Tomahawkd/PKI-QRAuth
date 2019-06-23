@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserPasswordDao {
-    //查用户登录
+    //用户登录
     @Select("select username,password from user_info where username=#{username}")
     @Results({
             @Result(property = "username",column = "username"),
