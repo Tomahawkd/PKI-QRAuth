@@ -1,15 +1,26 @@
 package io.tomahawkd.pki.model;
 
+import com.google.gson.Gson;
+
 import java.sql.Timestamp;
 
 public class UserLogModel {
 
-	private int userId;
-	private int systemId;
+	private transient int userId;
+	private transient int systemId;
 	private Timestamp time;
 	private String ip;
 	private String device;
 	private String message;
+
+	public UserLogModel(int userId, int systemId, Timestamp time, String ip, String device, String message) {
+		this.userId = userId;
+		this.systemId = systemId;
+		this.time = time;
+		this.ip = ip;
+		this.device = device;
+		this.message = message;
+	}
 
 	public int getUserId() {
 		return userId;
@@ -37,11 +48,6 @@ public class UserLogModel {
 
 	@Override
 	public String toString() {
-		return "{" +
-				"\"time\": \"" + time + "\", " +
-				"\"ip\": \"" + ip + "\", " +
-				"\"device\": \"" + device + "\", " +
-				"\"message\": " + message + "\", " +
-				'}';
+		return new Gson().toJson(UserLogModel.class);
 	}
 }
