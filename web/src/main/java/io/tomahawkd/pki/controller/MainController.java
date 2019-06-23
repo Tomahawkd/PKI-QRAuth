@@ -1,6 +1,5 @@
 package io.tomahawkd.pki.controller;
 
-import io.tomahawkd.pki.controller.base.UserRegisterAndLoginController;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.service.SystemLogService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,15 +9,13 @@ import javax.annotation.Resource;
 
 @RestController
 public class MainController {
-    @Resource
-    private SystemLogService service;
+	@Resource
+	private SystemLogService service;
 
-    @GetMapping("/")
-    public String hello() {
-
-       service.insertLogRecord("b","add",SystemLogModel.INFO,"fjdhf");
-
-
-        return "hello";
-    }
+	@GetMapping("/")
+	public String hello() {
+		service.insertLogRecord(MainController.class.getName(),
+				"hello", SystemLogModel.INFO, "hello message");
+		return "hello";
+	}
 }
