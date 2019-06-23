@@ -9,10 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.tomahawkd</groupId>
-	<artifactId>pki</artifactId>
+	<artifactId>simple-server</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>pki</name>
-	<description>Pki qr authentication system backend</description>
+	<description>simple server backend</description>
 
 	<properties>
 		<java.version>1.8</java.version>
