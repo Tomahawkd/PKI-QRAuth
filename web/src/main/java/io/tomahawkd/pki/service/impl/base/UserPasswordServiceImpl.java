@@ -16,8 +16,14 @@ public class UserPasswordServiceImpl implements UserPasswordService {
     private UserPasswordDao dao;
 
     @Override
-    public UserPasswordModel getUserPassword(String username, String password) {
-        return dao.getUserPassword(username,password);
+    public boolean checkPassword(String username, String password,String random) {
+        UserPasswordModel model = dao.getUser(username);
+        String new_password = f(model.getPassword(),random);
+        return password.equals(new_password) ;
+    }
+
+    private String f(String password,String random){    //f(t)
+        return password + random;
     }
 
     @Override
