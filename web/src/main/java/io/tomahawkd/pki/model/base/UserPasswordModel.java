@@ -5,8 +5,7 @@ public class UserPasswordModel {
     private String username;
     private String password;
 
-    public UserPasswordModel(int index,String username,String password){
-        this.index = index;
+    public UserPasswordModel(String username,String password){
         this.username = username;
         this.password = password;
     }
