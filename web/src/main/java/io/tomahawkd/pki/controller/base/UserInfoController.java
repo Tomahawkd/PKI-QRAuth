@@ -1,5 +1,6 @@
 package io.tomahawkd.pki.controller.base;
 
+import com.google.gson.Gson;
 import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.base.UserInfoModel;

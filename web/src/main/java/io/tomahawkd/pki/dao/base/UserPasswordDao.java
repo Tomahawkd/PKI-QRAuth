@@ -5,13 +5,13 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserPasswordDao {
-    //查用户登录
-    @Select("select username,password from user_info where username=#{username} and password=#{password}")
+    //用户登录
+    @Select("select username,password from user_info where username=#{username}")
     @Results({
             @Result(property = "username",column = "username"),
             @Result(property = "password",column = "password")
     })
-    UserPasswordModel getUserPassword(String username,String password);
+    UserPasswordModel getUser(String username);
 
     //添加新用户
     @Insert("insert into user_info(username,password) values (#{model.username},#{model.password})")
