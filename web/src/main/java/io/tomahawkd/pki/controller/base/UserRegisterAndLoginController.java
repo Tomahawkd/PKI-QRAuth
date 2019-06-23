@@ -36,9 +36,11 @@ public class UserRegisterAndLoginController {
         String random = bodyData.get("random");
         String username = bodyData.get("username");
         String password = bodyData.get("password");
+        systemLogService.insertLogRecord(UserRegisterAndLoginController.class.getName(), "userLogin",
+                SystemLogModel.FATAL, "user " + username + " login");
         if(!userPasswordService.checkUserExistence(username)){      //用户不存在
             systemLogService.insertLogRecord(UserRegisterAndLoginController.class.getName(), "userLogin",
-                    SystemLogModel.FATAL, "User not found");
+                    SystemLogModel.FATAL, "User " + username + " not exist");
             return "用户不存在";
         }
         boolean success_or_not = userPasswordService.checkPassword(username,password,random);
