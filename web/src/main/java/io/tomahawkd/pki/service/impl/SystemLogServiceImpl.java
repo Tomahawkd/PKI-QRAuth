@@ -16,8 +16,9 @@ public class SystemLogServiceImpl implements SystemLogService {
     private SystemLogDao dao;
 
     @Override
-    public boolean insertLogRecord(SystemLogModel module) {
-        int result = dao.insertLogRecord(module);
+    public boolean insertLogRecord(String module, String function, int level, String message) {
+        String m = module + "#" + function;
+        int result = dao.insertLogRecord(new SystemLogModel(m, level, message));
         return result == 1;
     }
 }
