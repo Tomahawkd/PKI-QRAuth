@@ -21,7 +21,7 @@ create table if not exists user_info
     `sex`        int          default 0, # 0 -> unknown, 1 -> male, 2 -> female
     `email`      varchar(255),
     `phone`      char(11),
-    `bio`        varchar(255) default '',
+    `bio`        text default '',
     `image_path` varchar(255)
 );
 
@@ -37,6 +37,8 @@ create table if not exists system_user
 (
     `user_index`   int auto_increment primary key,
     `system_index` int,
+    `username`     varchar(255) unique not null,
+    `password`     varchar(255)        not null,
 
     constraint system_api_user_fk
         foreign key (`system_index`) references system_api_index (`system_index`)

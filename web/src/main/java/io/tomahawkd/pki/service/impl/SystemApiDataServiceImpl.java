@@ -27,4 +27,9 @@ public class SystemApiDataServiceImpl implements SystemApiDataService {
 		SystemApiDataModel model = new SystemApiDataModel(uuid.toString());
 		return dao.registerApi(model) == 1 ? model.getSystemId() : -1;
 	}
+
+	@Override
+	public boolean checkApi(SystemApiDataModel data, String systemApi) {
+		return data.getSystemApi().equals(systemApi);
+	}
 }
