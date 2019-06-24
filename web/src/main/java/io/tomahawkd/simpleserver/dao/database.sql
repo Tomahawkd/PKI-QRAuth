@@ -21,6 +21,6 @@ create table if not exists user_info
     `sex`        int          default 0, # 0 -> unknown, 1 -> male, 2 -> female
     `email`      varchar(255),
     `phone`      char(11),
-    `bio`        text default '',
+    `bio`        text,
     `image_path` varchar(255)
 );
