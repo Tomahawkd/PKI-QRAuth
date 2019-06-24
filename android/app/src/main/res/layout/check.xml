@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@mipmap/background"
+        tools:context="com.example.administrator.myapplication.MainActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp"
+            android:layout_marginTop="50dp"
+            >
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="229dp"
+
+                app:srcCompat="@mipmap/check" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:text="是否确认登录？"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <Button
+                android:id="@+id/checkBtn"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="10dp"
+                android:background="#0099ff"
+
+                android:text="确认登录"
+
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#000000"
+                android:textSize="20dp" />
+
+            <Button
+                android:id="@+id/cancelBtn"
+                android:layout_width="match_parent"
+                android:layout_height="65dp"
+                android:text="取消"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+        </LinearLayout>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
