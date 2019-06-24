@@ -5,6 +5,7 @@
 
 	<groupId>io.tomahawkd</groupId>
 	<artifactId>pki</artifactId>
+	<packaging>pom</packaging>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
@@ -16,5 +17,6 @@
 		<module>pkiservice</module>
 		<module>pki-client-api</module>
 		<module>web</module>
+		<module>pki-api-common</module>
 	</modules>
 </project>
