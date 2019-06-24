@@ -42,12 +42,6 @@ public class SecurityFunctions {
 		}
 	}
 
-	public static String securePrivateKey(String userId, String random, String prikey)
-			throws CipherErrorException {
-		String seed = userId + random;
-		return Base64.getEncoder().encodeToString(encrypt(seed, random, Base64.getDecoder().decode(prikey)));
-	}
-
 	public static byte[] encrypt(String keySeed, String random, byte[] data) throws CipherErrorException {
 		SecretKey secretKey = new SecretKeySpec(generateSymKey(keySeed), "AES");
 		GCMParameterSpec param = new GCMParameterSpec(128, random.getBytes());
