@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.api.server.exception;
+package io.tomahawkd.pki.api.common.exception;
 
 public class CipherErrorException extends Exception {
 
