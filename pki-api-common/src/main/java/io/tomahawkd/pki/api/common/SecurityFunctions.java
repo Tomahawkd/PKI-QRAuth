@@ -1,6 +1,6 @@
-package io.tomahawkd.pki.api.client;
+package io.tomahawkd.pki.api.common;
 
-import io.tomahawkd.pki.api.client.exception.CipherErrorException;
+import io.tomahawkd.pki.api.common.exception.CipherErrorException;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
