@@ -21,7 +21,8 @@ public interface UserInfoDao {
 
     //修改用户信息
     @Update("update user_info set name=#{model.name} and sex=#{model.sex} " +
-            "and email=#{model.email} and phone=#{model.phone} and bio#{model.bio} and image_path#{model.image_path}" +
+            "and email=#{model.email} and phone=#{model.phone} and " +
+            "bio=#{model.bio} and image_path=#{model.image_path}" +
             " where username=#{model.username}")
     int updateUserInfo(@Param("model") UserInfoModel model);
 }
