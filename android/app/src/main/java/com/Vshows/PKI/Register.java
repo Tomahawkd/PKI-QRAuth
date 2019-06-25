@@ -3,6 +3,7 @@ package com.Vshows.PKI;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -12,6 +13,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class Register extends AppCompatActivity implements View.OnClickListener {
     private EditText username_r;
     private EditText password_r;
@@ -19,8 +23,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
-    private jwt jwt = new jwt();
-    private String s = jwt.init();
+//    private jwt jwt = new jwt();
+//    private String s = jwt.init();
 
 
 
@@ -49,15 +53,39 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.registerBtn:
+                String username = username_r.getText().toString();
                 String password1 = password_r.getText().toString();
                 String password2 = re_password_r.getText().toString();
-                if(password1.equals(password2)){
-                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
-                }
+                if(TextUtils.isEmpty(username))
+                    Toast.makeText(this,"用户名不能为空！", Toast.LENGTH_LONG).show();
+                else if (TextUtils.isEmpty(password1))
+                    Toast.makeText(this,"密码不能为空！", Toast.LENGTH_LONG).show();
+                else if (TextUtils.isEmpty(password2))
+                    Toast.makeText(this,"请再次输入密码！", Toast.LENGTH_LONG).show();
+                else if (!TextUtils.equals(password1,password2))
+                    Toast.makeText(this, "两次输入的密码不一致，请重新输入！", Toast.LENGTH_LONG).show();
                 else {
-                    Toast.makeText(this,"s" , Toast.LENGTH_LONG).show();
-                    jwt.read(s);
+                    try {
+                        JSONObject jsonObject = new JSONObject();
+
+                        jsonObject.put("username",username);
+                        jsonObject.put("password",password1);
+
+                        //sendToUserServer(String.valueOf(jsonObject));
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
+
+                    Intent intent1 = new Intent(this,Login.class);
+                    startActivity(intent1);
                 }
+//                if(password1.equals(password2)){
+//                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+//                }
+//                else {
+//                    Toast.makeText(this,"s" , Toast.LENGTH_LONG).show();
+//                    jwt.read(s);
+//                }
                 break;
             case R.id.forget_re:
 

@@ -79,8 +79,16 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 else if (TextUtils.isEmpty(psw))
                     Toast.makeText(this,"请输入密码！", Toast.LENGTH_LONG).show();
                 else {
-                    System.out.println("---------------------------------------------------------");
-                    registerPOST(login);
+                    try {
+                        JSONObject jsonObject = new JSONObject();
+
+                        jsonObject.put("username",username);
+                        jsonObject.put("password",password);
+
+                        //sendToUserServer(String.valueOf(jsonObject));
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
                     Toast.makeText(this, "登录成功！", Toast.LENGTH_LONG).show();
                     Intent intent2 = new Intent(this,index.class);
                     startActivity(intent2);
@@ -92,76 +100,5 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
         }
     }
 
-    public void registerPOST(View view) {
-        try{
-            jsonObject = new JSONObject();
-            jsonObject.put("username",name);
-            jsonObject.put("password",psw);
 
-            new Thread(postRun).start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    Runnable postRun = new Runnable() {
-        @Override
-        public void run() {
-            requestPost(jsonObject);
-        }
-    };
-
-    private void requestPost(JSONObject jsonObject) {
-        try {
-            String path = "https://www.baidu.com";
-            String content = String.valueOf(jsonObject);
-            Log.e(TAG,"params-post-->" + content);
-            System.out.println(jsonObject);
-
-            URL url = new URL(path);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setUseCaches(false);
-            connection.setInstanceFollowRedirects(true);
-            connection.connect();
-
-            PrintWriter printWriter = new PrintWriter(connection.getOutputStream());
-            printWriter.write(content);
-            printWriter.flush();
-            printWriter.close();
-
-            if (connection.getResponseCode() == 200){
-                String result = streamToString(connection.getInputStream());
-                Log.e(TAG, "Post方式请求成功，result--->" + result);
-            }else {
-                Log.e(TAG, "Post方式请求失败");
-            }
-
-            connection.disconnect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String streamToString(InputStream inputStream){
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            while ((len = inputStream.read(buffer)) != -1) {
-                baos.write(buffer, 0, len);
-            }
-            baos.close();
-            inputStream.close();
-            byte[] byteArray = baos.toByteArray();
-            return new String(byteArray);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }
