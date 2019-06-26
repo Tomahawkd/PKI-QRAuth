@@ -1,39 +1,175 @@
 package io.tomahawkd.simpleserver.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.tomahawkd.simpleserver.exceptions.NotFoundException;
 import io.tomahawkd.simpleserver.model.SystemLogModel;
 import io.tomahawkd.simpleserver.model.UserInfoModel;
+import io.tomahawkd.simpleserver.model.UserPasswordModel;
 import io.tomahawkd.simpleserver.service.SystemLogService;
 import io.tomahawkd.simpleserver.service.UserInfoService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.tomahawkd.simpleserver.service.UserPasswordService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user/info")
 public class UserInfoController {
 
-	@Resource
-	private UserInfoService userInfoService;
-	@Resource
-	private SystemLogService systemLogService;
+    @Resource
+    private UserInfoService userInfoService;
+    @Resource
+    private SystemLogService systemLogService;
+    @Resource
+    private UserPasswordService userPasswordService;
 
-	// http://127.0.0.1/user/info/liucheng
-	@GetMapping("/data/{user}")
-	public String getInfoPageById(@PathVariable String user) throws NotFoundException {
-		systemLogService.insertLogRecord(UserInfoController.class.getName(),
-				"getInfoPageById", SystemLogModel.INFO, "Accept username: " + user);
-		UserInfoModel model = userInfoService.getUserInfo(user);
-		if (model == null) {
-			systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-							SystemLogModel.FATAL, "User not found");
-			throw new NotFoundException("User not found");
-		}
-		systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-				SystemLogModel.DEBUG, "User found: " + model.toString());
-		return model.toString();
-	}
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    // http://127.0.0.1/user/info/liucheng
+    @GetMapping("/")
+    public String getInfoPageById(HttpServletRequest request) throws NotFoundException {
+
+        String user =(String)request.getSession().getAttribute("username");
+
+
+        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                "getInfoPageById", SystemLogModel.INFO, "Accept username: " + user);
+        UserInfoModel model = userInfoService.getUserInfo(user);
+        if (model == null) {
+            systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
+                    SystemLogModel.FATAL, "User not found");
+            throw new NotFoundException("User not found");
+        }
+        systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
+                SystemLogModel.DEBUG, "User found: " + model.toString());
+        return model.toString();
+    }
+/*
+
+    @PostMapping("/data/{user}")
+    public String updateUserInfo(@RequestBody String body) throws Exception {
+
+        Map<String, String> bodyData =
+                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                }.getType());
+
+        String username = bodyData.get("username");
+        String name = bodyData.get("name");
+        int sex = Integer.parseInt(bodyData.get("sex"));
+        String email = bodyData.get("email");
+        String phone = bodyData.get("phone");
+        String bio = bodyData.get("bio");
+
+        Map<String, MultipartFile> imageData =
+                new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
+                }.getType());
+
+        String image_path = this.getImagePath(username, imageData.get("image"));
+
+        UserInfoModel model = new UserInfoModel(1, username, name, sex, email, phone, bio, image_path);
+        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                "changeUserInfo", SystemLogModel.INFO,  " changingInfo:" + model.toString());
+        boolean result = userInfoService.changeUserInfo(model);
+
+        return result ?
+                "{\"status\": 0, \"message\": \"success\"}" :
+                "{\"status\": 1, \"message\": \"failed\"}";
+    }
+*/
+
+
+
+    @PostMapping("/data/{user}")
+    public String updateUserInfo(HttpServletRequest request,@RequestBody String body) throws Exception {
+
+        Map<String, String> bodyData =
+                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                }.getType());
+
+        String username = (String)request.getSession().getAttribute("username");
+        String name = bodyData.get("name");
+        int sex = Integer.parseInt(bodyData.get("sex"));
+        String email = bodyData.get("email");
+        String phone = bodyData.get("phone");
+        String bio = bodyData.get("bio");
+
+        Map<String, MultipartFile> imageData =
+                new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
+                }.getType());
+
+        String image_path = this.getImagePath(username, imageData.get("image"));
+
+        UserInfoModel model = new UserInfoModel(1, username, name, sex, email, phone, bio, image_path);
+        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                "changeUserInfo", SystemLogModel.INFO,  " changingInfo:" + model.toString());
+        boolean result = userInfoService.changeUserInfo(model);
+
+        return result ?
+                "{\"status\": 0, \"message\": \"success\"}" :
+                "{\"status\": 1, \"message\": \"failed\"}";
+    }
+
+    @PostMapping("/")
+    public String updateUserPassword(HttpServletRequest request,@RequestBody String body) throws Exception {
+
+        Map<String, String> bodyData =
+                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                }.getType());
+
+        String username = (String)request.getSession().getAttribute("username");
+        String password = bodyData.get("password");
+        String new_password = bodyData.get("new_password");
+
+        UserPasswordModel model = new UserPasswordModel(username,password);
+        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                "updateUserPassword", SystemLogModel.INFO,  " updateUserPassword:" + model.toString());
+      boolean result = userPasswordService.changePassword(model,new_password);
+
+        return result ?
+                "{\"status\": 0, \"message\": \"success\"}" :
+                "{\"status\": 1, \"message\": \"failed\"}";
+    }
+
+
+    private String getImagePath(String username, MultipartFile file) {
+        String path = "/user/image";    //图像存储路径
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        String id = UUID.randomUUID().toString();
+        String fileName = file.getOriginalFilename();
+        String img = id + fileName.substring(fileName.lastIndexOf("."));
+
+        FileOutputStream imgOut = null;//根据 dir 抽象路径名和 img 路径名字符串创建一个新 File 实例。
+        try {
+            imgOut = new FileOutputStream(new File(dir, img));
+            /* System.out.println(file.getBytes());*/
+            imgOut.write(file.getBytes());//返回一个字节数组文件的内容
+            systemLogService.insertLogRecord(UserInfoController.class.getName(), "getImagePath",
+                    SystemLogModel.OK, username + " image store success..");
+            imgOut.close();
+            return img;
+        } catch (Exception e) {
+            e.printStackTrace();
+            systemLogService.insertLogRecord(UserInfoController.class.getName(), "getImagePath",
+                    SystemLogModel.WARN, username + " image store failed.");
+        }
+        return null;
+    }
+
+
 }

@@ -8,6 +8,7 @@ public interface UserPasswordDao {
     //用户登录
     @Select("select username,password from user_info where username=#{username}")
     @Results({
+            @Result(property = "index", column = "index"),
             @Result(property = "username",column = "username"),
             @Result(property = "password",column = "password")
     })
