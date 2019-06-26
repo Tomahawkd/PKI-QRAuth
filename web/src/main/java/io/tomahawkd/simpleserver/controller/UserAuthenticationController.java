@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Map;
 
 @RestController
@@ -28,8 +31,9 @@ public class UserAuthenticationController {
 	private StringRedisTemplate redisTemplate;
 
 	@PostMapping("/register")
-	public String userRegister(HttpServletRequest request, String body) {
-
+	public String userRegister(String ebody) throws UnsupportedEncodingException {
+		Base64.Decoder decoder = Base64.getDecoder();
+		String body = new String(decoder.decode(ebody),"UTF-8");
 		Map<String, String> bodyData =
 				new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
 				}.getType());
@@ -90,17 +94,25 @@ System.out.println(username);
 	}*/
 
 	@PostMapping(value = "/login")
-	public String userLogin(@RequestParam("userName") String username, @RequestParam("password") String password,
-						 HttpServletRequest request, HttpServletResponse response ) throws Exception {
-		response.setContentType("text/html;charset=utf-8");
-		response.setCharacterEncoding("utf-8");
+	public String userLogin(@RequestBody String euser, HttpServletRequest request, HttpServletResponse response ) throws Exception {
+		Base64.Decoder decoder = Base64.getDecoder();		//解码
+		String user;
+		user = new String(decoder.decode(euser),"UTF-8");
+		Map<String, String> bodyData =
+				new Gson().fromJson(user, new TypeToken<Map<String, String>>() {}.getType());
+
+		String username = bodyData.get("username");
+		String password = bodyData.get("password");
 		if (!userPasswordService.checkUserExistence(username)) {      //用户不存在
 			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
 					SystemLogModel.WARN, "User " + username + " not exist");
 			return "{\"status\": -1, \"message\": \"user not exist\"}";
 		}
-		if (userPasswordService.checkPassword(username, password)) {  //登陆成功
-			request.getSession().setAttribute("users", username);//用户名存入该用户的session 中
+		int index = userPasswordService.checkPassword(username, password);
+		if (index != -1) {  //登陆成功
+			HttpSession session = request.getSession();
+			session.setAttribute("userid", index);//用户名存入该用户的session 中
+			redisTemplate.opsForValue().set("loginUser:" + index,session.getId());
 			return "{\"status\": 0, \"message\": \"success\"}";
 		} else
 			return "{\"status\": 1, \"message\": \"password incorrect\"}";

@@ -6,7 +6,7 @@ public interface UserPasswordService {
 
 	boolean checkUserExistence(String username);
 
-	boolean checkPassword(String username, String password);
+	int checkPassword(String username, String password);
 
 	int addUser(UserPasswordModel model);
 
