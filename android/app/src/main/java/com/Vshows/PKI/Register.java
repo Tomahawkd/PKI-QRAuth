@@ -1,7 +1,9 @@
 package com.Vshows.PKI;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -12,11 +14,25 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Base64;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class Register extends AppCompatActivity implements View.OnClickListener {
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private EditText username_r;
     private EditText password_r;
     private EditText re_password_r;
@@ -49,6 +65,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     @Override
     public void onClick(View view) {
         switch (view.getId()){
@@ -67,25 +84,41 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 else {
                     try {
                         JSONObject jsonObject = new JSONObject();
-
                         jsonObject.put("username",username);
                         jsonObject.put("password",password1);
+                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
+                        //base64解码
+                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
+                        String url ="http://192.168.43.159/user/info";
+                        OkHttpClient client = new OkHttpClient();
+                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
 
-                        //sendToUserServer(String.valueOf(jsonObject));
+                        final Request request = new Request.Builder()
+                                .url(url)
+                                .post(body)
+                                .build();
+                        Call call = client.newCall(request);
+                        call.enqueue(new Callback() {
+                            public void onFailure(Call call, IOException e) {
+                                Log.d("error","<<<<e="+e);
+
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                if(response.isSuccessful()) {
+                                    String jsonString = response.body().string();
+                                    handle_response(jsonString);
+
+                                    Log.d("success","<<<<d="+jsonString);
+                                    //Log.d("success","<<<<status="+status);
+                                }
+                            }
+                        });
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-
-                    Intent intent1 = new Intent(this,Login.class);
-                    startActivity(intent1);
                 }
-//                if(password1.equals(password2)){
-//                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
-//                }
-//                else {
-//                    Toast.makeText(this,"s" , Toast.LENGTH_LONG).show();
-//                    jwt.read(s);
-//                }
                 break;
             case R.id.forget_re:
 
@@ -96,5 +129,32 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 break;
             default:
         }
+    }
+
+    public void handle_response(String response){
+        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
+        JSONObject result = null;
+        try {
+            result = new JSONObject(response);
+            int status = (int) result.get("status");
+            if(status==-1){
+                Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();
+            }
+            else if(status==0){
+                Toast.makeText(this,"注册成功！", Toast.LENGTH_LONG).show();
+                Intent intent1 = new Intent(this,Login.class);
+                startActivity(intent1);
+            }
+            else if(status==1){
+                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //取数据
     }
 }
