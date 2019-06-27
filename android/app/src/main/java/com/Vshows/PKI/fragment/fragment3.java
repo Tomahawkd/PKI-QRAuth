@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,10 +24,17 @@ import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
 
+import java.io.IOException;
 import java.util.List;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 import static android.app.Activity.RESULT_OK;
-import static android.content.Intent.getIntent;
 
 
 public class fragment3 extends Fragment implements View.OnClickListener {
@@ -43,6 +51,7 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     TextView sex_information;
     TextView phone_information;
     TextView mail_information;
+    private String session;
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.infomation,container,false);
@@ -63,11 +72,40 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         phone_information  = (TextView)view.findViewById(R.id.phone_infomation);
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
+        session = getActivity().getIntent().getStringExtra("session");
+        Log.d("sessin" ,session);
+
+
+
         return view;
     }
 
     public void init_info(){
+        String url ="http://192.168.43.159/user/login";
 
+        OkHttpClient client = new OkHttpClient();
+        //RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+
+        final Request request = new Request.Builder()
+                .url(url)
+                //.post(body)
+                .build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            public void onFailure(Call call, IOException e) {
+                Log.d("error","<<<<e="+e);
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.isSuccessful()) {
+                    String jsonString = response.body().string();
+                    //handle_response(jsonString);
+                    Log.d("success","<<<<d="+jsonString);
+                }
+            }
+        });
     }
 
     @Override
@@ -118,8 +156,6 @@ public class fragment3 extends Fragment implements View.OnClickListener {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-
         // 扫描二维码/条码回传
         if (requestCode == REQUEST_CODE_SCAN && resultCode == RESULT_OK) {
             if (data != null) {

@@ -92,9 +92,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                         String url ="http://192.168.43.159/user/info";
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-//                        RequestBody body = new FormBody.Builder()
-//                                .add("username",String.valueOf(username))
-//                                .add("password",password1).build();
 
                         final Request request = new Request.Builder()
                                 .url(url)
@@ -111,49 +108,17 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()) {
                                     String jsonString = response.body().string();
-                                    //int status = -2 ;
-
-                                    try {
-                                        JSONObject jsonObject1 = new JSONObject(jsonString);
-                                        //status = ;
-                                        switch (jsonObject1.getInt("status")) {
-                                            case 0:
-                                                break;
-                                            case 1:
-                                                break;
-                                            case -1:
-                                                break;
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                                    handle_response(jsonString);
 
                                     Log.d("success","<<<<d="+jsonString);
                                     //Log.d("success","<<<<status="+status);
-
                                 }
                             }
                         });
-
-
-
-
-
-                        //sendToUserServer(String.valueOf(jsonObject));
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-
-                    Intent intent1 = new Intent(this,Login.class);
-                    startActivity(intent1);
                 }
-//                if(password1.equals(password2)){
-//                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
-//                }
-//                else {
-//                    Toast.makeText(this,"s" , Toast.LENGTH_LONG).show();
-//                    jwt.read(s);
-//                }
                 break;
             case R.id.forget_re:
 
@@ -167,10 +132,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     }
 
     public void handle_response(String response){
-        String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
+        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
         JSONObject result = null;
         try {
-            result = new JSONObject(responses);
+            result = new JSONObject(response);
             int status = (int) result.get("status");
             if(status==-1){
                 Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();

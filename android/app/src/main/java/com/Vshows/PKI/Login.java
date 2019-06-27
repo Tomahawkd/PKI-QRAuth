@@ -2,6 +2,7 @@ package com.Vshows.PKI;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -118,41 +119,56 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()) {
                                     String jsonString = response.body().string();
-
-                                    try {
-                                        JSONObject jsonObject1 = new JSONObject(jsonString);
-                                        switch (jsonObject1.getInt("status")) {
-                                            case 0:
-
-                                                break;
-                                            case 1:
-                                                break;
-                                            case -1:
-                                                break;
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                                    handle_response(jsonString);
                                     Log.d("success","<<<<d="+jsonString);
                                 }
                             }
                         });
-
-                        //sendToUserServer(String.valueOf(jsonObject));
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-                    Toast.makeText(this, "登录成功！", Toast.LENGTH_LONG).show();
-                    Intent intent2 = new Intent(this,index.class);
-                    //intent2.putExtra("user_info",jsonObject.toString());
-                    startActivity(intent2);
                 }
-
                 break;
             default:
-
         }
     }
 
+    public void handle_response(String response){
+        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
+        JSONObject result = null;
+        try {
+            result = new JSONObject(response);
+            int status = (int) result.get("status");
+            if(status==-1){
+                Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
+            }
+            else if(status==0){
+                Looper.prepare();
+                Toast.makeText(this,"登录成功！", Toast.LENGTH_LONG).show();
+
+                Intent intent1 = new Intent(this,index.class);
+
+                JSONObject sessionJson = new JSONObject();
+                sessionJson.put("sessionid",result.get("sessionid"));
+                sessionJson.put("session_userid",result.get("session_userid"));
+                sessionJson.put("session_username",result.get("session_username"));
+
+                intent1.putExtra("session",sessionJson.toString());
+
+                startActivity(intent1);
+                Looper.loop();
+            }
+            else if(status==1){
+                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //取数据
+    }
 
 }
