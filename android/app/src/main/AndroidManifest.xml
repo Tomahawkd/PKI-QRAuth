@@ -14,6 +14,7 @@
             >
 
         </activity>
+        <activity android:name=".ChangeSelfInfo"></activity>
         <activity android:name=".Scan">
 
         </activity>
@@ -38,5 +39,5 @@
         </activity>
 
     </application>
-
+<uses-permission android:name="android.permission.INTERNET"></uses-permission>
 </manifest>
