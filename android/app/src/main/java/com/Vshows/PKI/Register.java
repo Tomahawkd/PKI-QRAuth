@@ -3,6 +3,7 @@ package com.Vshows.PKI;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -89,7 +90,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                         //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
                         //base64解码
                         //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
-                        String url ="http://192.168.43.159/user/info";
+                        String url ="http://192.168.43.159/user/register";
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = RequestBody.create(JSON,jsonObject.toString());
 
@@ -101,7 +102,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                         call.enqueue(new Callback() {
                             public void onFailure(Call call, IOException e) {
                                 Log.d("error","<<<<e="+e);
-
                             }
 
                             @Override
@@ -138,18 +138,26 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
             result = new JSONObject(response);
             int status = (int) result.get("status");
             if(status==-1){
+                Looper.prepare();
                 Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
             else if(status==0){
+                Looper.prepare();
                 Toast.makeText(this,"注册成功！", Toast.LENGTH_LONG).show();
                 Intent intent1 = new Intent(this,Login.class);
                 startActivity(intent1);
+                Looper.loop();
             }
             else if(status==1){
+                Looper.prepare();
                 Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
             else {
+                Looper.prepare();
                 Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
 
         } catch (JSONException e) {

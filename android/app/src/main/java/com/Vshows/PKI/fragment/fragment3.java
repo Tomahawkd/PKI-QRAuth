@@ -29,6 +29,7 @@ import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -51,7 +52,11 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     TextView sex_information;
     TextView phone_information;
     TextView mail_information;
+
     private String session;
+    private String username;
+
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.infomation,container,false);
@@ -73,28 +78,31 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
         session = getActivity().getIntent().getStringExtra("session");
+        username = getActivity().getIntent().getStringExtra("username");
+
         Log.d("sessin" ,session);
+//        Log.d("name" ,username);
 
-
+        init_info();
 
         return view;
     }
 
     public void init_info(){
-        String url ="http://192.168.43.159/user/login";
+        String url ="http://192.168.43.159/user/info/data/";
 
         OkHttpClient client = new OkHttpClient();
-        //RequestBody body = RequestBody.create(JSON,jsonObject.toString());
 
         final Request request = new Request.Builder()
+                .addHeader("cookie",session)
                 .url(url)
-                //.post(body)
+                .get()
                 .build();
+
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             public void onFailure(Call call, IOException e) {
-                Log.d("error","<<<<e="+e);
-
+                Log.d("getInfoError","<<<<e="+e);
             }
 
             @Override
@@ -102,7 +110,7 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 if(response.isSuccessful()) {
                     String jsonString = response.body().string();
                     //handle_response(jsonString);
-                    Log.d("success","<<<<d="+jsonString);
+                    Log.d("getInfoSuccess","<<<<d="+jsonString);
                 }
             }
         });

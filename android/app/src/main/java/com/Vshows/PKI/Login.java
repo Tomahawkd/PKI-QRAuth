@@ -25,10 +25,12 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -49,6 +51,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
     String TAG = Register.class.getCanonicalName();
 
     private JSONObject jsonObject;
+    private String session;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
@@ -100,9 +103,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-//                        RequestBody body = new FormBody.Builder()
-//                                .add("username",String.valueOf(name))
-//                                .add("password",psw).build();
 
                         final Request request = new Request.Builder()
                                 .url(url)
@@ -112,15 +112,21 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                         call.enqueue(new Callback() {
                             public void onFailure(Call call, IOException e) {
                                 Log.d("error","<<<<e="+e);
-
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()) {
+                                    Headers headers=response.headers();
+                                    List<String> cookies=headers.values("Set-Cookie");
+                                    if(cookies.size()>0) {
+                                        session = cookies.get(0);
+                                        Log.d("session","<<<<d="+session);
+//                                        session = result.substring(0, result.indexOf(";"));
+                                    }
                                     String jsonString = response.body().string();
-                                    handle_response(jsonString);
                                     Log.d("success","<<<<d="+jsonString);
+                                    handle_response(jsonString);
                                 }
                             }
                         });
@@ -140,7 +146,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             result = new JSONObject(response);
             int status = (int) result.get("status");
             if(status==-1){
+                Looper.prepare();
                 Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
             else if(status==0){
                 Looper.prepare();
@@ -148,21 +156,20 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 
                 Intent intent1 = new Intent(this,index.class);
 
-                JSONObject sessionJson = new JSONObject();
-                sessionJson.put("sessionid",result.get("sessionid"));
-                sessionJson.put("session_userid",result.get("session_userid"));
-                sessionJson.put("session_username",result.get("session_username"));
-
-                intent1.putExtra("session",sessionJson.toString());
+                intent1.putExtra("session",session);
 
                 startActivity(intent1);
                 Looper.loop();
             }
             else if(status==1){
+                Looper.prepare();
                 Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
             else {
+                Looper.prepare();
                 Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
+                Looper.loop();
             }
 
         } catch (JSONException e) {
