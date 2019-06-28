@@ -36,8 +36,8 @@ public class UserPasswordServiceImpl implements UserPasswordService {
 	}
 
 	@Override
-	public boolean changePassword(UserPasswordModel model, String new_password) {
-		int result = dao.updateUser(model, new_password);
+	public boolean updateUserPassword(UserPasswordModel model, String new_password) {
+		int result = dao.updateUserPassword(model, new_password);
 		return result == 1;
 	}
 }

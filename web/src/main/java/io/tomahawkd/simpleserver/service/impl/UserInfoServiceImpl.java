@@ -16,12 +16,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private UserInfoDao dao;
 
 	@Override
-	public UserInfoModel getUserInfo(String username) {
-		return dao.getUserInfo(username);
+	public UserInfoModel getUserInfo(int userid) {
+		return dao.getUserInfo(userid);
 	}
 
 	@Override
-	public boolean changeUserInfo(UserInfoModel model) {
+	public boolean updateUserInfo(UserInfoModel model) {
 		int result = dao.updateUserInfo(model);
 		return result == 1;
 	}
