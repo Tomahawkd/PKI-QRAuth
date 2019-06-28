@@ -2,6 +2,7 @@ package io.tomahawkd.simpleserver.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.tomahawkd.simpleserver.model.SystemLogModel;
 import io.tomahawkd.simpleserver.model.UserInfoModel;
 import io.tomahawkd.simpleserver.model.UserPasswordModel;
@@ -34,6 +35,7 @@ public class UserInfoController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+
     @GetMapping("/data")
     public String getInfoPageById(HttpServletRequest request)  {
 
@@ -48,6 +50,7 @@ public class UserInfoController {
             systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
                     SystemLogModel.WARN, "User not found");
             return "{\"status\": -1, \"message\": \"user not found\"}";
+
         }
         systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
                 SystemLogModel.OK, "User found: " + model.toString());
@@ -88,6 +91,7 @@ public class UserInfoController {
         } else {
             systemLogService.insertLogRecord(UserInfoController.class.getName(),
                     "changeUserInfo", SystemLogModel.WARN, " change Info failed");
+
             return "{\"status\": 1, \"message\": \"failed\"}";
 
         }
@@ -117,6 +121,7 @@ public class UserInfoController {
         } else {
             systemLogService.insertLogRecord(UserInfoController.class.getName(),
                     "updateUserPassword", SystemLogModel.WARN, " update user password failed");
+
             return "{\"status\": 1, \"message\": \"failed\"}";
 
         }
@@ -136,6 +141,7 @@ public class UserInfoController {
         FileOutputStream imgOut = null;//根据 dir 抽象路径名和 img 路径名字符串创建一个新 File 实例。
         try {
             imgOut = new FileOutputStream(new File(dir, img));
+
             imgOut.write(file.getBytes());//返回一个字节数组文件的内容
             systemLogService.insertLogRecord(UserInfoController.class.getName(), "getImagePath",
                     SystemLogModel.DEBUG, userid + " image store success..");
@@ -145,6 +151,7 @@ public class UserInfoController {
             e.printStackTrace();
             systemLogService.insertLogRecord(UserInfoController.class.getName(), "getImagePath",
                     SystemLogModel.WARN, userid + " image store failed.");
+
         }
         return null;
     }
