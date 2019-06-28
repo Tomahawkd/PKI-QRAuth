@@ -14,7 +14,7 @@ public class MainController {
 
     @GetMapping("/")
     public String hello() {
-
+        System.out.println("aa");
       // service.insertLogRecord("b","add", SystemLogModel.INFO,"fjdhf");
 
 

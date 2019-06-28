@@ -21,5 +21,5 @@ public interface UserPasswordDao {
 
     //用户修改密码
     @Update("update user_info set password=#{new_password} where username=#{model.username} and password=#{model.password}")
-    int updateUser(@Param("model") UserPasswordModel model,String new_password);
+    int updateUserPassword(@Param("model") UserPasswordModel model,String new_password);
 }
