@@ -40,12 +40,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
-//    private jwt jwt = new jwt();
-//    private String s = jwt.init();
-
-
-
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

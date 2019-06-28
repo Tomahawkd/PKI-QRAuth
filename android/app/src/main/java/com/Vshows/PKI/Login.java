@@ -122,7 +122,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                                     if(cookies.size()>0) {
                                         session = cookies.get(0);
                                         Log.d("session","<<<<d="+session);
-//                                        session = result.substring(0, result.indexOf(";"));
                                     }
                                     String jsonString = response.body().string();
                                     Log.d("success","<<<<d="+jsonString);
@@ -147,7 +146,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             int status = (int) result.get("status");
             if(status==-1){
                 Looper.prepare();
-                Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
+                Toast.makeText(this,"用户名不存在！", Toast.LENGTH_LONG).show();
                 Looper.loop();
             }
             else if(status==0){
@@ -163,7 +162,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             }
             else if(status==1){
                 Looper.prepare();
-                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
+                Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
                 Looper.loop();
             }
             else {
