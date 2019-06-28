@@ -2,6 +2,7 @@ package io.tomahawkd.simpleserver.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.tomahawkd.simpleserver.exceptions.MalformedJsonException;
 import io.tomahawkd.simpleserver.model.SystemLogModel;
 import io.tomahawkd.simpleserver.model.UserInfoModel;
 import io.tomahawkd.simpleserver.model.UserPasswordModel;
@@ -58,67 +59,75 @@ public class UserInfoController {
     @PostMapping("/update/info")
     public String updateUserInfo(HttpServletRequest request, @RequestBody String body) throws Exception {
 
-        Map<String, String> bodyData =
-                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
-                }.getType());
-        int userid = (int) request.getSession().getAttribute("userid");
-        String username = (String) request.getSession().getAttribute("username");
-        String name = bodyData.get("name");
-        int sex = Integer.parseInt(bodyData.get("sex"));
-        String email = bodyData.get("email");
-        String phone = bodyData.get("phone");
-        String bio = bodyData.get("bio");
+        try {
+            Map<String, String> bodyData =
+                    new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                    }.getType());
+            int userid = (int) request.getSession().getAttribute("userid");
+            String username = (String) request.getSession().getAttribute("username");
+            String name = bodyData.get("name");
+            int sex = Integer.parseInt(bodyData.get("sex"));
+            String email = bodyData.get("email");
+            String phone = bodyData.get("phone");
+            String bio = bodyData.get("bio");
 
-        Map<String, MultipartFile> imageData =
-                new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
-                }.getType());
+            Map<String, MultipartFile> imageData =
+                    new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
+                    }.getType());
 
-        String image_path = this.getImagePath(userid, imageData.get("image"));
+            String image_path = this.getImagePath(userid, imageData.get("image"));
 
-        UserInfoModel model = new UserInfoModel(userid, username, name, sex, email, phone, bio, image_path);
-        systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
-        boolean result = userInfoService.updateUserInfo(model);
-
-        if (result) {
+            UserInfoModel model = new UserInfoModel(userid, username, name, sex, email, phone, bio, image_path);
             systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "changeUserInfo", SystemLogModel.OK, " change Info successfully");
-            return "{\"status\": 0, \"message\": \"success\"}";
+                    "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
+            boolean result = userInfoService.updateUserInfo(model);
 
-        } else {
-            systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "changeUserInfo", SystemLogModel.WARN, " change Info failed");
-            return "{\"status\": 1, \"message\": \"failed\"}";
+            if (result) {
+                systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                        "changeUserInfo", SystemLogModel.OK, " change Info successfully");
+                return "{\"status\": 0, \"message\": \"success\"}";
 
+            } else {
+                systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                        "changeUserInfo", SystemLogModel.WARN, " change Info failed");
+                return "{\"status\": 1, \"message\": \"failed\"}";
+
+            }
+        } catch (Exception e) {
+            throw  new MalformedJsonException("Json parse error");
         }
     }
 
     @PostMapping("/update/password")
     public String updateUserPassword(HttpServletRequest request, @RequestBody String body) throws Exception {
 
-        Map<String, String> bodyData =
-                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
-                }.getType());
+        try {
+            Map<String, String> bodyData =
+                    new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                    }.getType());
 
-        String username = (String) request.getSession().getAttribute("username");
-        String password = bodyData.get("password");
-        String new_password = bodyData.get("new_password");
+            String username = (String) request.getSession().getAttribute("username");
+            String password = bodyData.get("password");
+            String new_password = bodyData.get("new_password");
 
-        UserPasswordModel model = new UserPasswordModel(username, password);
-        systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "updateUserPassword", SystemLogModel.DEBUG, " updateUserPassword:" + model.toString());
-
-        boolean result = userPasswordService.updateUserPassword(model, new_password);
-
-        if (result) {
+            UserPasswordModel model = new UserPasswordModel(username, password);
             systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "updateUserPassword", SystemLogModel.OK, " update user password successfully");
-            return "{\"status\": 0, \"message\": \"success\"}";
-        } else {
-            systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "updateUserPassword", SystemLogModel.WARN, " update user password failed");
-            return "{\"status\": 1, \"message\": \"failed\"}";
+                    "updateUserPassword", SystemLogModel.DEBUG, " updateUserPassword:" + model.toString());
 
+            boolean result = userPasswordService.updateUserPassword(model, new_password);
+
+            if (result) {
+                systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                        "updateUserPassword", SystemLogModel.OK, " update user password successfully");
+                return "{\"status\": 0, \"message\": \"success\"}";
+            } else {
+                systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                        "updateUserPassword", SystemLogModel.WARN, " update user password failed");
+                return "{\"status\": 1, \"message\": \"failed\"}";
+
+            }
+        } catch (Exception e) {
+            throw  new MalformedJsonException("Json parse error");
         }
     }
 
