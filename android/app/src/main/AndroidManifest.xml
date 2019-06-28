@@ -8,12 +8,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         >
 
         <activity android:name=".Login"
             >
 
         </activity>
+        <activity android:name=".ChangeSelfInfo"></activity>
         <activity android:name=".Scan">
 
         </activity>
@@ -38,5 +40,5 @@
         </activity>
 
     </application>
-
+<uses-permission android:name="android.permission.INTERNET"></uses-permission>
 </manifest>
