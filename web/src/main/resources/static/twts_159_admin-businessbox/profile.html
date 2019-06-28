@@ -1,0 +1,140 @@
+<div class="row mt-2" id="card-prof">
+    <div class="col-md-12">
+        <div class="card hovercard">
+            <div class="tab" role="tabpanel">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item col-md-6" onclick="showProfileTab()">
+                        <a class="nav-link active" id="profile-link" role="tab" data-toggle="tab"><span><i
+                                class="fa fa-user"></i></span>个人信息</a>
+                    </li>
+                    <li class="nav-item col-md-6" onclick="showReferencesTab()">
+                        <a class="nav-link" id="references-link" role="tab" data-toggle="tab"><span><i
+                                class="fa fa-cog"></i></span>信息修改</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content tabs">
+                    <div role="tabpanel" class="tab-pane fade show active" id="profile-tab">
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nec urna aliquam,
+                            ornare eros vel, malesuada lorem. Nullam faucibus lorem at eros consectetur
+                            lobortis. Maecenas nec nibh congue, placerat sem id, rutrum velit. </p>
+                        <div class="row mt-3">
+                            <h5 class="col-12 mb-2">User Info</h5>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-envelope"> E-mail: </i></strong>
+                                    steena@gmail.com
+                                </div>
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-phone"> Phone: </i></strong> +91 1233
+                                    45 5678
+                                </div>
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-map"> City: </i></strong> New York
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-globe"> Country: </i></strong>
+                                    steena@gmail.com
+                                </div>
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-map-marker"> Address: </i></strong> 25,
+                                    Dist town Street, Logn California, US
+                                </div>
+                                <div class="form-group">
+                                    <strong class="mr-5"><i class="fa fa-globe"> Website: </i></strong>
+                                    www.Businessbox.com
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="references-tab">
+                        <div class="row mx-2">
+                            <div class="col-md-12 panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-comment"></i> Edit Info</h3><br>
+                            </div>
+                            <div class="col-md-6 ">
+                                <div class="form-group row">
+                                    <label for="example-text-input" style="width: 85px;"
+                                           class=" col-form-label">Name</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="text" value="Steena Ben"
+                                               id="example-text-input">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="example-email-input" style="width: 85px;"
+                                           class=" col-form-label">Email</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="email" value="steena@gmail.com"
+                                               id="example-email-input">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="example-url-input" style="width: 85px;"
+                                           class=" col-form-label">URL</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="url" value="www.Businessbox.com"
+                                               id="example-url-input">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <label for="example-text-input" style="width: 85px;"
+                                           class=" col-form-label">Department</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="text" value="Programming"
+                                               id="example-text-input">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="example-date-input" style="width: 85px;"
+                                           class=" col-form-label">Hire Date</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="date" value="2018-08-19"
+                                               id="example-date-input">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="example-tel-input" style="width: 85px;" class=" col-form-label">Telephone</label>
+                                    <div class="col-9">
+                                        <input class="form-control" type="tel" value="+91-(555)-555-5555"
+                                               id="example-tel-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mx-2">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-4">
+                                <button id="save-profile" type="button" class="btn btn-success">保存修改</button>
+                            </div>
+                            <div class="col-md-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function showProfileTab() {
+        $('.nav-link.active').removeClass('active');
+        $('#profile-link').addClass('active');
+        $('.tab-content .active').removeClass('show').removeClass('active');
+        $('#profile-tab').addClass('show').addClass('active');
+    }
+
+    function showReferencesTab() {
+        $('.nav-link.active').removeClass('active');
+        $('#references-link').addClass('active');
+        $('.tab-content .active').removeClass('show').removeClass('active');
+        $('#references-tab').addClass('show').addClass('active');
+    }
+
+
+
+</script>
