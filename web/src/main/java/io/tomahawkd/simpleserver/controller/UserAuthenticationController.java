@@ -7,10 +7,12 @@ import io.tomahawkd.simpleserver.model.UserPasswordModel;
 import io.tomahawkd.simpleserver.service.SystemLogService;
 import io.tomahawkd.simpleserver.service.UserPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -23,98 +25,91 @@ import java.util.Map;
 @RequestMapping("/user")
 public class UserAuthenticationController {
 
-	@Resource
-	private UserPasswordService userPasswordService;
-	@Resource
-	private SystemLogService systemLogService;
-	@Autowired
-	private StringRedisTemplate redisTemplate;
+    @Resource
+    private UserPasswordService userPasswordService;
+    @Resource
+    private SystemLogService systemLogService;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
-	@PostMapping("/register")
-	public String userRegister(String ebody) throws UnsupportedEncodingException {
-		Base64.Decoder decoder = Base64.getDecoder();
-		String body = new String(decoder.decode(ebody),"UTF-8");
-		Map<String, String> bodyData =
-				new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
-				}.getType());
+    @PostMapping("/register")
+    public String userRegister(@RequestBody String body) throws UnsupportedEncodingException {
 
-		String username = bodyData.get("username");
-		String password = bodyData.get("password");
-System.out.println(username);
-		systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
-				"registerUser", SystemLogModel.DEBUG,
-				"checkUserExistence: " + username);
+        Map<String, String> bodyData =
+                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                }.getType());
 
-		if (userPasswordService.checkUserExistence(username)) {
-			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
-					"registerUser", SystemLogModel.WARN, "user existed: " + username);
-			return "{\"status\": -1, \"message\": \"user already existing\"}";
-		}
+        String username = bodyData.get("username");
+        String password = bodyData.get("password");
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                "registerUser", SystemLogModel.DEBUG,
+                "checkUserExistence: " + username);
 
-		systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
-				"registerUser", SystemLogModel.OK, "user is allowed to register");
+        if (userPasswordService.checkUserExistence(username)) {
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                    "registerUser", SystemLogModel.WARN, "user\"" + username + "\"+ existing");
+            return "{\"status\": -1, \"message\": \"user already existing\"}";
+        }
 
-		systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
-				"registerUser", SystemLogModel.INFO, "Registering user: " + username);
-		int result = userPasswordService.addUser(new UserPasswordModel(username, password));
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                "registerUser", SystemLogModel.OK, "user is allowed to register");
 
-		return result == 1 ?
-				"{\"status\": 0, \"message\": \"success\"}" :
-				"{\"status\": 1, \"message\": \"failed\"}";
-	}
-/*
-	@PostMapping("/login")
-	public String userLogin(@RequestBody String user) {
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                "registerUser", SystemLogModel.DEBUG, "Registering user: " + username);
+        int result = userPasswordService.addUser(new UserPasswordModel(username, password));
 
-		Map<String, String> bodyData =
-				new Gson().fromJson(user, new TypeToken<Map<String, String>>() {}.getType());
+        if (result != -1) {
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                    "registerUser", SystemLogModel.OK, "Registering successful: " + username);
+            return "{\"status\": 0, \"message\": \"success\"}";
+        } else {
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                    "registerUser", SystemLogModel.WARN, "Registering failed: " + username);
+            return "{\"status\": 1, \"message\": \"failed\"}";
 
-		String username = bodyData.get("username");
-		String password = bodyData.get("password");
+        }
 
-		systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
-				SystemLogModel.INFO, "user " + username + " login");
+    }
 
-		if (!userPasswordService.checkUserExistence(username)) {      //用户不存在
-			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
-					SystemLogModel.WARN, "User " + username + " not exist");
-			return "{\"status\": 1, \"message\": \"user not exist\"}";
-		}
+    @PostMapping(value = "/login")
+    public String userLogin(@RequestBody String user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		if (userPasswordService.checkPassword(username, password)) {      //登陆成功
-			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
-					SystemLogModel.OK, "user " + username + " login success");
-			return "{\"status\": 0, \"message\": \"success\"}";
-		} else {
-			//密码错误
-			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
-					SystemLogModel.WARN, "User password wrong");
-			return "{\"status\": 1, \"message\": \"password incorrect\"}";
-		}
-	}*/
+        Map<String, String> bodyData =
+                new Gson().fromJson(user, new TypeToken<Map<String, String>>() {
+                }.getType());
 
-	@PostMapping(value = "/login")
-	public String userLogin(@RequestBody String euser, HttpServletRequest request, HttpServletResponse response ) throws Exception {
-		Base64.Decoder decoder = Base64.getDecoder();		//解码
-		String user;
-		user = new String(decoder.decode(euser),"UTF-8");
-		Map<String, String> bodyData =
-				new Gson().fromJson(user, new TypeToken<Map<String, String>>() {}.getType());
+        String username = bodyData.get("username");
+        String password = bodyData.get("password");
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
+                SystemLogModel.DEBUG, "User " + username + " checkUserExistence:" + username);
+        if (!userPasswordService.checkUserExistence(username)) {      //用户不存在
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
+                    SystemLogModel.WARN, "User " + username + " not exist");
+            return "{\"status\": -1, \"message\": \"user not exist\"}";
+        }
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
+                SystemLogModel.OK, "User " + username + " existing,allowed to login");
 
-		String username = bodyData.get("username");
-		String password = bodyData.get("password");
-		if (!userPasswordService.checkUserExistence(username)) {      //用户不存在
-			systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
-					SystemLogModel.WARN, "User " + username + " not exist");
-			return "{\"status\": -1, \"message\": \"user not exist\"}";
-		}
-		int index = userPasswordService.checkPassword(username, password);
-		if (index != -1) {  //登陆成功
-			HttpSession session = request.getSession();
-			session.setAttribute("userid", index);//用户名存入该用户的session 中
-			redisTemplate.opsForValue().set("loginUser:" + index,session.getId());
-			return "{\"status\": 0, \"message\": \"success\"}";
-		} else
-			return "{\"status\": 1, \"message\": \"password incorrect\"}";
-	}
+        systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "checkPassword",
+                SystemLogModel.DEBUG, "User " + username + "    password:"+password);
+        int index = userPasswordService.checkPassword(username, password);
+        if (index != -1) {  //登陆成功
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
+                    SystemLogModel.OK, "User " + username + " login successfully");
+            HttpSession session = request.getSession();
+            session.setAttribute("userid", index);//用户名存入该用户的session 中
+            session.setAttribute("username", username);//用户名存入该用户的session 中
+            redisTemplate.opsForValue().set("loginUser:" + index, session.getId());
+            //Cookie cookie = new Cookie("SESSIONID",session.getId());
+            //cookie.setPath(request.getContextPath());
+            //response.addCookie(cookie);
+            return "{\"status\": 0, \"message\": \"success\"}";
+        } else {
+            systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
+                    SystemLogModel.WARN, "User " + username + " login failed");
+            return "{\"status\": 1, \"message\": \"password incorrect\"}";
+
+        }
+    }
+
 }
