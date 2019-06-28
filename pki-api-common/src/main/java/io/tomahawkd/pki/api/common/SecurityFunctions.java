@@ -49,9 +49,7 @@ public class SecurityFunctions {
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey, param);
 
 			return cipher.doFinal(data);
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException |
-				InvalidKeyException | InvalidAlgorithmParameterException |
-				IllegalBlockSizeException | BadPaddingException e) {
+		} catch (Exception e) {
 			throw new CipherErrorException(e);
 		}
 	}
@@ -64,9 +62,7 @@ public class SecurityFunctions {
 			cipher.init(Cipher.DECRYPT_MODE, secretKey, param);
 
 			return cipher.doFinal(enc);
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException |
-				InvalidKeyException | InvalidAlgorithmParameterException |
-				IllegalBlockSizeException | BadPaddingException e) {
+		} catch (Exception e) {
 			throw new CipherErrorException(e);
 		}
 	}
