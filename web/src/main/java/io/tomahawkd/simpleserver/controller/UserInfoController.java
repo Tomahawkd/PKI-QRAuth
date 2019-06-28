@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Map;
@@ -39,60 +36,28 @@ public class UserInfoController {
     private StringRedisTemplate redisTemplate;
 
     // http://127.0.0.1/user/info/liucheng
-    @GetMapping("/")
+    @GetMapping("/data")
     public String getInfoPageById(HttpServletRequest request) throws NotFoundException {
-
+        System.out.println("getinfo");
         String user =(String)request.getSession().getAttribute("username");
 
-
         systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "getInfoPageById", SystemLogModel.INFO, "Accept username: " + user);
+                "getInfoPageById", SystemLogModel.DEBUG, "Accept username: " + user);
         UserInfoModel model = userInfoService.getUserInfo(user);
         if (model == null) {
             systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-                    SystemLogModel.FATAL, "User not found");
+                    SystemLogModel.WARN, "User not found");
             throw new NotFoundException("User not found");
         }
         systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-                SystemLogModel.DEBUG, "User found: " + model.toString());
+                SystemLogModel.OK, "User found: " + model.toString());
         return model.toString();
     }
-/*
-
-    @PostMapping("/data/{user}")
-    public String updateUserInfo(@RequestBody String body) throws Exception {
-
-        Map<String, String> bodyData =
-                new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
-                }.getType());
-
-        String username = bodyData.get("username");
-        String name = bodyData.get("name");
-        int sex = Integer.parseInt(bodyData.get("sex"));
-        String email = bodyData.get("email");
-        String phone = bodyData.get("phone");
-        String bio = bodyData.get("bio");
-
-        Map<String, MultipartFile> imageData =
-                new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
-                }.getType());
-
-        String image_path = this.getImagePath(username, imageData.get("image"));
-
-        UserInfoModel model = new UserInfoModel(1, username, name, sex, email, phone, bio, image_path);
-        systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "changeUserInfo", SystemLogModel.INFO,  " changingInfo:" + model.toString());
-        boolean result = userInfoService.changeUserInfo(model);
-
-        return result ?
-                "{\"status\": 0, \"message\": \"success\"}" :
-                "{\"status\": 1, \"message\": \"failed\"}";
-    }
-*/
 
 
 
-    @PostMapping("/data/{user}")
+
+    @PostMapping("/update/info")
     public String updateUserInfo(HttpServletRequest request,@RequestBody String body) throws Exception {
 
         Map<String, String> bodyData =
@@ -114,15 +79,26 @@ public class UserInfoController {
 
         UserInfoModel model = new UserInfoModel(1, username, name, sex, email, phone, bio, image_path);
         systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "changeUserInfo", SystemLogModel.INFO,  " changingInfo:" + model.toString());
+                "changeUserInfo", SystemLogModel.DEBUG,  " changingInfo:" + model.toString());
         boolean result = userInfoService.changeUserInfo(model);
 
-        return result ?
-                "{\"status\": 0, \"message\": \"success\"}" :
-                "{\"status\": 1, \"message\": \"failed\"}";
+        if(result )
+        {
+            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                    "changeUserInfo", SystemLogModel.OK,  " change Info successfully");
+
+            return  "{\"status\": 0, \"message\": \"success\"}" ;
+
+        }
+        else {
+            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                    "changeUserInfo", SystemLogModel.WARN,  " change Info failed");
+            return "{\"status\": 1, \"message\": \"failed\"}";
+
+        }
     }
 
-    @PostMapping("/")
+    @PostMapping("/update/password")
     public String updateUserPassword(HttpServletRequest request,@RequestBody String body) throws Exception {
 
         Map<String, String> bodyData =
@@ -135,12 +111,23 @@ public class UserInfoController {
 
         UserPasswordModel model = new UserPasswordModel(username,password);
         systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                "updateUserPassword", SystemLogModel.INFO,  " updateUserPassword:" + model.toString());
+                "updateUserPassword", SystemLogModel.DEBUG,  " updateUserPassword:" + model.toString());
       boolean result = userPasswordService.changePassword(model,new_password);
 
-        return result ?
-                "{\"status\": 0, \"message\": \"success\"}" :
-                "{\"status\": 1, \"message\": \"failed\"}";
+        if(result )
+        {
+            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                    "updateUserPassword", SystemLogModel.OK,  " update user password successfully");
+
+            return  "{\"status\": 0, \"message\": \"success\"}" ;
+
+        }
+        else {
+            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                    "updateUserPassword", SystemLogModel.WARN,  " update user password failed");
+            return "{\"status\": 1, \"message\": \"failed\"}";
+
+        }
     }
 
 
