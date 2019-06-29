@@ -37,8 +37,10 @@ public class UserKeyServiceImpl implements UserKeyService {
 		String prikey = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
 		UserKeyModel model = new UserKeyModel(userId, systemId, pubkey, prikey);
 
-		if (dao.getUserKeyDataById(userId, systemId) != null) dao.updateUserKey(model);
-		else dao.addUserKey(model);
+		if (dao.getUserKeyDataById(userId, systemId) != null) {
+			dao.deleteUserKey(model);
+		}
+		dao.addUserKey(model);
 
 		return model;
 	}
