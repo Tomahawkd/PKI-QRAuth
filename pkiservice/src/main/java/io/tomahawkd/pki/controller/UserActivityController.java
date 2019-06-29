@@ -23,10 +23,10 @@ public class UserActivityController {
 	@RequestMapping(value = "/info", method = RequestMethod.POST)
 	public String getUserLogById(@RequestBody String body) throws MalformedJsonException {
 		try {
-			Map<String, Integer> bodyData =
-					new Gson().fromJson(body, new TypeToken<Map<String, Integer>>() {}.getType());
+			Map<String, String> bodyData =
+					new Gson().fromJson(body, new TypeToken<Map<String, String>>() {}.getType());
 
-			return userLogService.getUserActivitiesById(bodyData.get("user"), bodyData.get("system"));
+			return "";
 		} catch (JsonSyntaxException e) {
 			throw new MalformedJsonException("Malformed Json: " + body);
 		} catch (NullPointerException e) {
