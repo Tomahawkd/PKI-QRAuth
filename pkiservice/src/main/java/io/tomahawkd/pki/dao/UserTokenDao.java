@@ -19,7 +19,7 @@ public interface UserTokenDao {
 
 	@Insert("insert into user_token (`user_id`, `system_id`, `valid_by`) " +
 			"values (#{token.userId}, #{token.systemId}, TIMESTAMPADD(DAY, 30, CURRENT_TIMESTAMP))")
-	@Options(keyProperty = "tokenId", keyColumn = "token_id", useGeneratedKeys = true)
+	@Options(keyProperty = "tokenId", useGeneratedKeys = true)
 	int addToken(@Param("token") TokenModel token);
 
 	@Delete("delete from user_token where token_id = #{id}")
