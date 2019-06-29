@@ -20,18 +20,26 @@ create table if not exists system_api_index
     `private_key`   mediumtext                          not null
 );
 
-create view  system_api_view as
+create view system_api_view as
     (
-        select `system_api`, `public_key` from system_api_index
+        select `system_api`, `public_key`
+        from system_api_index
     );
 
 create table if not exists system_user
 (
     `system_user_id` int auto_increment primary key,
-    `system_id`      int,
     `username`       varchar(255) unique not null,
-    `password`       varchar(255)        not null,
+    `password`       varchar(255)        not null
+);
 
+create table if not exists system_user_registeration
+(
+    `system_user_id` int not null,
+    `system_id`      int not null,
+
+    constraint system_user_fk
+        foreign key (`system_user_id`) references system_user (`system_user_id`),
     constraint system_api_user_fk
         foreign key (`system_id`) references system_api_index (`system_id`)
 );
