@@ -3,6 +3,7 @@ package io.tomahawkd.pki.model;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
+import java.util.Base64;
 
 public class TokenModel {
 
@@ -12,8 +13,8 @@ public class TokenModel {
 	private Timestamp createDate;
 	private Timestamp validBy;
 
-	public static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
-	public static final int BYTE_ARRAY_SIZE = Integer.BYTES * 3 + TIMESTAMP_SIZE * 2;
+	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
+	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 3 + TIMESTAMP_SIZE * 2;
 
 	private TokenModel(int tokenId, int userId, int systemId, Timestamp createDate, Timestamp validBy) {
 		this.tokenId = tokenId;
@@ -99,6 +100,10 @@ public class TokenModel {
 		return result;
 	}
 
+	public String serializeToString() {
+		return Base64.getEncoder().encodeToString(this.serialize());
+	}
+
 	public static TokenModel deserialize(byte[] data) {
 
 		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid");
@@ -120,5 +125,9 @@ public class TokenModel {
 		Timestamp validBy = toTimeStamp(validByBytes);
 
 		return new TokenModel(token, user, system, createDate, validBy);
+	}
+
+	public static TokenModel deserializeFromString(String data) throws IllegalArgumentException {
+		return deserialize(Base64.getDecoder().decode(data));
 	}
 }
