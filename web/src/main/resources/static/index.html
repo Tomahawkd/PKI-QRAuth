@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>PKI</title>
+    <link href="css/login.css" rel="stylesheet" rev="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" src="js/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="js/jquery.validate.js"></script>
+    <script type="text/javascript" src="js/jquery-qrcode.js"></script>
+    <script type="text/javascript" src="js/jquery.form.js"></script>
+    <script type="text/javascript" src="js/myvalidate.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var $tab_li = $('#login_tab ul li');
+            $tab_li.click(function () {
+                $(this).addClass('selected').siblings().removeClass('selected');
+                var index = $tab_li.index(this);
+                $('div.tab_box > div').eq(index).show().siblings().hide();
+            });
+
+            $('#login_with_qrcode').click(function () {
+                $('#qrcode').empty();
+                $('#qrcode').qrcode({text: "www.baidu.com"});
+            });
+
+            $('#go_to_register').click(function () {
+                $('#login_tab').addClass('hide');
+                $('#register_tab').removeClass('hide');
+            });
+        });
+
+
+
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            //根据窗口宽度生成图片宽度
+            var width = $(window).width();
+            $(".screenbg ul img").css("width", width + "px");
+        });
+
+
+
+    </script>
+</head>
+
+<body>
+<div class="tab login_tab" id="login_tab">
+    <ul class="tab_menu">
+        <li class="selected">账号密码登录</li>
+        <li id="login_with_qrcode">二维码登录</li>
+    </ul>
+    <div class="tab_box">
+        <!-- 账号密码登录开始 -->
+        <div>
+            <div class="error_box"></div>
+            <form action="/user/login" method="post" class="login_error" id="login_form">
+                <div id="login_username">
+                    <label>账&nbsp;&nbsp;&nbsp;号：</label>
+                    <input type="text" id="login_username_value" name="username" placeholder="输入用户名"/>
+                </div>
+                <div id="login_password">
+                    <label>密&nbsp;&nbsp;&nbsp;码：</label>
+                    <input type="password" id="login_password_value" name="password" placeholder="输入密码"/>
+                </div>
+                <table>
+                    <tr>
+                        <td id="remember" width="205px">
+                            <input type="checkbox" name="remember">
+                            <label>记住密码</label>
+                        </td>
+                        <td id="go_to_register" width="205px">现在注册 >></td>
+                    </tr>
+                </table>
+                <div id="login">
+                    <button type="submit" id="login_btn">登录</button>
+                </div>
+            </form>
+        </div>
+        <!-- 账号密码登录结束 -->
+        <!-- 二维码登录开始 -->
+        <div class="hide">
+            <div id="qrcode"></div>
+        </div>
+        <!-- 二维码登录结束 -->
+    </div>
+</div>
+<div class="tab register_tab hide" id="register_tab">
+    <ul class="tab_menu">
+        <li class="selected">请输入注册信息</li>
+    </ul>
+    <div class="tab_box">
+        <!-- 账号密码登录开始 -->
+        <div>
+            <div class="error_box"></div>
+            <form action="/user/register" method="post" class="register_error" id="register_form">
+                <div id="register_username">
+                    <label>账&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：</label>
+                    <input type="text" id="register_username_value" name="username" placeholder="输入用户名"/>
+                    <!--ajaxurl="demo/valid.jsp"-->
+                </div>
+                <div id="register_password">
+                    <label>密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：</label>
+                    <input type="password" id="register_password_value" name="password" placeholder="输入密码"/>
+                </div>
+                <div id="repeat_register_password">
+                    <label>确认密码：</label>
+                    <input type="password" id="repeat_register_password_value" name="confirm_password"
+                           placeholder="确认密码"/>
+                </div>
+                <div id="register">
+                    <button type="submit" id="register_btn">注册</button>
+                </div>
+            </form>
+        </div>
+        <!-- 学生登录结束-->
+    </div>
+</div>
+<div class="screenbg">
+    <ul>
+        <li><a href="javascript:;"><img src="images/background.png"></a></li>
+    </ul>
+</div>
+</body>
+</html>

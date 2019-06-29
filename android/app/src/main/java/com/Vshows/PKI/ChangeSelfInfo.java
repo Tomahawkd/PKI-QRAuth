@@ -1,5 +1,6 @@
 package com.Vshows.PKI;
 
+<<<<<<< HEAD
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,10 +9,17 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+=======
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.Window;
+>>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+<<<<<<< HEAD
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,11 +42,15 @@ public class ChangeSelfInfo extends AppCompatActivity  {
     private String nameInfo,phoneInfo,mailInfo,sigInfo;
     private int sexInfo;
 
+=======
+public class ChangeSelfInfo extends AppCompatActivity  {
+>>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.changeinfo);
+<<<<<<< HEAD
 
         Intent intent = getIntent();
         session = intent.getStringExtra("session");
@@ -123,4 +135,11 @@ public class ChangeSelfInfo extends AppCompatActivity  {
             sig.setText(sigInfo);
         }
     };
+=======
+        initView();
+    }
+    private void initView() {
+
+    }
+>>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
 }
