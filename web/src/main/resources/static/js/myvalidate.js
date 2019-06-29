@@ -57,7 +57,14 @@ $(document).ready(function () {
             data: JSON.stringify(formObject),
             dataType: "json",
             success:function(data){
-                alert(data.message);
+                if(data.status == -1) {
+                    $(".error_box").text("用户名不存在！");
+                } else if (data.status == 0) {
+                    $(".error_box").text("登录成功！");
+                    window.location.href="home.html";
+                } else if (data.status == 1) {
+                    $(".error_box").text("密码错误！");
+                }
             },
             error:function(e){
                 alert("错误！！");
@@ -122,7 +129,14 @@ $(document).ready(function () {
             data: JSON.stringify(formObject),
             dataType: "json",
             success:function(data){
-                alert(data.message);
+                if(data.status == -1) {
+                    $(".error_box").text("该用户名已存在！");
+                } else if (data.status == 0) {
+                    $(".error_box").text("注册成功！");
+                    window.location.href="index.html";
+                } else if (data.status == 1) {
+                    $(".error_box").text("注册失败！");
+                }
             },
             error:function(e){
                 alert("错误！！");
