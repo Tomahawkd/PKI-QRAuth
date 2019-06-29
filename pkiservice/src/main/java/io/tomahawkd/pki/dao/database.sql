@@ -20,6 +20,11 @@ create table if not exists system_api_index
     `private_key`   mediumtext                          not null
 );
 
+create view  system_api_view as
+    (
+        select `system_api`, `public_key` from system_api_index
+    );
+
 create table if not exists system_user
 (
     `system_user_id` int auto_increment primary key,
