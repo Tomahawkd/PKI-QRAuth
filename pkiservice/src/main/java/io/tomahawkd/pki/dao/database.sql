@@ -66,8 +66,7 @@ create table if not exists user_token
     `user_id`   int                                 not null,
     `system_id` int                                 not null,
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
-    `validBy`  timestamp                           not null,
-    `token`     text,
+    `valid_by`  timestamp                           not null,
 
     constraint user_token_user_fk
         foreign key (`system_id`, `user_id`) references user_key (`system_id`, `user_id`) on delete cascade
@@ -91,7 +90,7 @@ create procedure out_of_date()
 begin
     delete
     from user_token
-    where timestampdiff(SECOND, `validBy`, CURRENT_TIMESTAMP) <= 0;
+    where timestampdiff(SECOND, `valid_by`, CURRENT_TIMESTAMP) <= 0;
 end;
 
 # event for status update
