@@ -58,11 +58,11 @@
             <form action="/user/login" method="post" class="login_error" id="login_form">
                 <div id="login_username">
                     <label>账&nbsp;&nbsp;&nbsp;号：</label>
-                    <input type="text" id="login_username_value" name="username" value="输入学号"/>
+                    <input type="text" id="login_username_value" name="username" placeholder="输入用户名"/>
                 </div>
                 <div id="login_password">
                     <label>密&nbsp;&nbsp;&nbsp;码：</label>
-                    <input type="password" id="login_password_value" name="password" value="输入密码"/>
+                    <input type="password" id="login_password_value" name="password" placeholder="输入密码"/>
                 </div>
                 <table>
                     <tr>
@@ -74,7 +74,7 @@
                     </tr>
                 </table>
                 <div id="login">
-                    <button type="submit">登录</button>
+                    <button type="submit" id="login_btn">登录</button>
                 </div>
             </form>
         </div>
@@ -97,19 +97,20 @@
             <form action="/user/register" method="post" class="register_error" id="register_form">
                 <div id="register_username">
                     <label>账&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：</label>
-                    <input type="text" id="register_username_value" name="username"/>
+                    <input type="text" id="register_username_value" name="username" placeholder="输入用户名"/>
                     <!--ajaxurl="demo/valid.jsp"-->
                 </div>
                 <div id="register_password">
                     <label>密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：</label>
-                    <input type="password" id="register_password_value" name="password"/>
+                    <input type="password" id="register_password_value" name="password" placeholder="输入密码"/>
                 </div>
                 <div id="repeat_register_password">
                     <label>确认密码：</label>
-                    <input type="password" id="repeat_register_password_value" name="confirm_password"/>
+                    <input type="password" id="repeat_register_password_value" name="confirm_password"
+                           placeholder="确认密码"/>
                 </div>
                 <div id="register">
-                    <button type="submit">注册</button>
+                    <button type="submit" id="register_btn">注册</button>
                 </div>
             </form>
         </div>
@@ -118,7 +119,7 @@
 </div>
 <div class="screenbg">
     <ul>
-        <li><a href="/static/javascript:;"><img src="images/background.png"></a></li>
+        <li><a href="javascript:;"><img src="images/background.png"></a></li>
     </ul>
 </div>
 </body>

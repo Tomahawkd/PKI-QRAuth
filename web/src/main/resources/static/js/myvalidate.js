@@ -37,20 +37,34 @@ $(document).ready(function () {
         },
 
         submitHandler: function (form) {
-            $("#login_form").ajaxSubmit({
-                success: function (data) {
-                    alert(data);
-                    alert("登录成功");
-                },
-
-                error: function (data) {
-                    alert(data.message);
-                }
-            });
-
             return false;
         }
     });
+
+    $("#login_btn").click(function() {
+        if(! $("#login_form").valid()) {
+            return;
+        }
+        var formObject = {};
+        var formArray =$("#login_form").serializeArray();
+        $.each(formArray,function(i,item){
+            formObject[item.name] = item.value;
+        });
+        $.ajax({
+            url:"/user/login",
+            type:"post",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(formObject),
+            dataType: "json",
+            success:function(data){
+                alert(data.message);
+            },
+            error:function(e){
+                alert("错误！！");
+            }
+        });
+    });
+
 
     $('#register_form').validate({
         rules: {
@@ -88,18 +102,31 @@ $(document).ready(function () {
         },
 
         submitHandler: function (form) {
-            $("#register_form").ajaxSubmit({
-                success: function (data) {
-                    alert(data);
-                    alert("注册成功");
-                },
-
-                error: function (data) {
-                    alert(data.message);
-                }
-            });
-
             return false;
         }
-    })
+    });
+
+    $("#register_btn").click(function() {
+        if(! $("#register_form").valid()) {
+            return;
+        }
+        var formObject = {};
+        var formArray =$("#register_form").serializeArray();
+        $.each(formArray,function(i,item){
+            formObject[item.name] = item.value;
+        });
+        $.ajax({
+            url:"/user/register",
+            type:"post",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(formObject),
+            dataType: "json",
+            success:function(data){
+                alert(data.message);
+            },
+            error:function(e){
+                alert("错误！！");
+            }
+        });
+    });
 });
