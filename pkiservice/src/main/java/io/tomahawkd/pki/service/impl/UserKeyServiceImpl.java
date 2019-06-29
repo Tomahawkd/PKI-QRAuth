@@ -4,7 +4,7 @@ import io.tomahawkd.pki.dao.UserKeyDao;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.UserKeyService;
-import io.tomahawkd.pki.service.util.SecurityFunctions;
+import io.tomahawkd.pki.util.SecurityFunctions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
