@@ -16,29 +16,23 @@
                 <!-- Tab panes -->
                 <div class="tab-content tabs">
                     <div role="tabpanel" class="tab-pane fade show active" id="profile-tab">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nec urna aliquam,
-                            ornare eros vel, malesuada lorem. Nullam faucibus lorem at eros consectetur
-                            lobortis. Maecenas nec nibh congue, placerat sem id, rutrum velit. </p>
+                        <p id="bio-display"> </p>
                         <div class="row mt-3">
                             <h5 class="col-12 mb-2">User Info</h5>
                             <div class="col-6">
-                                <div class="form-group">
+                                <div class="form-group" id="name-display">
                                     <strong class="mr-5">姓名</strong>
-                                    段铭诚
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" id="email-display">
                                     <strong class="mr-5">邮箱</strong>
-                                    steena@gmail.com
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="form-group">
+                                <div class="form-group" id="sex-display">
                                     <strong class="mr-5">性别</strong>
-                                    男
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" id="phone-display">
                                     <strong class="mr-5">电话</strong>
-                                    11111111111
                                 </div>
                             </div>
                         </div>
@@ -51,53 +45,53 @@
                             <div class="col-md-12">
                                 <div class="form-group row">
                                     <div class="col-md-2">
-                                        <input type="file" name="pclogo" id="xdaTanFileImg" accept="image/*">
                                         <img src="img/avatar-1.jpg" class="img-fluid rounded-circle" id="avarimgs">
+                                        <input type="file" name="pclogo" id="xdaTanFileImg" accept="image/*">
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="form-group row">
-                                    <label for="example-text-input" style="width: 85px;"
+                                    <label for="bio-input" style="width: 85px;"
                                            class=" col-form-label">个人简介</label>
                                     <div class="col-9">
                                         <input class="form-control" type="text" value="Steena Ben"
-                                               id="bio-input">
+                                               id="bio-input" name="bio">
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6 ">
                                 <div class="form-group row">
-                                    <label for="example-text-input" style="width: 85px;"
+                                    <label for="name-input" style="width: 85px;"
                                            class=" col-form-label">姓名</label>
                                     <div class="col-9">
                                         <input class="form-control" type="text" value="Steena Ben"
-                                               id="name-input">
+                                               id="name-input" name="name">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="example-email-input" style="width: 85px;"
+                                    <label for="email-input" style="width: 85px;"
                                            class=" col-form-label">邮箱</label>
                                     <div class="col-9">
                                         <input class="form-control" type="email" value="steena@gmail.com"
-                                               id="example-email-input">
+                                               id="email-input" name="email">
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group row">
-                                    <label for="example-text-input" style="width: 85px;"
+                                    <label for="sex-input" style="width: 85px;"
                                            class=" col-form-label">性别</label>
                                     <div class="col-9">
                                         <input class="form-control" type="text" value="Programming"
-                                               id="example-text-input">
+                                               id="sex-input" name="sex">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="example-tel-input" style="width: 85px;" class=" col-form-label">电话</label>
+                                    <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
                                     <div class="col-9">
                                         <input class="form-control" type="tel" value="+91-(555)-555-5555"
-                                               id="example-tel-input">
+                                               id="phone-input" name="phone">
                                     </div>
                                 </div>
                             </div>

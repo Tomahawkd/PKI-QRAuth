@@ -8,6 +8,41 @@ $(document).ready(function () {
     $('html').css('height', '100%');
     $('body').css('height', '100%');
 
+    $.ajax({
+        url:"/user/info/data",
+        type:"get",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success:function(data){
+            alert("成功！");
+            $("#name-display").append(data.name);
+            $("#name-input").val(data.name);
+            $("#bio-display").text(data.bio);
+            $("#bio-input").val(data.bio);
+            $("#phone-display").append(data.phone);
+            $("#phone-input").val(data.phone);
+            $("#email-display").append(data.email);
+            $("#email-input").val(data.email);
+            switch(data.sex) {
+            case 1:
+                $("#sex-display").append("女");
+                $("#sex-input").val("女");
+                break;
+            case 2:
+                $("#sex-display").append("男");
+                $("#sex-input").val("男");
+                break;
+            default:
+                $("#sex-display").append("未知");
+                $("#sex-input").val("未知");
+            }
+            console.log(data.image);
+        },
+        error:function(e){
+            alert("错误！");
+        }
+    })
+
     $('#profile-menu-item').click(function () {
         $('.side-navbar li.active').removeClass('active');
         $('#profile-menu-item').addClass('active');
@@ -26,18 +61,12 @@ $(document).ready(function () {
         $('.content-inner').load('log.html');
     });
 
-    //选择图片，马上预览
-     $("#xdaTanFileImg").change(function() {
-      var file = $("#xdaTanFileImg").files[0];
-      console.log(obj);
-      console.log(file);
-      console.log("file.size = " + file.size);
-      var reader = new FileReader();
-      reader.onload = function (e) {
-          console.log("成功读取....");
-      var img = document.getElementById("avarimgs");
-          img.src = e.target.result;
-      }
-          reader.readAsDataURL(file)
-      });
+     $("#xdaTanFileImg").change(function () {
+        var obj=$("#xdaTanFileImg")[0].files[0];
+        var wuc=window.URL.createObjectURL(obj);
+            $("#avarimgs").attr('src',wuc);
+            $("#avarimgs").load(function () {
+               window.URL.revokeObjectURL(wuc);
+            })
+     });
 });

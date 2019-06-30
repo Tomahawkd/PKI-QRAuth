@@ -93,7 +93,6 @@ public class UserInfoController {
                     "changeUserInfo", SystemLogModel.WARN, " change Info failed");
 
             return "{\"status\": 1, \"message\": \"failed\"}";
-
         }
     }
 
