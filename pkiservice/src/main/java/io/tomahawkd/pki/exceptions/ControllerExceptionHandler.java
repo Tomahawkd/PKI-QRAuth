@@ -25,4 +25,10 @@ public class ControllerExceptionHandler {
 	public void cipherIssue(Exception e) {
 
 	}
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Malformed Base64 value")
+	@ExceptionHandler(Base64EncodeException.class)
+	public void base64Issue(Exception e) {
+
+	}
 }
