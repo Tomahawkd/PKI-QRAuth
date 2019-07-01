@@ -4,7 +4,7 @@ import java.security.KeyPair;
 import java.sql.Timestamp;
 import java.util.Base64;
 
-public class SystemApiDataModel {
+public class SystemKeyModel {
 
 	private int systemId;
 	private String systemApi;
@@ -12,7 +12,7 @@ public class SystemApiDataModel {
 	private String publicKey;
 	private String privateKey;
 
-	public SystemApiDataModel(String systemApi, KeyPair kp) {
+	public SystemKeyModel(String systemApi, KeyPair kp) {
 		this.systemApi = systemApi;
 		this.publicKey = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
 		this.privateKey = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
@@ -40,7 +40,7 @@ public class SystemApiDataModel {
 
 	@Override
 	public String toString() {
-		return "SystemApiDataModel{" +
+		return "SystemKeyModel{" +
 				"systemId=" + systemId +
 				", systemApi='" + systemApi + '\'' +
 				", registerDate=" + registerDate +
