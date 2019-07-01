@@ -10,12 +10,14 @@ public class ResponseMessage {
 		this.message = message;
 	}
 
-	public void setOK() {
+	public ResponseMessage setOK() {
 		this.status = 0;
+		return this;
 	}
 
-	public void setError() {
+	public ResponseMessage setError() {
 		this.status = 1;
+		return this;
 	}
 
 	public void setMessage(String message) {
