@@ -1,8 +1,10 @@
 package io.tomahawkd.pki.service.impl;
 
 import io.tomahawkd.pki.dao.SystemApiDataDao;
+import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.SystemApiDataModel;
 import io.tomahawkd.pki.service.SystemApiDataService;
+import io.tomahawkd.pki.util.SecurityFunctions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,9 @@ public class SystemApiDataServiceImpl implements SystemApiDataService {
 	}
 
 	@Override
-	public int registerSystemApi() {
+	public int registerSystemApi() throws CipherErrorException {
 		UUID uuid = UUID.randomUUID();
-		SystemApiDataModel model = new SystemApiDataModel(uuid.toString());
+		SystemApiDataModel model = new SystemApiDataModel(uuid.toString(), SecurityFunctions.generateKeyPair());
 		return dao.registerApi(model) == 1 ? model.getSystemId() : -1;
 	}
 

@@ -5,7 +5,7 @@ import io.tomahawkd.pki.model.UserKeyModel;
 
 public interface UserKeyService {
 
-	public String createKeyForm(int userId, int systemId, String random) throws CipherErrorException;
+	String createKeyForm(int userId, int systemId, String random) throws CipherErrorException;
 
 	UserKeyModel getKeyFormById(int userId, int systemId);
 }
