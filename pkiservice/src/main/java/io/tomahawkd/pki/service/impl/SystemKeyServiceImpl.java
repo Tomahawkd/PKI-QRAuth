@@ -19,12 +19,12 @@ public class SystemKeyServiceImpl implements SystemKeyService {
 	private SystemKeyDao dao;
 
 	@Override
-	public SystemKeyModel getApiById(int systemId) {
+	public SystemKeyModel getById(int systemId) {
 		return dao.getApiDataById(systemId);
 	}
 
 	@Override
-	public SystemKeyModel getIdByApi(String systemApi) {
+	public SystemKeyModel getByApi(String systemApi) {
 		return dao.getIdByApiData(systemApi);
 	}
 
@@ -33,10 +33,5 @@ public class SystemKeyServiceImpl implements SystemKeyService {
 		UUID uuid = UUID.randomUUID();
 		SystemKeyModel model = new SystemKeyModel(uuid.toString(), SecurityFunctions.generateKeyPair());
 		return dao.registerApi(model) == 1 ? model.getSystemId() : -1;
-	}
-
-	@Override
-	public boolean checkApi(SystemKeyModel data, String systemApi) {
-		return data.getSystemApi().equals(systemApi);
 	}
 }

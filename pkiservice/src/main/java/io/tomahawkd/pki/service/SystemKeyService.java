@@ -5,12 +5,10 @@ import io.tomahawkd.pki.model.SystemKeyModel;
 
 public interface SystemKeyService {
 
-	SystemKeyModel getApiById(int systemId);
+	SystemKeyModel getById(int systemId);
 
 	// return system id
 	int registerSystemApi() throws CipherErrorException;
 
-	boolean checkApi(SystemKeyModel data, String systemApi);
-
-	SystemKeyModel getIdByApi(String systemApi);
+	SystemKeyModel getByApi(String systemApi);
 }
