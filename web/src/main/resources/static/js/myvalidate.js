@@ -41,32 +41,32 @@ $(document).ready(function () {
         }
     });
 
-    $("#login_btn").click(function() {
-        if(! $("#login_form").valid()) {
+    $("#login_btn").click(function () {
+        if (!$("#login_form").valid()) {
             return;
         }
         var formObject = {};
-        var formArray =$("#login_form").serializeArray();
-        $.each(formArray,function(i,item){
+        var formArray = $("#login_form").serializeArray();
+        $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
         $.ajax({
-            url:"/user/login",
-            type:"post",
+            url: "/user/login",
+            type: "post",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(formObject),
             dataType: "json",
-            success:function(data){
-                if(data.status == -1) {
+            success: function (data) {
+                if (data.status == -1) {
                     $(".error_box").text("用户名不存在！");
                 } else if (data.status == 0) {
                     $(".error_box").text("登录成功！");
-                    window.location.href="home.html";
+                    window.location.href = "home.html";
                 } else if (data.status == 1) {
                     $(".error_box").text("密码错误！");
                 }
             },
-            error:function(e){
+            error: function (e) {
                 alert("错误！！");
             }
         });
@@ -113,32 +113,32 @@ $(document).ready(function () {
         }
     });
 
-    $("#register_btn").click(function() {
-        if(! $("#register_form").valid()) {
+    $("#register_btn").click(function () {
+        if (!$("#register_form").valid()) {
             return;
         }
         var formObject = {};
-        var formArray =$("#register_form").serializeArray();
-        $.each(formArray,function(i,item){
+        var formArray = $("#register_form").serializeArray();
+        $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
         $.ajax({
-            url:"/user/register",
-            type:"post",
+            url: "/user/register",
+            type: "post",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(formObject),
             dataType: "json",
-            success:function(data){
-                if(data.status == -1) {
+            success: function (data) {
+                if (data.status == -1) {
                     $(".error_box").text("该用户名已存在！");
                 } else if (data.status == 0) {
                     $(".error_box").text("注册成功！");
-                    window.location.href="index.html";
+                    window.location.href = "index.html";
                 } else if (data.status == 1) {
                     $(".error_box").text("注册失败！");
                 }
             },
-            error:function(e){
+            error: function (e) {
                 alert("错误！！");
             }
         });

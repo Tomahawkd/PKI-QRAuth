@@ -44,17 +44,18 @@
                             </div>
                             <form id="update-info-form">
 
-                            <div class="col-md-12">
+                                <div class="col-md-12">
                                     <div class="form-group row">
                                         <div class="col-md-5"></div>
                                         <div class="col-md-2">
-                                            <img src="img/avatar-1.jpg" class="img-fluid rounded-circle" id="show-image">
+                                            <img src="img/avatar-1.jpg" class="img-fluid rounded-circle"
+                                                 id="show-image">
                                             <input name="image" type="file" id="image-file" accept="image/*">
                                         </div>
                                         <div class="col-md-5"></div>
                                     </div>
-                            </div>
-                            <div class="col-md-12">
+                                </div>
+                                <div class="col-md-12">
                                     <div class="form-group row">
                                         <label for="bio-input" style="width: 85px;"
                                                class=" col-form-label">个人简介</label>
@@ -100,7 +101,7 @@
                                     </div>
                                 </div>
                             </form>
-                            </div>
+                        </div>
 
 
                         <div class="row mx-2">
@@ -146,27 +147,27 @@
     });
 
     //方式一 Jquery实现
-             $("#save-profile-btn").click(function() {
-                 var formArray =$("#update-info-form").serializeArray();
-                         var formObject = {};
-        $.each(formArray,function(i,item){
+    $("#save-profile-btn").click(function () {
+        var formArray = $("#update-info-form").serializeArray();
+        var formObject = {};
+        $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
 
-                 $.ajax({
-                     url: "/user/info/update/info",
-                     type: "post",
-                     data: JSON.stringify(formObject),
-                     contentType: "application/json; charset=utf-8",
-                     processData: false,
-                     success: function (data) {
-                         console.log(data);
-                     },
-                     error: function (data) {
-                         console.log(data);
-                     }
-                 });
-             });
+        $.ajax({
+            url: "/user/info/update/info",
+            type: "post",
+            data: JSON.stringify(formObject),
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            success: function (data) {
+                console.log(data);
+            },
+            error: function (data) {
+                console.log(data);
+            }
+        });
+    });
 
 
 </script>

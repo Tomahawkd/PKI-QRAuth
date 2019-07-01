@@ -9,11 +9,11 @@ $(document).ready(function () {
     $('body').css('height', '100%');
 
     $.ajax({
-        url:"/user/info/data",
-        type:"get",
+        url: "/user/info/data",
+        type: "get",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success:function(data){
+        success: function (data) {
             alert("成功！");
             $("#name-display").append(data.name);
             $("#name-input").val(data.name);
@@ -23,22 +23,22 @@ $(document).ready(function () {
             $("#phone-input").val(data.phone);
             $("#email-display").append(data.email);
             $("#email-input").val(data.email);
-            switch(data.sex) {
-            case 1:
-                $("#sex-display").append("女");
-                $("#sex-input").val("女");
-                break;
-            case 2:
-                $("#sex-display").append("男");
-                $("#sex-input").val("男");
-                break;
-            default:
-                $("#sex-display").append("未知");
-                $("#sex-input").val("未知");
+            switch (data.sex) {
+                case 1:
+                    $("#sex-display").append("女");
+                    $("#sex-input").val("女");
+                    break;
+                case 2:
+                    $("#sex-display").append("男");
+                    $("#sex-input").val("男");
+                    break;
+                default:
+                    $("#sex-display").append("未知");
+                    $("#sex-input").val("未知");
             }
             console.log(data.image);
         },
-        error:function(e){
+        error: function (e) {
             alert("错误！");
         }
     });
