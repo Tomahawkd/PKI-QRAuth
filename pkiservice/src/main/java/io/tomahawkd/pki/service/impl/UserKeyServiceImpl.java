@@ -51,4 +51,9 @@ public class UserKeyServiceImpl implements UserKeyService {
 
 		return model;
 	}
+
+	@Override
+	public UserKeyModel getUserById(int userId) {
+		return dao.getUserById(userId);
+	}
 }

@@ -14,7 +14,8 @@ public interface UserTokenDao {
 			@Result(property = "tokenId", column = "token_id"),
 			@Result(property = "userId", column = "user_id"),
 			@Result(property = "createDate", column = "init_date"),
-			@Result(property = "validBy", column = "valid_by")
+			@Result(property = "validBy", column = "valid_by"),
+			@Result(property = "nonce", column = "nonce")
 	})
 	TokenModel getByTokenId(@Param("id") int tokenId);
 
@@ -24,12 +25,13 @@ public interface UserTokenDao {
 			@Result(property = "tokenId", column = "token_id"),
 			@Result(property = "userId", column = "user_id"),
 			@Result(property = "createDate", column = "init_date"),
-			@Result(property = "validBy", column = "valid_by")
+			@Result(property = "validBy", column = "valid_by"),
+			@Result(property = "nonce", column = "nonce")
 	})
 	List<TokenModel> getByUserId(@Param("id") int user);
 
-	@Insert("insert into user_token (`user_id`, `valid_by`) " +
-			"values (#{token.userId}, TIMESTAMPADD(DAY, 30, CURRENT_TIMESTAMP))")
+	@Insert("insert into user_token (`user_id`, `valid_by`, `nonce`) " +
+			"values (#{token.userId}, TIMESTAMPADD(DAY, 30, CURRENT_TIMESTAMP), #{token.nonce})")
 	@Options(keyProperty = "tokenId", useGeneratedKeys = true)
 	int initToken(@Param("token") TokenModel token);
 
