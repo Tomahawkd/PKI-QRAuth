@@ -19,27 +19,22 @@ public class Utils {
 		return Base64.getDecoder().decode(data);
 	}
 
-	public static Map<String, String> wrapMapFromJson(String json) throws MalformedJsonException {
+	public static Map<String, String> wrapMapFromJson(String json, String... params)
+			throws ParamNotFoundException, MalformedJsonException {
 
 		try {
-			return new Gson().fromJson(json, new TypeToken<Map<String, String>>() {
+			Map<String, String> map = new Gson().fromJson(json, new TypeToken<Map<String, String>>() {
 			}.getType());
+
+			for (String param : params) {
+				if (!map.containsKey(param)) throw new ParamNotFoundException("Json key not exist: " + json);
+			}
+
+			return map;
 		} catch (JsonSyntaxException e) {
 			throw new MalformedJsonException("Malformed Json: " + json);
 		} catch (NullPointerException e) {
 			throw new MalformedJsonException("Cannot read json value: " + json);
 		}
-	}
-
-	public static Map<String, String> wrapMapFromJson(String json, String[] params)
-			throws ParamNotFoundException, MalformedJsonException {
-
-		Map<String, String> map = wrapMapFromJson(json);
-
-		for (String param : params) {
-			if (!map.containsKey(param)) throw new ParamNotFoundException("Json key not exist: " + json);
-		}
-
-		return map;
 	}
 }
