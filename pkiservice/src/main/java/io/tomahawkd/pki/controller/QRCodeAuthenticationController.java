@@ -37,7 +37,7 @@ public class QRCodeAuthenticationController {
 	 *             "type": number(1:scanned, 2:confirmed),
 	 *             "N"(appears if type:1):"Base64 encoded Kc private key signed nonce2"
 	 *             }",
-	 *             "EToken": "Base64 encoded Kc public key encrypted token,nonce",
+	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
 	 *             }
 	 * @return {

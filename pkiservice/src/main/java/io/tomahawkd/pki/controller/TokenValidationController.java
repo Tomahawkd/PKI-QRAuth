@@ -39,7 +39,7 @@ public class TokenValidationController {
 
 	/**
 	 * @param data {
-	 *             "EToken": "Base64 encoded Kc public key encrypted token,nonce+1(by client)",
+	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
 	 *             }
 	 * @return {
