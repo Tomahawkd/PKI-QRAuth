@@ -6,9 +6,9 @@ public interface UserPasswordService {
 
 	boolean checkUserExistence(String username);
 
-	boolean checkPassword(String username, String password);
+	int checkPassword(String username, String password);
 
 	int addUser(UserPasswordModel model);
 
-	boolean changePassword(UserPasswordModel model, String new_password) throws Exception;
+	boolean updateUserPassword(UserPasswordModel model, String new_password) throws Exception;
 }

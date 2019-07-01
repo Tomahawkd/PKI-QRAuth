@@ -22,11 +22,11 @@ public class UserPasswordServiceImpl implements UserPasswordService {
 	}
 
 	@Override
-	public boolean checkPassword(String username, String password) {
+	public int checkPassword(String username, String password) {
 		UserPasswordModel model = dao.getUser(username);
-		if (model == null) return false;
+		if (model == null) return -1;
 
-		return password.equals(model.getPassword());
+		return password.equals(model.getPassword()) ? model.getIndex() : -1;
 
 	}
 
@@ -36,8 +36,8 @@ public class UserPasswordServiceImpl implements UserPasswordService {
 	}
 
 	@Override
-	public boolean changePassword(UserPasswordModel model, String new_password) {
-		int result = dao.updateUser(model, new_password);
+	public boolean updateUserPassword(UserPasswordModel model, String new_password) {
+		int result = dao.updateUserPassword(model, new_password);
 		return result == 1;
 	}
 }

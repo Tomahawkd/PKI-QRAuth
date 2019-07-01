@@ -3,7 +3,7 @@ package io.tomahawkd.simpleserver.service;
 import io.tomahawkd.simpleserver.model.UserInfoModel;
 
 public interface UserInfoService {
-	UserInfoModel getUserInfo(String username);
+	UserInfoModel getUserInfo(int userid);
 
-	boolean changeUserInfo(UserInfoModel model) throws Exception;
+	boolean updateUserInfo(UserInfoModel model) throws Exception;
 }
