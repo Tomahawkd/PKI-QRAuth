@@ -82,10 +82,11 @@ create table if not exists user_log
 
 create table if not exists user_token
 (
-    `token_id`  int primary key auto_increment        not null,
-    `user_id`   int                                   not null,
-    `init_date` timestamp   default CURRENT_TIMESTAMP not null,
-    `valid_by`  timestamp                             not null,
+    `token_id`  int primary key auto_increment      not null,
+    `user_id`   int                                 not null,
+    `init_date` timestamp default CURRENT_TIMESTAMP not null,
+    `valid_by`  timestamp                           not null,
+    `nonce`     int                                 not null,
 
     constraint user_token_user_fk
         foreign key (`user_id`) references user_key (`user_id`) on delete cascade

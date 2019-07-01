@@ -1,8 +1,6 @@
 package io.tomahawkd.pki.model;
 
 import io.tomahawkd.pki.exceptions.CipherErrorException;
-import io.tomahawkd.pki.util.SecurityFunctions;
-import io.tomahawkd.pki.util.Utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,12 +13,14 @@ public class TokenModel {
 	private int userId;
 	private Timestamp createDate;
 	private Timestamp validBy;
+	private int nonce;
 
 	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
 	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 2 + TIMESTAMP_SIZE * 2;
 
-	public TokenModel(int userId) {
+	public TokenModel(int userId, int nonce) {
 		this.userId = userId;
+		this.nonce = nonce;
 	}
 
 	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy) {
@@ -38,11 +38,15 @@ public class TokenModel {
 		return userId;
 	}
 
+	public int getNonce() {
+		return nonce;
+	}
+
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
 
-	public Timestamp getValid_by() {
+	public Timestamp getValidBy() {
 		return validBy;
 	}
 
@@ -54,6 +58,13 @@ public class TokenModel {
 				", createDate=" + createDate +
 				", validBy=" + validBy +
 				'}';
+	}
+
+	public boolean equals(TokenModel token) {
+		return token.tokenId == this.tokenId &&
+				token.userId == this.userId &&
+				token.createDate.equals(this.createDate) &&
+				token.validBy.equals(this.validBy);
 	}
 
 	private static byte[] toByteArray(int i) {
