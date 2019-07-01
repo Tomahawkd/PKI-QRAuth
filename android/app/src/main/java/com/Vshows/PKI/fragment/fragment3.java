@@ -17,6 +17,7 @@ import com.Vshows.PKI.ChangeSelfInfo;
 import com.Vshows.PKI.Check;
 import com.Vshows.PKI.Login;
 import com.Vshows.PKI.R;
+import com.Vshows.PKI.changepsw;
 import com.Vshows.PKI.index;
 import com.Vshows.zxinglibrary.android.CaptureActivity;
 import com.Vshows.zxinglibrary.bean.ZxingConfig;
@@ -25,18 +26,12 @@ import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
 
-<<<<<<< HEAD
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
 
-=======
-import java.io.IOException;
-import java.util.List;
-
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -64,43 +59,15 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     TextView mail_information;
 
     private String session;
-<<<<<<< HEAD
     private Handler handler = null;
 
     private String username,name,email,phone,bio,imagepath;
     private int sex;
-=======
-    private String username;
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.infomation,container,false);
-        scanBtn = (ImageButton) view.findViewById(R.id.scan);
-        scanBtn.setOnClickListener(this);
-        changeSelfInfo = (Button) view.findViewById(R.id.changeinfo);
-        changeSelfInfo.setOnClickListener(this);
-        changePsw = (Button) view.findViewById(R.id.changepsw);
-        changePsw.setOnClickListener(this);
-        changeKey = (Button) view.findViewById(R.id.changekey);
-        changeKey.setOnClickListener(this);
-        quit = (Button) view.findViewById(R.id.quit);
-        quit.setOnClickListener(this);
-        username_information = (TextView)view.findViewById(R.id.username_information);
-        username2_information = (TextView)view.findViewById(R.id.username2_information);
-        sig_information = (TextView)view.findViewById(R.id.sig_information);
-        sex_information = (TextView)view.findViewById(R.id.sex_information);
-        phone_information  = (TextView)view.findViewById(R.id.phone_infomation);
-        mail_information = (TextView)view.findViewById(R.id.mail_information);
-
-        session = getActivity().getIntent().getStringExtra("session");
-        username = getActivity().getIntent().getStringExtra("username");
-
-        Log.d("sessin" ,session);
-//        Log.d("name" ,username);
-
-        init_info();
 
         handler = new Handler();
 
@@ -123,7 +90,7 @@ public class fragment3 extends Fragment implements View.OnClickListener {
 
         session = getActivity().getIntent().getStringExtra("session");
 
-//        Log.d("sessin" ,session);
+        //Log.d("sessin" ,session);
 
         init_info();
 
@@ -150,11 +117,11 @@ public class fragment3 extends Fragment implements View.OnClickListener {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.isSuccessful()) {
-<<<<<<< HEAD
-                    String jsonString = response.body().string();;
-
+                    String jsonString = response.body().string();
                     try {
-                        JSONObject resultJson = new JSONObject(jsonString);
+                        JSONObject mesJson = new JSONObject(jsonString);
+                        String json = mesJson.getString("message");
+                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
                         username = resultJson.getString("username");
                         name = resultJson.getString("name");
                         sex = resultJson.getInt("sex");
@@ -173,17 +140,11 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-=======
-                    String jsonString = response.body().string();
-                    //handle_response(jsonString);
-                    Log.d("getInfoSuccess","<<<<d="+jsonString);
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
                 }
             }
         });
     }
 
-<<<<<<< HEAD
     Runnable changeInfoUI = new Runnable() {
         @Override
         public void run() {
@@ -201,8 +162,6 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         }
     };
 
-=======
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
     @Override
     public void onClick(View view) {
         switch (view.getId()){
@@ -233,13 +192,13 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changeinfo:
                 Intent intent3 = new Intent(getActivity(), ChangeSelfInfo.class);
-<<<<<<< HEAD
                 intent3.putExtra("session",session);
-=======
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
                 startActivity(intent3);
                 break;
             case R.id.changepsw:
+                Intent intent4 = new Intent(getActivity(), changepsw.class);
+                intent4.putExtra("session",session);
+                startActivity(intent4);
                 break;
             case R.id.quit:
                 Intent intent2 = new Intent(getActivity(), Login.class);

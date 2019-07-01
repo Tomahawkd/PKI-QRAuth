@@ -82,7 +82,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
-
+                Intent intent1 = new Intent(this,index.class);
+                startActivity(intent1);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -121,14 +122,10 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                                     List<String> cookies=headers.values("Set-Cookie");
                                     if(cookies.size()>0) {
                                         session = cookies.get(0);
-                                        Log.d("session","<<<<d="+session);
-<<<<<<< HEAD
-=======
-//                                        session = result.substring(0, result.indexOf(";"));
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
+                                        Log.d("getsession","<<<<d="+session);
                                     }
                                     String jsonString = response.body().string();
-                                    Log.d("success","<<<<d="+jsonString);
+                                    Log.d("loginsuccess","<<<<d="+jsonString);
                                     handle_response(jsonString);
                                 }
                             }
@@ -150,11 +147,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             int status = (int) result.get("status");
             if(status==-1){
                 Looper.prepare();
-<<<<<<< HEAD
                 Toast.makeText(this,"用户名不存在！", Toast.LENGTH_LONG).show();
-=======
-                Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
                 Looper.loop();
             }
             else if(status==0){
@@ -170,11 +163,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             }
             else if(status==1){
                 Looper.prepare();
-<<<<<<< HEAD
                 Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
-=======
-                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
->>>>>>> 83628212b11b01e5087bd34f356c531ce3060bf0
                 Looper.loop();
             }
             else {
