@@ -10,4 +10,6 @@ public interface UserKeyService {
 	UserKeyModel getKeyPairById(String userTag, int systemId);
 
 	UserKeyModel regenerateKeysAndDeleteTokenFor(int userId) throws CipherErrorException;
+
+	UserKeyModel getUserById(int userId);
 }
