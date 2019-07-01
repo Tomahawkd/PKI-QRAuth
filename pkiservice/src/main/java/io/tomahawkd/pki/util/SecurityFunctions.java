@@ -6,6 +6,8 @@ import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -32,9 +34,14 @@ public class SecurityFunctions {
 		}
 	}
 
-	public static byte[] generateRandom() {
+	public static int generateRandom() {
+		byte[] intBytes = generateRandom(Integer.BYTES);
+		return ByteBuffer.wrap(intBytes).order(ByteOrder.LITTLE_ENDIAN).getInt(Integer.BYTES);
+	}
+
+	public static byte[] generateRandom(int bytes) {
 		SecureRandom s = new SecureRandom();
-		return s.generateSeed(12);
+		return s.generateSeed(bytes);
 	}
 
 	public static byte[] generateHash(byte[] seed) throws CipherErrorException {
@@ -50,9 +57,10 @@ public class SecurityFunctions {
 		return generateHash(seed.getBytes());
 	}
 
-	public static byte[] encryptSymmetric(String keySeed, String random, byte[] data) throws CipherErrorException {
-		SecretKey secretKey = new SecretKeySpec(generateSymKey(keySeed), "AES");
-		GCMParameterSpec param = new GCMParameterSpec(128, random.getBytes());
+	public static byte[] encryptSymmetric(byte[] key, byte[] iv, byte[] data) throws CipherErrorException {
+		if (key.length !=32) throw new CipherErrorException("Key invalid");
+		SecretKey secretKey = new SecretKeySpec(key, "AES");
+		GCMParameterSpec param = new GCMParameterSpec(128, iv);
 		try {
 			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey, param);
@@ -63,9 +71,10 @@ public class SecurityFunctions {
 		}
 	}
 
-	public static byte[] decryptSymmetric(String keySeed, String random, byte[] enc) throws CipherErrorException {
-		SecretKey secretKey = new SecretKeySpec(generateSymKey(keySeed), "AES");
-		GCMParameterSpec param = new GCMParameterSpec(128, random.getBytes());
+	public static byte[] decryptSymmetric(byte[] key, byte[] iv, byte[] enc) throws CipherErrorException {
+		if (key.length !=32) throw new CipherErrorException("Key invalid");
+		SecretKey secretKey = new SecretKeySpec(key, "AES");
+		GCMParameterSpec param = new GCMParameterSpec(128, iv);
 		try {
 			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 			cipher.init(Cipher.DECRYPT_MODE, secretKey, param);
@@ -110,25 +119,46 @@ public class SecurityFunctions {
 		}
 	}
 
-	public static KeyPair readAuthenticateServerKeys() throws IOException, CipherErrorException {
+	private static PrivateKey readAuthenticateServerPrivateKey() throws IOException, CipherErrorException {
 		byte[] priBytes = Base64.getDecoder().decode(
 				FileUtil.readFile(FileUtil.rootPath + "/resources/auth.pri"));
-
 		try {
-			PublicKey pub = readAuthenticateServerPublicKey();
-			PrivateKey pri = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(priBytes));
-			return new KeyPair(pub, pri);
+			return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(priBytes));
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
 			throw new CipherErrorException(e);
 		}
+
+	}
+
+	public static byte[] decryptUsingAuthenticateServerPrivateKey(byte[] data)
+			throws IOException, CipherErrorException {
+		PrivateKey k = readAuthenticateServerPrivateKey();
+		return decryptAsymmetric(k, data);
+	}
+
+	public static KeyPair readAuthenticateServerKeys() throws IOException, CipherErrorException {
+		return new KeyPair(readAuthenticateServerPublicKey(), readAuthenticateServerPrivateKey());
 	}
 
 	public static void generateNewAuthenticateServerKeys() throws CipherErrorException, IOException {
 		KeyPair pair = SecurityFunctions.generateKeyPair();
-		String pubBase64 = Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());
-		String priBase64 = Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded());
+		String pubBase64 = Utils.base64Encode(pair.getPublic().getEncoded());
+		String priBase64 = Utils.base64Encode(pair.getPrivate().getEncoded());
 
 		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pub", pubBase64, true);
 		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pri", priBase64, true);
+	}
+
+	public static KeyPair readKeysFromString(String pri, String pub) throws CipherErrorException {
+		try {
+			PublicKey publicKey =
+					KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Utils.base64Decode(pub)));
+			PrivateKey privateKey =
+					KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Utils.base64Decode(pri)));
+			return new KeyPair(publicKey, privateKey);
+		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+			throw new CipherErrorException(e);
+		}
+
 	}
 }
