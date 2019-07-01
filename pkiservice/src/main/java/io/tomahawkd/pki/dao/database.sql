@@ -80,6 +80,7 @@ create table if not exists user_token
     `system_id` int                                 not null,
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
     `valid_by`  timestamp                           not null,
+    `hash`      varchar(70)                         not null,
 
     constraint user_token_user_fk
         foreign key (`system_id`, `user_id`) references user_key (`system_id`, `user_id`) on delete cascade

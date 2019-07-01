@@ -1,5 +1,9 @@
 package io.tomahawkd.pki.model;
 
+import io.tomahawkd.pki.exceptions.CipherErrorException;
+import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.util.Utils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
@@ -12,16 +16,19 @@ public class TokenModel {
 	private int systemId;
 	private Timestamp createDate;
 	private Timestamp validBy;
+	private transient String hash;
 
 	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
 	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 3 + TIMESTAMP_SIZE * 2;
 
-	private TokenModel(int tokenId, int userId, int systemId, Timestamp createDate, Timestamp validBy) {
+	private TokenModel(int tokenId, int userId, int systemId, Timestamp createDate, Timestamp validBy)
+			throws CipherErrorException {
 		this.tokenId = tokenId;
 		this.userId = userId;
 		this.systemId = systemId;
 		this.createDate = createDate;
 		this.validBy = validBy;
+		this.hash = Utils.base64Encode(SecurityFunctions.generateHash(serialize()));
 	}
 
 	public int getTokenId() {
@@ -44,6 +51,9 @@ public class TokenModel {
 		return validBy;
 	}
 
+	public String getHash() {
+		return hash;
+	}
 
 	@Override
 	public String toString() {
@@ -104,7 +114,7 @@ public class TokenModel {
 		return Base64.getEncoder().encodeToString(this.serialize());
 	}
 
-	public static TokenModel deserialize(byte[] data) {
+	public static TokenModel deserialize(byte[] data) throws CipherErrorException {
 
 		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid");
 
@@ -127,7 +137,8 @@ public class TokenModel {
 		return new TokenModel(token, user, system, createDate, validBy);
 	}
 
-	public static TokenModel deserializeFromString(String data) throws IllegalArgumentException {
+	public static TokenModel deserializeFromString(String data)
+			throws IllegalArgumentException, CipherErrorException {
 		return deserialize(Base64.getDecoder().decode(data));
 	}
 }
