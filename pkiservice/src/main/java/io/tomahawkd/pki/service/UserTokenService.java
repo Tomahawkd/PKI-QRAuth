@@ -4,13 +4,9 @@ import io.tomahawkd.pki.model.TokenModel;
 
 public interface UserTokenService {
 
-	boolean validateToken(String tokenData);
+	byte[] generateNewToken(String userTag, int systemId);
 
-	TokenModel getToken(int tokenId);
+	TokenModel getTokenById(int tokenId);
 
-	byte[] getSerializedToken(int tokenId);
-
-	byte[] generateNewToken(int userId, int systemId);
-
-	void revokeToken(int tokenId);
+	boolean validateToken(TokenModel token, int nonce);
 }

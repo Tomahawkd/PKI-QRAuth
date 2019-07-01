@@ -20,29 +20,49 @@ create table if not exists system_api_index
     `private_key`   mediumtext                          not null
 );
 
+create view system_api_view as
+    (
+        select `system_api`, `public_key`
+        from system_api_index
+    );
+
 create table if not exists system_user
 (
     `system_user_id` int auto_increment primary key,
-    `system_id`      int,
     `username`       varchar(255) unique not null,
-    `password`       varchar(255)        not null,
+    `password`       varchar(255)        not null
+);
 
+create table if not exists system_user_registeration
+(
+    `system_user_id` int not null,
+    `system_id`      int not null,
+
+    constraint system_user_fk
+        foreign key (`system_user_id`) references system_user (`system_user_id`),
     constraint system_api_user_fk
         foreign key (`system_id`) references system_api_index (`system_id`)
 );
 
 create table if not exists user_key
 (
-    `system_id`   int        not null,
-    `user_id`     int        not null,
-    `public_key`  mediumtext not null,
-    `private_key` mediumtext not null,
+    `user_id`     int primary key auto_increment,
+    `system_id`   int          not null,
+    `user_tag`    varchar(255) not null,
+    `public_key`  mediumtext   not null,
+    `private_key` mediumtext   not null,
 
-    constraint user_pk primary key (`system_id`, `user_id`),
     constraint system_api_user_key_fk
-        foreign key (`system_id`) references system_api_index (`system_id`)
-
+        foreign key (`system_id`) references system_api_index (`system_id`),
+    constraint system_api_user_key_unique
+        unique (system_id, user_tag)
 );
+
+create view user_id_tag as
+    (
+        select user_id, user_tag
+        from user_key
+    );
 
 create table if not exists user_log
 (
@@ -53,10 +73,10 @@ create table if not exists user_log
     `device`    varchar(255)                        not null,
     `message`   varchar(255)                        not null,
 
-    constraint user_system_index
-        primary key (`user_id`, `system_id`),
     constraint system_api_user_log_fk
-        foreign key (`system_id`) references system_api_index (`system_id`) on delete cascade
+        foreign key (`system_id`) references system_api_index (`system_id`) on delete cascade,
+    constraint user_key_user_log_fk
+        foreign key (`user_id`) references user_key (`user_id`) on delete cascade
 
 );
 
@@ -64,12 +84,12 @@ create table if not exists user_token
 (
     `token_id`  int primary key auto_increment      not null,
     `user_id`   int                                 not null,
-    `system_id` int                                 not null,
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
     `valid_by`  timestamp                           not null,
+    `nonce`     int                                 not null,
 
     constraint user_token_user_fk
-        foreign key (`system_id`, `user_id`) references user_key (`system_id`, `user_id`) on delete cascade
+        foreign key (`user_id`) references user_key (`user_id`) on delete cascade
 
 
 );

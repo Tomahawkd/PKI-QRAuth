@@ -1,10 +1,11 @@
 package io.tomahawkd.pki.service.impl;
 
 import io.tomahawkd.pki.dao.UserKeyDao;
+import io.tomahawkd.pki.dao.UserTokenDao;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.UserKeyService;
-import io.tomahawkd.pki.service.util.SecurityFunctions;
+import io.tomahawkd.pki.util.SecurityFunctions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,28 +19,41 @@ public class UserKeyServiceImpl implements UserKeyService {
 
 	@Resource
 	private UserKeyDao dao;
+	@Resource
+	private UserTokenDao tokenDao;
 
 	@Override
-	public UserKeyModel getKeyFormById(int userId, int systemId) {
-		return dao.getUserKeyDataById(userId, systemId);
+	public UserKeyModel getKeyPairById(String userTag, int systemId) {
+		return dao.getUserKeyDataById(userTag, systemId);
 	}
 
-	@Override
-	public String createKeyForm(int userId, int systemId, String random)
-			throws CipherErrorException {
-		return "";
-	}
-
-	private UserKeyModel generateKeysFor(int userId, int systemId) throws CipherErrorException {
+	public UserKeyModel generateKeysFor(String userTag, int systemId) throws CipherErrorException {
 		// generate keys
 		KeyPair kp = SecurityFunctions.generateKeyPair();
 		String pubkey = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
 		String prikey = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
-		UserKeyModel model = new UserKeyModel(userId, systemId, pubkey, prikey);
+		UserKeyModel model = new UserKeyModel(systemId, userTag, pubkey, prikey);
 
-		if (dao.getUserKeyDataById(userId, systemId) != null) dao.updateUserKey(model);
-		else dao.addUserKey(model);
+		dao.addUserKey(model);
 
 		return model;
+	}
+
+	@Override
+	public UserKeyModel regenerateKeysAndDeleteTokenFor(int userId) throws CipherErrorException {
+		KeyPair kp = SecurityFunctions.generateKeyPair();
+		String pubkey = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
+		String prikey = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
+		UserKeyModel model = new UserKeyModel(userId, pubkey, prikey);
+
+		tokenDao.deleteUserTokens(userId);
+		dao.updateUserKey(model);
+
+		return model;
+	}
+
+	@Override
+	public UserKeyModel getUserById(int userId) {
+		return dao.getUserById(userId);
 	}
 }

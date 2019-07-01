@@ -1,12 +1,11 @@
 package io.tomahawkd.pki.controller;
 
 import io.tomahawkd.pki.exceptions.CipherErrorException;
+import io.tomahawkd.pki.exceptions.NotFoundException;
+import io.tomahawkd.pki.service.KeyDistributionService;
 import io.tomahawkd.pki.service.SystemLogService;
-import io.tomahawkd.pki.service.UserKeyService;
 import io.tomahawkd.pki.util.SecurityFunctions;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +17,7 @@ import java.util.Base64;
 public class KeyDistributionController {
 
 	@Resource
-	private UserKeyService userKeyService;
+	private KeyDistributionService service;
 	@Resource
 	private SystemLogService systemLogService;
 
@@ -33,4 +32,10 @@ public class KeyDistributionController {
 		return Base64.getEncoder().encodeToString(SecurityFunctions.readAuthenticateServerPublicKey().getEncoded());
 	}
 
+	@PostMapping("/server/pubkey")
+	public String getServerPublicKey(HttpServletRequest request, @RequestBody String id) throws NotFoundException {
+		String result = service.getPublicKeyById(id);
+		if (result == null) throw new NotFoundException("No public key found");
+		return result;
+	}
 }
