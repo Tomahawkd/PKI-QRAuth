@@ -7,19 +7,25 @@ import java.util.Base64;
 public class SystemKeyModel {
 
 	private int systemId;
+	private int systemUserId;
 	private String systemApi;
 	private Timestamp registerDate;
 	private String publicKey;
 	private String privateKey;
 
-	public SystemKeyModel(String systemApi, KeyPair kp) {
+	public SystemKeyModel(int systemUserId, String systemApi, KeyPair kp) {
 		this.systemApi = systemApi;
+		this.systemUserId = systemUserId;
 		this.publicKey = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
 		this.privateKey = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
 	}
 
 	public int getSystemId() {
 		return systemId;
+	}
+
+	public int getSystemUserId() {
+		return systemUserId;
 	}
 
 	public String getSystemApi() {
@@ -41,9 +47,8 @@ public class SystemKeyModel {
 	@Override
 	public String toString() {
 		return "SystemKeyModel{" +
-				"systemId=" + systemId +
-				", systemApi='" + systemApi + '\'' +
-				", registerDate=" + registerDate +
+				"systemApi='" + systemApi + '\'' +
+				"registerDate=" + registerDate +
 				'}';
 	}
 }

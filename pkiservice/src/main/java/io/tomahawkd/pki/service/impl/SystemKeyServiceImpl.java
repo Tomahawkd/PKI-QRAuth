@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,9 +30,14 @@ public class SystemKeyServiceImpl implements SystemKeyService {
 	}
 
 	@Override
-	public int registerSystemApi() throws CipherErrorException {
+	public List<SystemKeyModel> getByUser(int userId) {
+		return dao.getByUser(userId);
+	}
+
+	@Override
+	public int registerSystemApi(int userId) throws CipherErrorException {
 		UUID uuid = UUID.randomUUID();
-		SystemKeyModel model = new SystemKeyModel(uuid.toString(), SecurityFunctions.generateKeyPair());
+		SystemKeyModel model = new SystemKeyModel(userId, uuid.toString(), SecurityFunctions.generateKeyPair());
 		return dao.registerApi(model) == 1 ? model.getSystemId() : -1;
 	}
 }
