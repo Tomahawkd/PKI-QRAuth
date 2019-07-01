@@ -16,7 +16,7 @@
                 <!-- Tab panes -->
                 <div class="tab-content tabs">
                     <div role="tabpanel" class="tab-pane fade show active" id="profile-tab">
-                        <p id="bio-display"> </p>
+                        <p id="bio-display"></p>
                         <div class="row mt-3">
                             <h5 class="col-12 mb-2">User Info</h5>
                             <div class="col-6">
@@ -42,66 +42,71 @@
                             <div class="col-md-12 panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-comment"></i>编辑信息</h3><br>
                             </div>
+                            <form id="update-info-form">
+
                             <div class="col-md-12">
-                                <div class="form-group row">
-                                    <div class="col-md-5"></div>
-                                    <div class="col-md-2">
-                                        <img src="img/avatar-1.jpg" class="img-fluid rounded-circle" id="avarimgs">
-                                        <input type="file" name="pclogo" id="xdaTanFileImg" accept="image/*">
+                                    <div class="form-group row">
+                                        <div class="col-md-5"></div>
+                                        <div class="col-md-2">
+                                            <img src="img/avatar-1.jpg" class="img-fluid rounded-circle" id="show-image">
+                                            <input name="image" type="file" id="image-file" accept="image/*">
+                                        </div>
+                                        <div class="col-md-5"></div>
                                     </div>
-                                    <div class="col-md-5"></div>
-                                </div>
                             </div>
                             <div class="col-md-12">
-                                <div class="form-group row">
-                                    <label for="bio-input" style="width: 85px;"
-                                           class=" col-form-label">个人简介</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="text" value="Steena Ben"
-                                               id="bio-input" name="bio">
+                                    <div class="form-group row">
+                                        <label for="bio-input" style="width: 85px;"
+                                               class=" col-form-label">个人简介</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Steena Ben"
+                                                   id="bio-input" name="bio">
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="col-md-6 ">
+                                    <div class="form-group row">
+                                        <label for="name-input" style="width: 85px;"
+                                               class=" col-form-label">姓名</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Steena Ben"
+                                                   id="name-input" name="name">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="email-input" style="width: 85px;"
+                                               class=" col-form-label">邮箱</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="email" value="steena@gmail.com"
+                                                   id="email-input" name="email">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label for="sex-input" style="width: 85px;"
+                                               class=" col-form-label">性别</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Programming"
+                                                   id="sex-input" name="sex">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="tel" value="+91-(555)-555-5555"
+                                                   id="phone-input" name="phone">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                             </div>
-                            <div class="col-md-6 ">
-                                <div class="form-group row">
-                                    <label for="name-input" style="width: 85px;"
-                                           class=" col-form-label">姓名</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="text" value="Steena Ben"
-                                               id="name-input" name="name">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="email-input" style="width: 85px;"
-                                           class=" col-form-label">邮箱</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="email" value="steena@gmail.com"
-                                               id="email-input" name="email">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group row">
-                                    <label for="sex-input" style="width: 85px;"
-                                           class=" col-form-label">性别</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="text" value="Programming"
-                                               id="sex-input" name="sex">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="tel" value="+91-(555)-555-5555"
-                                               id="phone-input" name="phone">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+
                         <div class="row mx-2">
                             <div class="col-md-4"></div>
                             <div class="col-md-4">
-                                <button id="save-profile" type="button" class="btn btn-success">保存修改</button>
+                                <button id="save-profile-btn" type="button" class="btn btn-success">保存修改</button>
                             </div>
                             <div class="col-md-4"></div>
                         </div>
@@ -126,6 +131,42 @@
         $('#references-tab').addClass('show').addClass('active');
     }
 
+    $("#image-file").change(function (e) {
+        console.log("change image");
+        var file = e.target.files[0] || e.dataTransfer.files[0];
+        console.log(file);
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                $("#show-image").attr("src", this.result);
+            }
+            reader.readAsDataURL(file);
+        }
+        console.log("change image finish");
+    });
+
+    //方式一 Jquery实现
+             $("#save-profile-btn").click(function() {
+                 var formArray =$("#update-info-form").serializeArray();
+                         var formObject = {};
+        $.each(formArray,function(i,item){
+            formObject[item.name] = item.value;
+        });
+
+                 $.ajax({
+                     url: "/user/info/update/info",
+                     type: "post",
+                     data: JSON.stringify(formObject),
+                     contentType: "application/json; charset=utf-8",
+                     processData: false,
+                     success: function (data) {
+                         console.log(data);
+                     },
+                     error: function (data) {
+                         console.log(data);
+                     }
+                 });
+             });
 
 
 </script>

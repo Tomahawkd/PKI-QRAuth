@@ -41,7 +41,7 @@ $(document).ready(function () {
         error:function(e){
             alert("错误！");
         }
-    })
+    });
 
     $('#profile-menu-item').click(function () {
         $('.side-navbar li.active').removeClass('active');
@@ -60,13 +60,4 @@ $(document).ready(function () {
         $('#log-menu-item').addClass('active');
         $('.content-inner').load('log.html');
     });
-
-     $("#xdaTanFileImg").change(function () {
-        var obj=$("#xdaTanFileImg")[0].files[0];
-        var wuc=window.URL.createObjectURL(obj);
-            $("#avarimgs").attr('src',wuc);
-            $("#avarimgs").load(function () {
-               window.URL.revokeObjectURL(wuc);
-            })
-     });
 });
