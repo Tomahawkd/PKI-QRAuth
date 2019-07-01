@@ -1,16 +1,11 @@
 package io.tomahawkd.pki.service;
 
+import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.TokenModel;
 
 public interface UserTokenService {
 
-	boolean validateToken(String tokenData);
+	byte[] generateNewToken(String userTag, int systemId) throws CipherErrorException;
 
-	TokenModel getToken(int tokenId);
-
-	byte[] getSerializedToken(int tokenId);
-
-	byte[] generateNewToken(int userId, int systemId);
-
-	void revokeToken(int tokenId);
+	TokenModel getTokenById(int tokenId);
 }

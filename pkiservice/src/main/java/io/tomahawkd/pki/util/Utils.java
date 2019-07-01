@@ -3,9 +3,14 @@ package io.tomahawkd.pki.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import io.tomahawkd.pki.exceptions.Base64EncodeException;
+import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
 import io.tomahawkd.pki.exceptions.ParamNotFoundException;
 
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
@@ -16,7 +21,11 @@ public class Utils {
 	}
 
 	public static byte[] base64Decode(String data) {
-		return Base64.getDecoder().decode(data);
+		try {
+			return Base64.getDecoder().decode(data);
+		} catch (Exception e) {
+			throw new Base64EncodeException("Illegal Base64 Encode");
+		}
 	}
 
 	public static Map<String, String> wrapMapFromJson(String json, String... params)
@@ -36,5 +45,15 @@ public class Utils {
 		} catch (NullPointerException e) {
 			throw new MalformedJsonException("Cannot read json value: " + json);
 		}
+	}
+
+	public static String responseChallenge(String t, PublicKey key) throws IOException, CipherErrorException {
+		return Utils.base64Encode(
+				SecurityFunctions.encryptAsymmetric(key,
+						String.valueOf(
+								Integer.parseInt(
+										Arrays.toString(
+												SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+														Utils.base64Decode(t)))) + 1).getBytes()));
 	}
 }
