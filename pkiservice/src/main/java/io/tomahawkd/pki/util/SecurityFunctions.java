@@ -37,13 +37,17 @@ public class SecurityFunctions {
 		return s.generateSeed(12);
 	}
 
-	public static byte[] generateHash(String seed) throws CipherErrorException {
+	public static byte[] generateHash(byte[] seed) throws CipherErrorException {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			return digest.digest(seed.getBytes());
+			return digest.digest(seed);
 		} catch (NoSuchAlgorithmException e) {
 			throw new CipherErrorException(e);
 		}
+	}
+
+	public static byte[] generateHash(String seed) throws CipherErrorException {
+		return generateHash(seed.getBytes());
 	}
 
 	public static byte[] encryptSymmetric(String keySeed, String random, byte[] data) throws CipherErrorException {
