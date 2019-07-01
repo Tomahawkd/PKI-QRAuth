@@ -25,7 +25,7 @@ public class QRCodeAuthenticationController {
 	 */
 	@PostMapping("/genqr")
 	public String qrNonceGenerate(@RequestBody String data) throws MalformedJsonException {
-		Map<String, String> map = Utils.wrapMapFromJson(data, new String[]{"K", "T"});
+		Map<String, String> map = Utils.wrapMapFromJson(data, "K", "T");
 
 		return "";
 	}
@@ -52,7 +52,7 @@ public class QRCodeAuthenticationController {
 	 */
 	@PostMapping("/update")
 	public String updateQRStatus(@RequestBody String data) throws MalformedJsonException {
-		Map<String, String> map = Utils.wrapMapFromJson(data, new String[]{"M", "EToken", "T"});
+		Map<String, String> map = Utils.wrapMapFromJson(data, "M", "EToken", "T");
 
 		return "";
 	}
@@ -74,7 +74,7 @@ public class QRCodeAuthenticationController {
 	 */
 	@PostMapping("/query")
 	public String queryQRStatus(@RequestBody String data) throws MalformedJsonException {
-		Map<String, String> map = Utils.wrapMapFromJson(data, new String[]{"nonce2", "M"});
+		Map<String, String> map = Utils.wrapMapFromJson(data, "nonce2", "M");
 
 		return "";
 	}

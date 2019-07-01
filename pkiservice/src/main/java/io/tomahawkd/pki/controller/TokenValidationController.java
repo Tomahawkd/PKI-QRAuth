@@ -32,7 +32,7 @@ public class TokenValidationController {
 	 */
 	@PostMapping("/init")
 	public String tokenInitialization(@RequestBody String data) throws MalformedJsonException {
-		Map<String, String> map = Utils.wrapMapFromJson(data);
+		Map<String, String> map = Utils.wrapMapFromJson(data, "K", "id", "T");
 
 		return "";
 	}

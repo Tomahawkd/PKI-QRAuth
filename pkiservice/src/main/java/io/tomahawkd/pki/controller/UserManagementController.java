@@ -35,7 +35,7 @@ public class UserManagementController {
 	 */
 	@PostMapping("/info")
 	public String getUserLogById(@RequestBody String data) throws MalformedJsonException {
-		Map<String, String> bodyData = Utils.wrapMapFromJson(data, new String[]{"EToken", "T"});
+		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
 
 		return "";
 	}
@@ -53,7 +53,7 @@ public class UserManagementController {
 	 */
 	@PostMapping("/token/list")
 	public String listToken(String data) throws MalformedJsonException {
-		Map<String, String> bodyData = Utils.wrapMapFromJson(data, new String[]{"EToken", "T"});
+		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
 
 		return "";
 	}
@@ -76,7 +76,7 @@ public class UserManagementController {
 	 */
 	@PostMapping("/token/revoke")
 	public String revokeToken(String data) throws MalformedJsonException {
-		Map<String, String> bodyData = Utils.wrapMapFromJson(data, new String[]{"EToken", "T"});
+		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
 
 		return "";
 	}
@@ -98,7 +98,7 @@ public class UserManagementController {
 	 */
 	@PostMapping("/keys/regen")
 	public String regenerateKeys(String data) throws MalformedJsonException {
-		Map<String, String> bodyData = Utils.wrapMapFromJson(data, new String[]{"EToken", "T"});
+		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
 
 		return "";
 	}
