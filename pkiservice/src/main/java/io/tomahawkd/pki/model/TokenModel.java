@@ -13,22 +13,21 @@ public class TokenModel {
 
 	private int tokenId;
 	private int userId;
-	private int systemId;
 	private Timestamp createDate;
 	private Timestamp validBy;
-	private transient String hash;
 
 	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
-	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 3 + TIMESTAMP_SIZE * 2;
+	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 2 + TIMESTAMP_SIZE * 2;
 
-	private TokenModel(int tokenId, int userId, int systemId, Timestamp createDate, Timestamp validBy)
-			throws CipherErrorException {
+	public TokenModel(int userId) {
+		this.userId = userId;
+	}
+
+	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy) {
 		this.tokenId = tokenId;
 		this.userId = userId;
-		this.systemId = systemId;
 		this.createDate = createDate;
 		this.validBy = validBy;
-		this.hash = Utils.base64Encode(SecurityFunctions.generateHash(serialize()));
 	}
 
 	public int getTokenId() {
@@ -39,10 +38,6 @@ public class TokenModel {
 		return userId;
 	}
 
-	public int getSystemId() {
-		return systemId;
-	}
-
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
@@ -51,16 +46,11 @@ public class TokenModel {
 		return validBy;
 	}
 
-	public String getHash() {
-		return hash;
-	}
-
 	@Override
 	public String toString() {
 		return "TokenModel{" +
 				"tokenId=" + tokenId +
 				", userId=" + userId +
-				", systemId=" + systemId +
 				", createDate=" + createDate +
 				", validBy=" + validBy +
 				'}';
@@ -95,17 +85,17 @@ public class TokenModel {
 
 	public byte[] serialize() {
 
+		if (createDate == null) return null;
+
 		byte[] result = new byte[BYTE_ARRAY_SIZE];
 		byte[] tokenBytes = toByteArray(tokenId);
 		System.arraycopy(tokenBytes, 0, result, 0, Integer.BYTES);
 		byte[] userBytes = toByteArray(userId);
 		System.arraycopy(userBytes, 0, result, Integer.BYTES, Integer.BYTES);
-		byte[] systemBytes = toByteArray(systemId);
-		System.arraycopy(systemBytes, 0, result, Integer.BYTES * 2, Integer.BYTES);
 		byte[] createDateBytes = toByteArray(createDate);
-		System.arraycopy(createDateBytes, 0, result, Integer.BYTES * 3, TIMESTAMP_SIZE);
+		System.arraycopy(createDateBytes, 0, result, Integer.BYTES * 2, TIMESTAMP_SIZE);
 		byte[] validByBytes = toByteArray(validBy);
-		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 3 + TIMESTAMP_SIZE, TIMESTAMP_SIZE);
+		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 2 + TIMESTAMP_SIZE, TIMESTAMP_SIZE);
 
 		return result;
 	}
@@ -124,17 +114,14 @@ public class TokenModel {
 		byte[] userBytes = new byte[Integer.BYTES];
 		System.arraycopy(data, Integer.BYTES, userBytes, 0,  Integer.BYTES);
 		int user = toInt(userBytes);
-		byte[] systemBytes = new byte[Integer.BYTES];
-		System.arraycopy(data, Integer.BYTES * 2, systemBytes, 0, Integer.BYTES);
-		int system = toInt(systemBytes);
 		byte[] createDateBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 3, createDateBytes, 0, TIMESTAMP_SIZE);
+		System.arraycopy(data, Integer.BYTES * 2, createDateBytes, 0, TIMESTAMP_SIZE);
 		Timestamp createDate = toTimeStamp(createDateBytes);
 		byte[] validByBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 3 + TIMESTAMP_SIZE, validByBytes, 0, TIMESTAMP_SIZE);
+		System.arraycopy(data, Integer.BYTES * 2 + TIMESTAMP_SIZE, validByBytes, 0, TIMESTAMP_SIZE);
 		Timestamp validBy = toTimeStamp(validByBytes);
 
-		return new TokenModel(token, user, system, createDate, validBy);
+		return new TokenModel(token, user, createDate, validBy);
 	}
 
 	public static TokenModel deserializeFromString(String data)
