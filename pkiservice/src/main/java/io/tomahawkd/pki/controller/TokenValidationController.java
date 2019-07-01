@@ -3,8 +3,10 @@ package io.tomahawkd.pki.controller;
 import com.google.gson.Gson;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
+import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.SystemKeyModel;
 import io.tomahawkd.pki.model.SystemLogModel;
+import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.SystemKeyService;
 import io.tomahawkd.pki.service.SystemLogService;
@@ -77,7 +79,7 @@ public class TokenValidationController {
 				"Target: {user: +" + userTag + "system: " + systemApi + "}");
 
 
-		SystemKeyModel systemKeyModel = systemKeyService.getIdByApi(systemApi);
+		SystemKeyModel systemKeyModel = systemKeyService.getByApi(systemApi);
 
 		/* User Key pair */
 		UserKeyModel model = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
@@ -111,7 +113,8 @@ public class TokenValidationController {
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
 				systemKeyModel.getPrivateKey(),
-				systemKeyModel.getPublicKey());
+				systemKeyModel.getPublicKey()
+		);
 
 		String kResponse = Utils.base64Encode(
 				SecurityFunctions.encryptAsymmetric(skp.getPublic(), ckp.getPublic().getEncoded()));
@@ -144,9 +147,43 @@ public class TokenValidationController {
 	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1"}
 	 */
 	@PostMapping("/validate")
-	public String tokenValidation(@RequestBody String data) throws MalformedJsonException {
+	public String tokenValidation(@RequestBody String data)
+			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T");
 
-		return "";
+		String[] etoken = Arrays.toString(
+				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+						Utils.base64Decode(requestMap.get("EToken")))).split(";");
+
+		TokenModel tokenModel = TokenModel.deserializeFromString(etoken[0]);
+		int nonce = Integer.parseInt(etoken[1]);
+
+		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
+
+		if (tokenService.validateToken(tokenModel, nonce)) message.setOK().setMessage("Valid");
+		else message.setError().setMessage("Invalid");
+
+
+		UserKeyModel userKeyModel = userKeyService.getUserById(tokenModel.getUserId());
+		if (userKeyModel == null) throw new NotFoundException("User not found");
+		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
+
+		KeyPair skp = SecurityFunctions.readKeysFromString(
+				systemKeyModel.getPrivateKey(),
+				systemKeyModel.getPublicKey()
+		);
+
+		String mResponse = new Gson().toJson(message);
+		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
+		String kResponse = Utils.base64Encode(
+				SecurityFunctions.encryptAsymmetric(
+						skp.getPublic(), Utils.base64Decode(userKeyModel.getPublicKey())));
+
+		Map<String, String> responseMap = new HashMap<>();
+		responseMap.put("K", kResponse);
+		responseMap.put("M", mResponse);
+		responseMap.put("T", tResponse);
+
+		return new Gson().toJson(responseMap);
 	}
 }
