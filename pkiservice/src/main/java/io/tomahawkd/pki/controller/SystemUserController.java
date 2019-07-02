@@ -59,6 +59,7 @@ public class SystemUserController {
 		if (user == null) throw new NotFoundException("User not found");
 
 		SystemKeyModel key = systemKeyService.getByApi(map.get("system"));
+		if (key == null) return "";
 		if (key.getSystemUserId() == user.getUserId()) return key.getPublicKey() + "\n" + key.getPrivateKey();
 		return "";
 	}
