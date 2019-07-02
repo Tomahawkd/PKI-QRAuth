@@ -51,6 +51,12 @@ create table if not exists user_key
         unique (system_id, user_tag)
 );
 
+create view user_id_tag as
+    (
+        select user_id, user_tag
+        from user_key
+    );
+
 create table if not exists user_log
 (
     `user_id`   int                                 not null,
@@ -111,7 +117,3 @@ create definer = root@localhost event event_auto_cancel_order
     enable
     do
     call out_of_date();
-
-# add some test data
-insert into system_user (username, password)
-values ('123', '123');
