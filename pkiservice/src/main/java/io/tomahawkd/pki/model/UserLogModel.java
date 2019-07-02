@@ -13,6 +13,14 @@ public class UserLogModel {
 	private String device;
 	private String message;
 
+	public UserLogModel(int userId, int systemId, String ip, String device, String message) {
+		this.userId = userId;
+		this.systemId = systemId;
+		this.ip = ip;
+		this.device = device;
+		this.message = message;
+	}
+
 	public UserLogModel(int userId, int systemId, Timestamp time, String ip, String device, String message) {
 		this.userId = userId;
 		this.systemId = systemId;
