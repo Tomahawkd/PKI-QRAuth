@@ -37,7 +37,9 @@ public class SystemKeyServiceImpl implements SystemKeyService {
 	@Override
 	public int registerSystemApi(int userId) throws CipherErrorException {
 		UUID uuid = UUID.randomUUID();
-		SystemKeyModel model = new SystemKeyModel(userId, uuid.toString(), SecurityFunctions.generateKeyPair());
+		SystemKeyModel model = new SystemKeyModel(userId,
+				uuid.toString().replace("-", ""),
+				SecurityFunctions.generateKeyPair());
 		return dao.registerApi(model) == 1 ? model.getSystemId() : -1;
 	}
 }
