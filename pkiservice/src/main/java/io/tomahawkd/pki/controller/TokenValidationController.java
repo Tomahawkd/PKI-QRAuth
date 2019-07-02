@@ -66,9 +66,13 @@ public class TokenValidationController {
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
 
-		String[] d = requestMap.get("D").split(";");
-		String device = d[0];
-		String ip = d[1];
+		String[] d = requestMap.get("D").split(";", 2);
+		String device = "";
+		String ip = "";
+		if (d.length == 2) {
+			device = d[0];
+			ip = d[1];
+		}
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
@@ -182,9 +186,13 @@ public class TokenValidationController {
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T", "D");
 
-		String[] d = requestMap.get("D").split(";");
-		String device = d[0];
-		String ip = d[1];
+		String[] d = requestMap.get("D").split(";", 2);
+		String device = "";
+		String ip = "";
+		if (d.length == 2) {
+			device = d[0];
+			ip = d[1];
+		}
 
 		byte[] etoken = SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 				Utils.base64Decode(requestMap.get("EToken")));
