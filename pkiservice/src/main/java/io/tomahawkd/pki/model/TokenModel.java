@@ -70,7 +70,6 @@ public class TokenModel {
 	public boolean equals(TokenModel token) {
 		return token.tokenId == this.tokenId &&
 				token.userId == this.userId &&
-				token.createDate.equals(this.createDate) &&
 				token.validBy.equals(this.validBy);
 	}
 
