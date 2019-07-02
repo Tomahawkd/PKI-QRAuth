@@ -2,7 +2,6 @@ package io.tomahawkd.pki.service.impl;
 
 import io.tomahawkd.pki.dao.UserIndexDao;
 import io.tomahawkd.pki.dao.UserTokenDao;
-import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.service.UserTokenService;
 import io.tomahawkd.pki.util.SecurityFunctions;
@@ -22,13 +21,13 @@ public class UserTokenServiceImpl implements UserTokenService {
 	private UserIndexDao indexDao;
 
 	@Override
-	public byte[] generateNewToken(String userTag, int systemId) {
+	public TokenModel generateNewToken(String userTag, int systemId) {
 		int userId = indexDao.getUserIdByTag(userTag);
 		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom());
 		dao.initToken(model);
 		model = dao.getByTokenId(model.getTokenId());
 
-		return model.serialize();
+		return model;
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import io.tomahawkd.pki.model.TokenModel;
 
 public interface UserTokenService {
 
-	byte[] generateNewToken(String userTag, int systemId);
+	TokenModel generateNewToken(String userTag, int systemId);
 
 	TokenModel getTokenById(int tokenId);
 
