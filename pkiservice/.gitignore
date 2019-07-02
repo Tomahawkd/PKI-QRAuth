@@ -208,3 +208,7 @@ Temporary Items
 .apdisk
 
 application.properties
+
+auth.pub
+auth.pri
+auth.key

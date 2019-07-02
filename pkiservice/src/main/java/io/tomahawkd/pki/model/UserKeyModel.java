@@ -1,15 +1,29 @@
 package io.tomahawkd.pki.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class UserKeyModel {
 
-	private int userId;
+	private transient int userId;
+	@SerializedName("system")
 	private int systemId;
-	private String publicKey;
-	private String privateKey;
+	@SerializedName("user")
+	private String userTag;
+	private transient String publicKey;
+	private transient String privateKey;
 
-	public UserKeyModel(int userId, int systemId, String publicKey, String privateKey) {
+	public UserKeyModel(int userId, String publicKey, String privateKey) {
 		this.userId = userId;
+		this.systemId = -1;
+		this.userTag = "";
+		this.publicKey = publicKey;
+		this.privateKey = privateKey;
+	}
+
+	public UserKeyModel(int systemId, String userTag, String publicKey, String privateKey) {
+		this.userId = -1;
 		this.systemId = systemId;
+		this.userTag = userTag;
 		this.publicKey = publicKey;
 		this.privateKey = privateKey;
 	}
@@ -20,6 +34,10 @@ public class UserKeyModel {
 
 	public int getSystemId() {
 		return systemId;
+	}
+
+	public String getUserTag() {
+		return userTag;
 	}
 
 	public String getPublicKey() {

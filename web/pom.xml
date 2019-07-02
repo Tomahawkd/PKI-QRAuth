@@ -23,8 +23,8 @@
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 <!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-thymeleaf</artifactId>-->
+		<!--			<groupId>org.springframework.boot</groupId>-->
+		<!--			<artifactId>spring-boot-starter-thymeleaf</artifactId>-->
 <!--		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -40,51 +40,35 @@
 			<version>2.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-jdbc</artifactId>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-jdbc</artifactId>
 		</dependency>
-        <dependency>
+		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+		</dependency>
 
-        <dependency>
+		<dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
-        </dependency>
+		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.5</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>io.tomahawkd</groupId>-->
-<!--			<artifactId>pki-server-api</artifactId>-->
-<!--			<version>1.0-SNAPSHOT</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
-			<version>0.10.6</version>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-impl</artifactId>
-			<version>0.10.6</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-orgjson</artifactId>
-			<version>0.10.6</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
+        <!--		<dependency>-->
+        <!--			<groupId>io.tomahawkd</groupId>-->
+        <!--			<artifactId>pki-server-api</artifactId>-->
+        <!--			<version>1.0-SNAPSHOT</version>-->
+        <!--		</dependency>-->
+
+        <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
