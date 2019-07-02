@@ -69,20 +69,28 @@ public class TokenValidationController {
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
 		if (k.length != 32) return new Gson().toJson(new ResponseMessage(1, "invalid key"));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
+
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
 		if (iv.length != 16) return new Gson().toJson(new ResponseMessage(1, "invalid iv"));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
-			String[] id = new String(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-					Utils.base64Decode(requestMap.get("id")))).split(";");
+		String[] id = new String(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+				Utils.base64Decode(requestMap.get("id")))).split(";");
 		String userTag = id[0];
 		String systemApi = id[1];
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.INFO,
-				"Target: {user: +" + userTag + "system: " + systemApi + "}");
+				"Target: {user: +" + userTag + ", systemApi: " + systemApi + "}");
 
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(systemApi);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.INFO,
+				"Target: { SystemId: " + systemKeyModel.getSystemId() + "}");
 
 		/* User Key pair */
 		UserKeyModel model = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
@@ -97,10 +105,14 @@ public class TokenValidationController {
 				model.getPrivateKey(),
 				model.getPublicKey()
 		);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client key pair load complete.");
 
 		String kpString = model.getPublicKey() + ";" + model.getPrivateKey();
 		String kpResponse = Utils.base64Encode(
 				SecurityFunctions.encryptSymmetric(k, iv, kpString.getBytes()));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client key pair encryption complete.");
 
 
 		/* Token */
@@ -109,20 +121,28 @@ public class TokenValidationController {
 		int nonce = token.getNonce();
 		byte[] tokenArr = ByteBuffer.allocate(tokenBytes.length + Integer.BYTES)
 				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(tokenBytes).array();
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client token generate complete.");
 
 		String etokenResponse = Utils.base64Encode(
 				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), tokenArr));
-
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client token encryption complete.");
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
 				systemKeyModel.getPrivateKey(),
 				systemKeyModel.getPublicKey()
 		);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Server key pair load complete.");
 
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
 		String mResponse = new Gson().toJson(new ResponseMessage(0, "Authenticate Complete"));
+
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
 
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
@@ -155,6 +175,8 @@ public class TokenValidationController {
 
 		byte[] etoken = SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 				Utils.base64Decode(requestMap.get("EToken")));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.DEBUG, "EToken decryption complete.");
 
 		int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt(0);
 		byte[] token = new byte[etoken.length - Integer.BYTES];
@@ -162,25 +184,59 @@ public class TokenValidationController {
 
 		byte[] decToken = SecurityFunctions.decryptUsingAuthenticateServerKey(token);
 		TokenModel tokenModel = TokenModel.deserialize(decToken);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.DEBUG, "Token data wrapped complete.");
 
 		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
 
-		if (tokenService.validateToken(tokenModel, nonce)) message.setOK().setMessage("Valid");
-		else message.setError().setMessage("Invalid");
+		if (tokenService.validateToken(tokenModel, nonce)) {
+			message.setOK().setMessage("Valid");
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenValidation", SystemLogModel.INFO,
+					"Target: {user: +" + tokenModel.getUserId() + "} loaded");
+		} else {
+			message.setError().setMessage("Invalid");
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenValidation", SystemLogModel.WARN,
+					"Token invalid");
+		}
 
 
 		UserKeyModel userKeyModel = userKeyService.getUserById(tokenModel.getUserId());
-		if (userKeyModel == null) throw new NotFoundException("User not found");
+		if (userKeyModel == null) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenValidation", SystemLogModel.FATAL,
+					"Token valid but user not exist, this should not happen");
+			throw new NotFoundException("User not found");
+		}
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.WARN,
+				"get user context: " + userKeyModel.toString());
+
 		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
+		if (systemKeyModel == null) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenValidation", SystemLogModel.FATAL,
+					"User valid but system not exist, this should not happen");
+			throw new NotFoundException("System not found");
+		}
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.WARN,
+				"get system context: " + systemKeyModel.toString());
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
 				systemKeyModel.getPrivateKey(),
 				systemKeyModel.getPublicKey()
 		);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.DEBUG, "Server key pair load complete.");
 
 		String mResponse = new Gson().toJson(message);
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
 		String kResponse = userKeyModel.getPublicKey();
+
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.DEBUG, "Response data process complete.");
 
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
