@@ -1,26 +1,46 @@
 package io.tomahawkd.pki.model;
 
+import io.tomahawkd.pki.exceptions.CipherErrorException;
+import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.util.Utils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
+import java.util.Base64;
 
 public class TokenModel {
 
 	private int tokenId;
 	private int userId;
-	private int systemId;
 	private Timestamp createDate;
 	private Timestamp validBy;
+	private int nonce;
+	private String device;
+	private String ip;
 
-	public static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
-	public static final int BYTE_ARRAY_SIZE = Integer.BYTES * 3 + TIMESTAMP_SIZE * 2;
+	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
+	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 2 + TIMESTAMP_SIZE;
 
-	private TokenModel(int tokenId, int userId, int systemId, Timestamp createDate, Timestamp validBy) {
+	public TokenModel(int userId, int nonce, String device, String ip) {
+		this.userId = userId;
+		this.nonce = nonce;
+		this.device = device;
+		this.ip = ip;
+	}
+
+	public TokenModel(int tokenId, int userId, Timestamp validBy) {
 		this.tokenId = tokenId;
 		this.userId = userId;
-		this.systemId = systemId;
+		this.validBy = validBy;
+	}
+
+	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy, int nonce) {
+		this.tokenId = tokenId;
+		this.userId = userId;
 		this.createDate = createDate;
 		this.validBy = validBy;
+		this.nonce = nonce;
 	}
 
 	public int getTokenId() {
@@ -31,28 +51,41 @@ public class TokenModel {
 		return userId;
 	}
 
-	public int getSystemId() {
-		return systemId;
+	public int getNonce() {
+		return nonce;
 	}
 
 	public Timestamp getCreateDate() {
 		return createDate;
 	}
 
-	public Timestamp getValid_by() {
+	public Timestamp getValidBy() {
 		return validBy;
 	}
-
 
 	@Override
 	public String toString() {
 		return "TokenModel{" +
 				"tokenId=" + tokenId +
 				", userId=" + userId +
-				", systemId=" + systemId +
 				", createDate=" + createDate +
 				", validBy=" + validBy +
 				'}';
+	}
+
+	public String toJson() throws CipherErrorException {
+		return "{\"token\":\"" +
+				Utils.base64Encode(SecurityFunctions.generateHash(String.valueOf(tokenId))) + "\"," +
+				"\"create\":\"" + createDate.toString() + "\"," +
+				"\"valid\":\"" + validBy.toString() + "\"," +
+				"\"device\":\"" + device + "\"," +
+				"\"ip\":" + ip + "\"" + "}";
+	}
+
+	public boolean equals(TokenModel token) {
+		return token.tokenId == this.tokenId &&
+				token.userId == this.userId &&
+				token.validBy.equals(this.validBy);
 	}
 
 	private static byte[] toByteArray(int i) {
@@ -84,41 +117,42 @@ public class TokenModel {
 
 	public byte[] serialize() {
 
+		if (createDate == null) return null;
+
 		byte[] result = new byte[BYTE_ARRAY_SIZE];
 		byte[] tokenBytes = toByteArray(tokenId);
 		System.arraycopy(tokenBytes, 0, result, 0, Integer.BYTES);
 		byte[] userBytes = toByteArray(userId);
 		System.arraycopy(userBytes, 0, result, Integer.BYTES, Integer.BYTES);
-		byte[] systemBytes = toByteArray(systemId);
-		System.arraycopy(systemBytes, 0, result, Integer.BYTES * 2, Integer.BYTES);
-		byte[] createDateBytes = toByteArray(createDate);
-		System.arraycopy(createDateBytes, 0, result, Integer.BYTES * 3, TIMESTAMP_SIZE);
 		byte[] validByBytes = toByteArray(validBy);
-		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 3 + TIMESTAMP_SIZE, TIMESTAMP_SIZE);
+		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 2, TIMESTAMP_SIZE);
 
 		return result;
 	}
 
-	public static TokenModel deserialize(byte[] data) {
+	public String serializeToString() {
+		return Base64.getEncoder().encodeToString(this.serialize());
+	}
+
+	public static TokenModel deserialize(byte[] data) throws CipherErrorException {
 
 		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid");
 
 		byte[] tokenBytes = new byte[Integer.BYTES];
-		System.arraycopy(data, 0, tokenBytes, 0,  Integer.BYTES);
+		System.arraycopy(data, 0, tokenBytes, 0, Integer.BYTES);
 		int token = toInt(tokenBytes);
 		byte[] userBytes = new byte[Integer.BYTES];
-		System.arraycopy(data, Integer.BYTES, userBytes, 0,  Integer.BYTES);
+		System.arraycopy(data, Integer.BYTES, userBytes, 0, Integer.BYTES);
 		int user = toInt(userBytes);
-		byte[] systemBytes = new byte[Integer.BYTES];
-		System.arraycopy(data, Integer.BYTES * 2, systemBytes, 0, Integer.BYTES);
-		int system = toInt(systemBytes);
-		byte[] createDateBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 3, createDateBytes, 0, TIMESTAMP_SIZE);
-		Timestamp createDate = toTimeStamp(createDateBytes);
 		byte[] validByBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 3 + TIMESTAMP_SIZE, validByBytes, 0, TIMESTAMP_SIZE);
+		System.arraycopy(data, Integer.BYTES * 2, validByBytes, 0, TIMESTAMP_SIZE);
 		Timestamp validBy = toTimeStamp(validByBytes);
 
-		return new TokenModel(token, user, system, createDate, validBy);
+		return new TokenModel(token, user, validBy);
+	}
+
+	public static TokenModel deserializeFromString(String data)
+			throws IllegalArgumentException, CipherErrorException {
+		return deserialize(Base64.getDecoder().decode(data));
 	}
 }
