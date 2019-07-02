@@ -22,8 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.KeyPair;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ public class TokenValidationController {
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
 	 *             }
 	 * @return {
-	 * "K": "Base64 encoded Kc,t encrypted Kc public",
+	 * "K": "Base64 encoded Kc public",
 	 * "M": "result message
 	 * {
 	 * "status": number(0:success, 1:failed),
@@ -56,7 +57,7 @@ public class TokenValidationController {
 	 * }",
 	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
 	 * "KP": "Base64 encoded Kc,t encrypted client key pair String(base64 public;base64 private)",
-	 * "EToken": "Base64 encoded Kc public key encrypted String(token;nonce)"}
+	 * "EToken": "Base64 encoded Kc public key encrypted base64String(byteArr(nonce,token))"}
 	 */
 	@PostMapping("/init")
 	public String tokenInitialization(@RequestBody String data)
@@ -67,11 +68,13 @@ public class TokenValidationController {
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
+		if (k.length != 32) return new Gson().toJson(new ResponseMessage(1, "invalid key"));
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
+		if (iv.length != 16) return new Gson().toJson(new ResponseMessage(1, "invalid iv"));
 
-		String[] id = Arrays.toString(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-				Utils.base64Decode(requestMap.get("id")))).split(";");
+			String[] id = new String(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+					Utils.base64Decode(requestMap.get("id")))).split(";");
 		String userTag = id[0];
 		String systemApi = id[1];
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
@@ -101,14 +104,14 @@ public class TokenValidationController {
 
 
 		/* Token */
-		String token = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(ckp.getPublic(),
-						tokenService.generateNewToken(userTag, systemKeyModel.getSystemId())));
+		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId());
+		byte[] tokenBytes = SecurityFunctions.encryptUsingAuthenticateServerKey(token.serialize());
 		int nonce = SecurityFunctions.generateRandom();
+		byte[] tokenArr = ByteBuffer.allocate(tokenBytes.length + Integer.BYTES)
+				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(tokenBytes).array();
 
-		String etokenString = token + ";" + nonce;
 		String etokenResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), etokenString.getBytes()));
+				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), tokenArr));
 
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
@@ -116,8 +119,7 @@ public class TokenValidationController {
 				systemKeyModel.getPublicKey()
 		);
 
-		String kResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(skp.getPublic(), ckp.getPublic().getEncoded()));
+		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
 		String mResponse = new Gson().toJson(new ResponseMessage(0, "Authenticate Complete"));
@@ -151,12 +153,15 @@ public class TokenValidationController {
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T");
 
-		String[] etoken = Arrays.toString(
-				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-						Utils.base64Decode(requestMap.get("EToken")))).split(";");
+		byte[] etoken = SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+				Utils.base64Decode(requestMap.get("EToken")));
 
-		TokenModel tokenModel = TokenModel.deserializeFromString(etoken[0]);
-		int nonce = Integer.parseInt(etoken[1]);
+		int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt(0);
+		byte[] token = new byte[etoken.length - Integer.BYTES];
+		System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
+
+		byte[] decToken = SecurityFunctions.decryptUsingAuthenticateServerKey(token);
+		TokenModel tokenModel = TokenModel.deserialize(decToken);
 
 		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
 
