@@ -5,10 +5,10 @@ function createQRCode(randomNum, element) {
 
 function randomPassword(size)
 {
-    var seed = new Array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z',
+    var seed = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z',
         'a','b','c','d','e','f','g','h','i','j','k','m','n','p','Q','r','s','t','u','v','w','x','y','z',
         '2','3','4','5','6','7','8','9'
-    );//数组
+    ];//数组
     var seedlength = seed.length;//数组长度
     var createPassword = '';
     for (i=0;i<size;i++) {
@@ -26,7 +26,7 @@ function createInitialPackage(user, pass) {
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + SPub + '-----END PUBLIC KEY-----');
-    var timeStamp = (new Date()).valueOf()
+    var timeStamp = (new Date()).valueOf();
     var TimeStampBase64 = $.base64.encode(encrypt.encrypt(timeStamp)); // The Base64 encoded encrypted timeStamp
 
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
@@ -67,9 +67,10 @@ function parseInitialResponsePackage(package) {
 }
 
 function bytesToInt(bytes) {
-    var int = 0;
-    for(var i=0; i<4; i++) {
-        int += (bytes[i] << (8*i));
+    bytes = new Int8Array(bytes);
+    var int = bytes[3];
+    for(var i=2; i>=0; i--) {
+        int = (int << 8 | bytes[i]);
     }
     return int;
 }
@@ -77,9 +78,13 @@ function bytesToInt(bytes) {
 function intToBytes(int) {
     var ints = [];
     for(var i=0; i<4; i++) {
-        ints.push((int>>(8*i))%math.pow(2, 7));
+        ints.push((int>>(8*i)) & (0xFF));
     }
 
-    var bytes = new Int8Array(ints);
+    var byteArray = new Int8Array(ints);
+    var bytes = [];
+    for(var i=0; i<4; i++) {
+        bytes.push(byteArray[i]);
+    }
     return bytes;
 }
