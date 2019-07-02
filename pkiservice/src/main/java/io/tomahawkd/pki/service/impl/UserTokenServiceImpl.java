@@ -38,8 +38,10 @@ public class UserTokenServiceImpl implements UserTokenService {
 	@Override
 	public boolean validateToken(TokenModel token, int nonce) {
 
-		return token.equals(dao.getByTokenId(token.getTokenId())) &&
-				token.getValidBy().compareTo(new Date(System.currentTimeMillis())) < 0 &&
-				token.getNonce() + 1 == nonce;
+		TokenModel model = dao.getByTokenId(token.getTokenId());
+
+		return token.equals(model) &&
+				token.getValidBy().after(new Date(System.currentTimeMillis())) &&
+				model.getNonce() + 1 == nonce;
 	}
 }
