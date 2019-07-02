@@ -30,7 +30,8 @@ public class KeyDistributionTest {
 
 	@Test
 	public void serverKey() {
-		String server = this.testRestTemplate.postForObject("/keys/server", "123", String.class);
+		String server = this.testRestTemplate.postForObject("/keys/server",
+				"a5e1fc6f2f4941fe981e0361a99ded64", String.class);
 		System.out.println(server);
 	}
 }
