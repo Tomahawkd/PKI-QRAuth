@@ -16,18 +16,25 @@ public class TokenModel {
 	private int nonce;
 
 	private static final int TIMESTAMP_SIZE = Long.BYTES + Integer.BYTES;
-	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 2 + TIMESTAMP_SIZE * 2;
+	private static final int BYTE_ARRAY_SIZE = Integer.BYTES * 2 + TIMESTAMP_SIZE;
 
 	public TokenModel(int userId, int nonce) {
 		this.userId = userId;
 		this.nonce = nonce;
 	}
 
-	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy) {
+	public TokenModel(int tokenId, int userId, Timestamp validBy) {
+		this.tokenId = tokenId;
+		this.userId = userId;
+		this.validBy = validBy;
+	}
+
+	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy, int nonce) {
 		this.tokenId = tokenId;
 		this.userId = userId;
 		this.createDate = createDate;
 		this.validBy = validBy;
+		this.nonce = nonce;
 	}
 
 	public int getTokenId() {
@@ -103,10 +110,8 @@ public class TokenModel {
 		System.arraycopy(tokenBytes, 0, result, 0, Integer.BYTES);
 		byte[] userBytes = toByteArray(userId);
 		System.arraycopy(userBytes, 0, result, Integer.BYTES, Integer.BYTES);
-		byte[] createDateBytes = toByteArray(createDate);
-		System.arraycopy(createDateBytes, 0, result, Integer.BYTES * 2, TIMESTAMP_SIZE);
 		byte[] validByBytes = toByteArray(validBy);
-		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 2 + TIMESTAMP_SIZE, TIMESTAMP_SIZE);
+		System.arraycopy(validByBytes, 0, result, Integer.BYTES * 2, TIMESTAMP_SIZE);
 
 		return result;
 	}
@@ -125,14 +130,11 @@ public class TokenModel {
 		byte[] userBytes = new byte[Integer.BYTES];
 		System.arraycopy(data, Integer.BYTES, userBytes, 0,  Integer.BYTES);
 		int user = toInt(userBytes);
-		byte[] createDateBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 2, createDateBytes, 0, TIMESTAMP_SIZE);
-		Timestamp createDate = toTimeStamp(createDateBytes);
 		byte[] validByBytes = new byte[TIMESTAMP_SIZE];
-		System.arraycopy(data, Integer.BYTES * 2 + TIMESTAMP_SIZE, validByBytes, 0, TIMESTAMP_SIZE);
+		System.arraycopy(data, Integer.BYTES * 2, validByBytes, 0, TIMESTAMP_SIZE);
 		Timestamp validBy = toTimeStamp(validByBytes);
 
-		return new TokenModel(token, user, createDate, validBy);
+		return new TokenModel(token, user, validBy);
 	}
 
 	public static TokenModel deserializeFromString(String data)
