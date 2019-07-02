@@ -33,7 +33,7 @@ public class TokenTest {
 
 	@Test
 	public void token()
-			throws InvalidKeySpecException, NoSuchAlgorithmException, CipherErrorException, MalformedJsonException, IOException {
+			throws InvalidKeySpecException, NoSuchAlgorithmException, CipherErrorException, MalformedJsonException {
 
 		String auth = this.testRestTemplate.getForObject("/keys/auth", String.class);
 		System.out.println(auth);
