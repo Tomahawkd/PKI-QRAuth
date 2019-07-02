@@ -6,9 +6,6 @@
     <string name="hint_username">输入手机号码/邮箱/账号</string>
     <string name="hint_password">请输入密码</string>
     <string name="confirm">请确认密码</string>
-    <string name="psw">请输入原密码</string>
-    <string name="newpsw">请输入新密码</string>
-    <string name="newpswagain">请再次确认新密码</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

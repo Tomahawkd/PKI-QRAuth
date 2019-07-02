@@ -40,6 +40,12 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
+//    private jwt jwt = new jwt();
+//    private String s = jwt.init();
+
+
+
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,7 +138,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
             result = new JSONObject(response);
             int status = (int) result.get("status");
             if(status==-1){
-                //子线程使用looper加入队列
                 Looper.prepare();
                 Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();
                 Looper.loop();

@@ -18,6 +18,11 @@ public class index extends AppCompatActivity {
 
         setContentView(R.layout.index);
 
+//        Intent intent = getIntent();
+//        session = intent.getStringExtra("session");
+//        Bundle bundle = new Bundle();
+//        bundle.putString("session",session);
+//        homePageFragment.setArguments(bundle);
         initView();
     }
 
