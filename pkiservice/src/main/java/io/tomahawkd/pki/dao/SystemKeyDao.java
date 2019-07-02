@@ -8,7 +8,8 @@ import java.util.List;
 @Mapper
 public interface SystemKeyDao {
 
-	@Select("select system_id, system_api, register_date, public_key, private_key from system_api_index " +
+	@Select("select system_id, system_user_id, system_api, register_date, public_key, private_key " +
+			"from system_api_index " +
 			"where system_id = #{id} limit 0,1")
 	@Results({
 			@Result(property = "systemId", column = "system_id"),
