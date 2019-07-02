@@ -31,4 +31,10 @@ public class ControllerExceptionHandler {
 	public void base64Issue(Exception e) {
 
 	}
+
+//	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Other error")
+//	@ExceptionHandler(Exception.class)
+//	public void others(Exception e) {
+//		e.printStackTrace();
+//	}
 }
