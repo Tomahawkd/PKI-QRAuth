@@ -8,10 +8,7 @@ import io.tomahawkd.pki.model.SystemKeyModel;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
-import io.tomahawkd.pki.service.SystemKeyService;
-import io.tomahawkd.pki.service.SystemLogService;
-import io.tomahawkd.pki.service.UserKeyService;
-import io.tomahawkd.pki.service.UserTokenService;
+import io.tomahawkd.pki.service.*;
 import io.tomahawkd.pki.util.ResponseMessage;
 import io.tomahawkd.pki.util.SecurityFunctions;
 import io.tomahawkd.pki.util.Utils;
@@ -37,6 +34,8 @@ public class TokenValidationController {
 	@Resource
 	private UserTokenService tokenService;
 	@Resource
+	private UserLogService userLogService;
+	@Resource
 	private SystemKeyService systemKeyService;
 	@Resource
 	private SystemLogService systemLogService;
@@ -46,7 +45,8 @@ public class TokenValidationController {
 	 *             "K": "Base64 encoded Kt public key encrypted Kc,t",
 	 *             "iv": "Base64 encoded Kt public key encrypted iv",
 	 *             "id": "Base64 encoded Kt public key encrypted String(userTag;systemid)",
-	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "device information(device;ip)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Kc public",
@@ -64,7 +64,11 @@ public class TokenValidationController {
 			throws MalformedJsonException, IOException, CipherErrorException {
 
 
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T");
+		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
+
+		String[] d = requestMap.get("D").split(";");
+		String device = d[0];
+		String ip = d[1];
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
@@ -93,22 +97,22 @@ public class TokenValidationController {
 				"Target: { SystemId: " + systemKeyModel.getSystemId() + "}");
 
 		/* User Key pair */
-		UserKeyModel model = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
-		if (model == null) {
+		UserKeyModel userKeyModel = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
+		if (userKeyModel == null) {
 			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 					"tokenInitialization", SystemLogModel.INFO,
 					"user: +" + userTag + " not found, initializing");
-			model = userKeyService.generateKeysFor(userTag, systemKeyModel.getSystemId());
+			userKeyModel = userKeyService.generateKeysFor(userTag, systemKeyModel.getSystemId());
 		}
 
 		KeyPair ckp = SecurityFunctions.readKeysFromString(
-				model.getPrivateKey(),
-				model.getPublicKey()
+				userKeyModel.getPrivateKey(),
+				userKeyModel.getPublicKey()
 		);
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Client key pair load complete.");
 
-		String kpString = model.getPublicKey() + ";" + model.getPrivateKey();
+		String kpString = userKeyModel.getPublicKey() + ";" + userKeyModel.getPrivateKey();
 		String kpResponse = Utils.base64Encode(
 				SecurityFunctions.encryptSymmetric(k, iv, kpString.getBytes()));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
@@ -116,7 +120,7 @@ public class TokenValidationController {
 
 
 		/* Token */
-		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId());
+		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId(), device, ip);
 		byte[] tokenBytes = SecurityFunctions.encryptUsingAuthenticateServerKey(token.serialize());
 		int nonce = token.getNonce();
 		byte[] tokenArr = ByteBuffer.allocate(tokenBytes.length + Integer.BYTES)
@@ -128,6 +132,9 @@ public class TokenValidationController {
 				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), tokenArr));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Client token encryption complete.");
+
+		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+				device, ip, "Token initialized");
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
 				systemKeyModel.getPrivateKey(),
@@ -157,7 +164,8 @@ public class TokenValidationController {
 	/**
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "Device information(device;ip)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -171,7 +179,12 @@ public class TokenValidationController {
 	@PostMapping("/validate")
 	public String tokenValidation(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T");
+
+		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T", "D");
+
+		String[] d = requestMap.get("D").split(";");
+		String device = d[0];
+		String ip = d[1];
 
 		byte[] etoken = SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 				Utils.base64Decode(requestMap.get("EToken")));
@@ -189,7 +202,9 @@ public class TokenValidationController {
 
 		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
 
+		int status = 1;
 		if (tokenService.validateToken(tokenModel, nonce)) {
+			status = 0;
 			message.setOK().setMessage("Valid");
 			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 					"tokenValidation", SystemLogModel.INFO,
@@ -223,6 +238,9 @@ public class TokenValidationController {
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenValidation", SystemLogModel.WARN,
 				"get system context: " + systemKeyModel.toString());
+
+		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+				device, ip, "Token used with status: " + status);
 
 		KeyPair skp = SecurityFunctions.readKeysFromString(
 				systemKeyModel.getPrivateKey(),
