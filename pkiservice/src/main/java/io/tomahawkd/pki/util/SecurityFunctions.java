@@ -1,9 +1,10 @@
 package io.tomahawkd.pki.util;
 
-import io.tomahawkd.pki.exceptions.*;
-import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.exceptions.CipherErrorException;
+import javafx.util.Pair;
+
 import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.ByteBuffer;
