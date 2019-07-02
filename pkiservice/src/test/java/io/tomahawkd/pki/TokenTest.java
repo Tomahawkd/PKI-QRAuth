@@ -57,6 +57,7 @@ public class TokenTest {
 		request.put("iv", ivString);
 		request.put("id", idString);
 		request.put("T", tString);
+		request.put("D", "JavaTest;127.0.0.1");
 
 		String re = new Gson().toJson(request);
 		System.out.println(re);
@@ -99,6 +100,7 @@ public class TokenTest {
 		Map<String, String> reqMap = new HashMap<>();
 		reqMap.put("EToken", etokenReq);
 		reqMap.put("T", tStringReq);
+		reqMap.put("D", "JavaTest;127.0.0.1");
 
 		String reqJ = new Gson().toJson(reqMap);
 		System.out.println(reqJ);
