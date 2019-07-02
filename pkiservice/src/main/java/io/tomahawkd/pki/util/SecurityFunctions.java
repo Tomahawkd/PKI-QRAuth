@@ -1,6 +1,7 @@
 package io.tomahawkd.pki.util;
 
 import io.tomahawkd.pki.exceptions.CipherErrorException;
+import javafx.util.Pair;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
@@ -16,14 +17,6 @@ import java.util.Base64;
 
 public class SecurityFunctions {
 
-	public static String generateSecretByName(String name) {
-		return name;
-	}
-
-	public static byte[] generateSymKey(String seed) throws CipherErrorException {
-		return generateHash(seed);
-	}
-
 	public static KeyPair generateKeyPair() throws CipherErrorException {
 		try {
 			KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -36,7 +29,7 @@ public class SecurityFunctions {
 
 	public static int generateRandom() {
 		byte[] intBytes = generateRandom(Integer.BYTES);
-		return ByteBuffer.wrap(intBytes).order(ByteOrder.LITTLE_ENDIAN).getInt(Integer.BYTES);
+		return ByteBuffer.wrap(intBytes).order(ByteOrder.LITTLE_ENDIAN).getInt(0);
 	}
 
 	public static byte[] generateRandom(int bytes) {
@@ -44,10 +37,10 @@ public class SecurityFunctions {
 		return s.generateSeed(bytes);
 	}
 
-	public static byte[] generateHash(byte[] seed) throws CipherErrorException {
+	public static byte[] generateHash(byte[] data) throws CipherErrorException {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			return digest.digest(seed);
+			return digest.digest(data);
 		} catch (NoSuchAlgorithmException e) {
 			throw new CipherErrorException(e);
 		}
@@ -58,7 +51,7 @@ public class SecurityFunctions {
 	}
 
 	public static byte[] encryptSymmetric(byte[] key, byte[] iv, byte[] data) throws CipherErrorException {
-		if (key.length !=32) throw new CipherErrorException("Key invalid");
+		if (key.length != 32) throw new CipherErrorException("Key invalid");
 		SecretKey secretKey = new SecretKeySpec(key, "AES");
 		GCMParameterSpec param = new GCMParameterSpec(128, iv);
 		try {
@@ -72,7 +65,7 @@ public class SecurityFunctions {
 	}
 
 	public static byte[] decryptSymmetric(byte[] key, byte[] iv, byte[] enc) throws CipherErrorException {
-		if (key.length !=32) throw new CipherErrorException("Key invalid");
+		if (key.length != 32) throw new CipherErrorException("Key invalid");
 		SecretKey secretKey = new SecretKeySpec(key, "AES");
 		GCMParameterSpec param = new GCMParameterSpec(128, iv);
 		try {
@@ -120,7 +113,7 @@ public class SecurityFunctions {
 	}
 
 	private static PrivateKey readAuthenticateServerPrivateKey() throws IOException, CipherErrorException {
-		byte[] priBytes = Base64.getDecoder().decode(
+		byte[] priBytes = Utils.base64Decode(
 				FileUtil.readFile(FileUtil.rootPath + "/resources/auth.pri"));
 		try {
 			return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(priBytes));
@@ -130,23 +123,62 @@ public class SecurityFunctions {
 
 	}
 
+	public static Pair<byte[], byte[]> readAuthenticateServerKey() throws IOException {
+		byte[] data = Utils.base64Decode(
+				FileUtil.readFile(FileUtil.rootPath + "/resources/auth.key"));
+		byte[] iv = new byte[16];
+		System.arraycopy(data, 0, iv, 0, 16);
+		byte[] key = new byte[32];
+		System.arraycopy(data, 16, key, 0, 32);
+		return new Pair<>(iv, key);
+	}
+
+	public static byte[] encryptUsingAuthenticateServerPublicKey(byte[] data)
+			throws IOException, CipherErrorException {
+		PublicKey k = readAuthenticateServerPublicKey();
+		return encryptAsymmetric(k, data);
+	}
+
 	public static byte[] decryptUsingAuthenticateServerPrivateKey(byte[] data)
 			throws IOException, CipherErrorException {
 		PrivateKey k = readAuthenticateServerPrivateKey();
 		return decryptAsymmetric(k, data);
 	}
 
-	public static KeyPair readAuthenticateServerKeys() throws IOException, CipherErrorException {
+	public static byte[] encryptUsingAuthenticateServerKey(byte[] data)
+			throws IOException, CipherErrorException {
+		Pair<byte[], byte[]> keyData = readAuthenticateServerKey();
+		return encryptSymmetric(keyData.getValue(), keyData.getKey(), data);
+	}
+
+	public static byte[] decryptUsingAuthenticateServerKey(byte[] data)
+			throws IOException, CipherErrorException {
+		Pair<byte[], byte[]> keyData = readAuthenticateServerKey();
+		return decryptSymmetric(keyData.getValue(), keyData.getKey(), data);
+	}
+
+	public static KeyPair readAuthenticateServerKeyPair() throws IOException, CipherErrorException {
 		return new KeyPair(readAuthenticateServerPublicKey(), readAuthenticateServerPrivateKey());
 	}
 
 	public static void generateNewAuthenticateServerKeys() throws CipherErrorException, IOException {
+		generateNewAuthenticateServerKeys(FileUtil.rootPath + "resources/");
+	}
+
+	public static void generateNewAuthenticateServerKeys(String path) throws CipherErrorException, IOException {
 		KeyPair pair = SecurityFunctions.generateKeyPair();
 		String pubBase64 = Utils.base64Encode(pair.getPublic().getEncoded());
 		String priBase64 = Utils.base64Encode(pair.getPrivate().getEncoded());
 
-		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pub", pubBase64, true);
-		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pri", priBase64, true);
+		FileUtil.writeFile(path +  "auth.pub", pubBase64, true);
+		FileUtil.writeFile(path + "auth.pri", priBase64, true);
+
+		byte[] iv = generateRandom(16);
+		byte[] key = generateRandom(32);
+
+		byte[] data = ByteBuffer.allocate(16+32).order(ByteOrder.LITTLE_ENDIAN).put(iv).put(key).array();
+		String dataString = Utils.base64Encode(data);
+		FileUtil.writeFile(path + "auth.key", dataString, true);
 	}
 
 	public static KeyPair readKeysFromString(String pri, String pub) throws CipherErrorException {
