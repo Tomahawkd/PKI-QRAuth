@@ -1,4 +1,4 @@
-package com.Vshows.PKI;
+package com.Vshows.PKI.util;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -38,13 +38,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 + nonce + " TEXT"
                 + ");" ;
         sqLiteDatabase.execSQL(KEY_TABLE_CMD);
-
-
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
 
     }
 }
