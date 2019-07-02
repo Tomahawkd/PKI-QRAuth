@@ -10,6 +10,9 @@ import javax.jws.Oneway;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -40,11 +43,12 @@ public class Connecter{
                 result.append(line + "\n");
             }
             connection.disconnect();
+            String res = result.toString();
 
-            return result.toString();
+            return res;
         }
         catch (Exception e){
-            return "连接异常，请重试!";
+            return "申请证书出错，请检查您的网络！";
         }
 
 
@@ -78,11 +82,12 @@ public class Connecter{
                 bos.flush();
             }
             bos.close();
-            return bos.toString("utf-8");
+            String result = bos.toString("utf-8");
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return "申请证书出错，请检查您的网络！";
 
 
     }
@@ -109,12 +114,11 @@ public class Connecter{
         map1.put("password",password);
         String json1 = gson.toJson(map1);
         String temp = new String(String.valueOf(System.currentTimeMillis()));
-        //generate the seed
-        byte[] random = SecurityFunctions.generateRandom(16);
+
         //generate the symmetric ky between C and S
-        byte[] Kcs = SecurityFunctions.generateSymKey(random.toString());
+        byte[] Kcs = SecurityFunctions.generateRandom(32);
         //generate the symmetric ky between C and T
-        byte[] Kct = SecurityFunctions.generateSymKey(random.toString());
+        byte[] Kct = SecurityFunctions.generateRandom(32);
         //generte the initial vector
         byte[] iv = SecurityFunctions.generateRandom(16);
         String payload = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,json1.getBytes()));
@@ -159,13 +163,38 @@ public class Connecter{
                 bos.flush();
             }
             bos.close();
-            return bos.toString("utf-8");
+            String res = bos.toString("utf-8");
+            Map<String, String> result = Utils.wrapMapFromJson(res);
+            String[] kp =
+                    new String(SecurityFunctions.decryptSymmetric(Kct, iv, Utils.base64Decode(result.get("KP"))))
+                            .split(";");
+            KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
+            byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
+                    Utils.base64Decode(result.get("EToken")));
+            int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt();
+            byte[] token = new byte[etoken.length - Integer.BYTES];
+            System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
+
+            String tR = result.get("T");
+            int tRes = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(), Utils.base64Decode(tR)))
+                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
+            //assertThat(tRes).isEqualTo(t + 1);
+
+            Map<String,Object> re = new HashMap<>();
+            re.put("nonce",nonce);
+            re.put("Token",token);
+            re.put("Cpri",keyPair.getPrivate());
+            re.put("Cpub",keyPair.getPublic());
+
+            return gson.toJson(re);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
 
     }
+
+
 
     /**
      * @param data {"K": "Base64 encoded Kt public key encrypted Kc, t",
@@ -178,23 +207,25 @@ public class Connecter{
      *  "EToken": "Base64 encoded Kc public key encrypted token, nonce"}
      */
 
-    public String interactAuthentication(String data,PublicKey Tpub,PublicKey Spub,String token,int nonce) throws Exception{
+    public String interactAuthentication(String data,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri) throws Exception{
         Gson gson = new Gson();
+
         String payload = Utils.base64Encode(data.getBytes());
-        Map<String,Object> map1 = new HashMap<>();
-        map1.put("token",token);
-        map1.put("nounce",nonce+1);
-        String json1 = gson.toJson(map1);
-		String time = new String(String.valueOf(System.currentTimeMillis()));
+        byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
+                .order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(token).array();
+        String etokenReq = Utils.base64Encode(
+                SecurityFunctions.encryptAsymmetric(Tpub, tokenArr));
+        int tReq = SecurityFunctions.generateRandom();
+        String tStringReq = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tReq).array()));
+        Map<String, String> reqMap = new HashMap<>();
+        reqMap.put("payload",payload);
+        reqMap.put("EToken", etokenReq);
+        reqMap.put("T", tStringReq);
+        String json = new Gson().toJson(reqMap);
 
-        byte[] EToken = SecurityFunctions.encryptAsymmetric(Tpub,json1.getBytes());
-        byte[] T = SecurityFunctions.encryptAsymmetric(Spub,time.getBytes());
 
-        Map<String,Object> map = new HashMap<>();
-        map.put("payload",payload);
-        map.put("EToken",EToken);
-        map.put("T",T);
-        String json = gson.toJson(map);
+
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
         URL url = null;
         try {
@@ -222,7 +253,24 @@ public class Connecter{
                 bos.flush();
             }
             bos.close();
-            return bos.toString("utf-8");
+            String res = bos.toString("utf-8");
+            Map<String, String> resultAuth = Utils.wrapMapFromJson(res);
+            System.out.println(resultAuth.get("M"));
+
+            String tRes2 = resultAuth.get("T");
+            int tRes2Int = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(Cpri, Utils.base64Decode(tRes2)))
+                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
+            //assertThat(tRes2Int).isEqualTo(tReq + 1);
+            int check = 1;
+            if(tRes2Int!=tReq+1){
+                check = 0;
+            }
+            String payload_re = Utils.base64Decode(resultAuth.get("payload")).toString();
+
+            Map<String,Object> result = new HashMap<>();
+            result.put("check",check);
+            result.put("data",payload_re);
+            return gson.toJson(result);
         } catch (Exception e) {
             e.printStackTrace();
         }

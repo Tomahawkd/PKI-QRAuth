@@ -166,4 +166,12 @@ public class SecurityFunctions {
 		}
 
 	}
+
+	public static PublicKey readPublicKey(String pub) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Utils.base64Decode(pub)));
+	}
+
+	public static PrivateKey readPrivateKey(String pri) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Utils.base64Decode(pri)));
+	}
 }

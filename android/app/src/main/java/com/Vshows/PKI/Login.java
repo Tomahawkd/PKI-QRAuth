@@ -15,6 +15,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Vshows.PKI.util.SystemUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +74,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
         login = (ImageButton) findViewById(R.id.loginBtn);
         login.setOnClickListener(this);
         register.setOnClickListener(this);
+        Toast.makeText(this, SystemUtil.getSystemModel(), Toast.LENGTH_LONG).show();
     }
 
     @Override
