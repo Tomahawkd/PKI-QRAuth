@@ -5,7 +5,7 @@ import io.tomahawkd.pki.util.FileUtil;
 import io.tomahawkd.pki.util.Utils;
 
 import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,14 +17,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class SecurityFunctions {
-
-	public static String generateSecretByName(String name) {
-		return name;
-	}
-
-	public static byte[] generateSymKey(String seed) throws CipherErrorException {
-		return generateHash(seed);
-	}
 
 	public static KeyPair generateKeyPair() throws CipherErrorException {
 		try {
@@ -62,9 +54,9 @@ public class SecurityFunctions {
 	public static byte[] encryptSymmetric(byte[] key, byte[] iv, byte[] data) throws CipherErrorException {
 		if (key.length != 32) throw new CipherErrorException("Key invalid");
 		SecretKey secretKey = new SecretKeySpec(key, "AES");
-		GCMParameterSpec param = new GCMParameterSpec(128, iv);
+		IvParameterSpec param = new IvParameterSpec(iv);
 		try {
-			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+			final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey, param);
 
 			return cipher.doFinal(data);
@@ -76,9 +68,9 @@ public class SecurityFunctions {
 	public static byte[] decryptSymmetric(byte[] key, byte[] iv, byte[] enc) throws CipherErrorException {
 		if (key.length != 32) throw new CipherErrorException("Key invalid");
 		SecretKey secretKey = new SecretKeySpec(key, "AES");
-		GCMParameterSpec param = new GCMParameterSpec(128, iv);
+		IvParameterSpec param = new IvParameterSpec(iv);
 		try {
-			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+			final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.DECRYPT_MODE, secretKey, param);
 
 			return cipher.doFinal(enc);
