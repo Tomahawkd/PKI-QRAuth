@@ -51,12 +51,6 @@ create table if not exists user_key
         unique (system_id, user_tag)
 );
 
-create view user_id_tag as
-    (
-        select user_id, user_tag
-        from user_key
-    );
-
 create table if not exists user_log
 (
     `user_id`   int                                 not null,
@@ -80,6 +74,8 @@ create table if not exists user_token
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
     `valid_by`  timestamp                           not null,
     `nonce`     int                                 not null,
+    `device`    varchar(255),
+    `ip`        varchar(30),
 
     constraint user_token_user_fk
         foreign key (`user_id`) references user_key (`user_id`) on delete cascade
