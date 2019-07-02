@@ -14,8 +14,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public final static String KSpub = "KSpub";
     public final static String KCpub = "KCpub";
     public final static String KCpri = "KCpri";
-    public final static String iv =     "iv";
-    public final static String TEMP1 = "TEMP1";
     public final static String nonce = "nonce";
     public final static String token = "token";
 
@@ -38,8 +36,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 + KSpub +" TEXT,"
                 + token +" TEXT,"
                 + nonce + " TEXT"
-                +TEMP1 + "TEXT,"
-                +iv + "TEXT"
                 + ");" ;
         sqLiteDatabase.execSQL(KEY_TABLE_CMD);
 

@@ -1,7 +1,11 @@
-package io.tomahawkd.pki.util;
+package io.tomahawkd.pki.api.client.util;
 
+import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.*;
-import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
+import io.tomahawkd.pki.api.client.*;
+
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,6 +17,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+
 
 public class SecurityFunctions {
 

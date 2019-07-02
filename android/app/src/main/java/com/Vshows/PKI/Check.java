@@ -19,7 +19,6 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
 
         setContentView(R.layout.check);
         initView();
-
     }
 
     private void initView() {
