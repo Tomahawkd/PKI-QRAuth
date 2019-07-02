@@ -12,8 +12,9 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -55,11 +56,11 @@ public class Utils {
 	public static String responseChallenge(String t, PublicKey key) throws IOException, CipherErrorException {
 		return Utils.base64Encode(
 				SecurityFunctions.encryptAsymmetric(key,
-						String.valueOf(
-								Integer.parseInt(
-										new String(
+						ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(
+										ByteBuffer.wrap(
 												SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-														Utils.base64Decode(t)))) + 1).getBytes()));
+														Utils.base64Decode(t)))
+												.order(ByteOrder.LITTLE_ENDIAN).getInt() + 1).array()));
 	}
 
 	public static byte[] gzipEncode(byte[] source) throws IOException {
