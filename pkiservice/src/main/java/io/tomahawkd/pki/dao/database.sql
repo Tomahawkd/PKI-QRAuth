@@ -5,10 +5,10 @@ use pki;
 create table if not exists system_log
 (
     `index`   int auto_increment primary key,
-    `module`  varchar(255)                           not null,
-    `level`   int                                    not null,
-    `date`    timestamp    default CURRENT_TIMESTAMP not null,
-    `message` varchar(255) default ''
+    `module`  varchar(255)                        not null,
+    `level`   int                                 not null,
+    `date`    timestamp default CURRENT_TIMESTAMP not null,
+    `message` mediumtext
 );
 
 create table if not exists system_user
