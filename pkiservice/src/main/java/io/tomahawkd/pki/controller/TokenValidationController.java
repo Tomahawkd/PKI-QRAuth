@@ -106,7 +106,7 @@ public class TokenValidationController {
 		/* Token */
 		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId());
 		byte[] tokenBytes = SecurityFunctions.encryptUsingAuthenticateServerKey(token.serialize());
-		int nonce = SecurityFunctions.generateRandom();
+		int nonce = token.getNonce();
 		byte[] tokenArr = ByteBuffer.allocate(tokenBytes.length + Integer.BYTES)
 				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(tokenBytes).array();
 
@@ -180,9 +180,7 @@ public class TokenValidationController {
 
 		String mResponse = new Gson().toJson(message);
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
-		String kResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(
-						skp.getPublic(), Utils.base64Decode(userKeyModel.getPublicKey())));
+		String kResponse = userKeyModel.getPublicKey();
 
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
