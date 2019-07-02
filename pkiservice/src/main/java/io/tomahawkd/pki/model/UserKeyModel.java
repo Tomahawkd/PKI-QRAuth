@@ -1,12 +1,16 @@
 package io.tomahawkd.pki.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class UserKeyModel {
 
-	private int userId;
+	private transient int userId;
+	@SerializedName("system")
 	private int systemId;
+	@SerializedName("user")
 	private String userTag;
-	private String publicKey;
-	private String privateKey;
+	private transient String publicKey;
+	private transient String privateKey;
 
 	public UserKeyModel(int userId, String publicKey, String privateKey) {
 		this.userId = userId;

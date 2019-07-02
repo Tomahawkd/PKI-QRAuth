@@ -24,7 +24,7 @@ public class SystemLogServiceImpl implements SystemLogService {
 
     @Override
     public void addAccessLog(String module, String function, String ip, String ua) {
-        insertLogRecord(module, function, SystemLogModel.INFO, "Request at" + ip + " using " + ua);
+        insertLogRecord(module, function, SystemLogModel.INFO, "Request at " + ip + " using " + ua);
     }
 }
 

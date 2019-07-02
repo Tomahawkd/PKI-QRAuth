@@ -22,7 +22,7 @@ public class KeyDistributionController {
 	private SystemLogService systemLogService;
 
 
-	@GetMapping("/auth/pubkey")
+	@GetMapping("/auth")
 	public String getAuthenticateServerPublicKey(HttpServletRequest request)
 			throws IOException, CipherErrorException {
 		systemLogService.addAccessLog(KeyDistributionController.class.getName(),
@@ -32,7 +32,7 @@ public class KeyDistributionController {
 		return Base64.getEncoder().encodeToString(SecurityFunctions.readAuthenticateServerPublicKey().getEncoded());
 	}
 
-	@PostMapping("/server/pubkey")
+	@PostMapping("/server")
 	public String getServerPublicKey(HttpServletRequest request, @RequestBody String id) throws NotFoundException {
 		String result = service.getPublicKeyById(id);
 		if (result == null) throw new NotFoundException("No public key found");

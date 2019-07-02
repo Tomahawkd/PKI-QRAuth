@@ -8,18 +8,18 @@ import java.util.List;
 @Mapper
 public interface UserTokenDao {
 
-	@Select("select `token_id`, `user_id`, `init_date`, `valid_by`" +
+	@Select("select `token_id`, `user_id`, `init_date`, `valid_by`, `nonce`" +
 			"from user_token where token_id = #{id}")
 	@Results({
 			@Result(property = "tokenId", column = "token_id"),
 			@Result(property = "userId", column = "user_id"),
 			@Result(property = "createDate", column = "init_date"),
 			@Result(property = "validBy", column = "valid_by"),
-			@Result(property = "nonce", column = "nonce")
+			@Result(property = "nonce", column = "nonce"),
 	})
 	TokenModel getByTokenId(@Param("id") int tokenId);
 
-	@Select("select `token_id`, `user_id`, `init_date`, `valid_by`" +
+	@Select("select `token_id`, `user_id`, `init_date`, `valid_by`, `nonce`" +
 			"from user_token where user_id = #{id}")
 	@Results({
 			@Result(property = "tokenId", column = "token_id"),
