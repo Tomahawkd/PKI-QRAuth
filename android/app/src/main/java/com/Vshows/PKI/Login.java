@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.keyManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +29,8 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+
+import javax.net.ssl.KeyManager;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -85,7 +88,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
-
+                keyManager km = new keyManager();
+                km.test(this,"233333333333");
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
