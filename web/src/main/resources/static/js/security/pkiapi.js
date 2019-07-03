@@ -11,8 +11,8 @@ function randomPassword(size)
     ];//数组
     var seedlength = seed.length;//数组长度
     var createPassword = '';
-    for (i=0;i<size;i++) {
-        j = Math.floor(Math.random()*seedlength);
+    for (var i=0;i<size;i++) {
+        var j = Math.floor(Math.random()*seedlength);
         createPassword += seed[j];
     }
     return createPassword;
@@ -21,14 +21,10 @@ function randomPassword(size)
 
 function createInitialPackage(user, pass) {
     var message = {user: user, password: pass};
-    var SPub = getBytesFromStorage("SPub");
     var TPub = getBytesFromStorage("TPub");
+    var TimeStampBase64 = generateTimeStamp("SPub");
 
     var encrypt = new JSEncrypt();
-    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + SPub + '-----END PUBLIC KEY-----');
-    var timeStamp = (new Date()).valueOf();
-    var TimeStampBase64 = $.base64.encode(encrypt.encrypt(timeStamp)); // The Base64 encoded encrypted timeStamp
-
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
 
@@ -37,7 +33,6 @@ function createInitialPackage(user, pass) {
     var iv = aesjs.utils.hex.toBytes(sha256(RandomSeed));
     var IV = encrypt.encrypt(iv); // the Base64 encoded Kct
 
-    localStorage.setItem("timeStamp", timeStamp);
     storeBytesToStorage("kct", kct);
     storeBytesToStorage("iv", iv);
     return {payload: message, S: TimeStampBase64, K: Kct, iv: IV};
@@ -55,26 +50,23 @@ function parseInitialResponsePackage(package) {
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
     var decryptedBytes = aesCbc.decrypt(KP);
     var keyPair = $.base64.encode(decryptedBytes).split(";");
-    var KcpubBase64 = keyPair[0];
-    var KcpriBase64 = keyPair[1];
+    localStorage.setItem("Kcpub", keyPair[0]);
+    localStorage.setItem("Kcpri", keyPair[1]);
 
+    // validate timeStamp
+    if (!validateTimeStamp(package.T, "Kcpri")) return false;
+
+    // parse token and nonce from eToken
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PUBLIC KEY-----' + $.base64.decode(KcpriBase64) + '-----END PUBLIC KEY-----');
+    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + $.base64.decode(keyPair[1]) + '-----END PRIVATE KEY-----');
 
-    //validate the timeStamp
-    var timeStamp = bytesToInt(encrypt.decrypt(timeStampEncrypted));
-    if (timeStamp !== localStorage.getItem("timeStamp") + 1)
-        return false;
+    var nonceToken = encrypt.decrypt(eToken);
+    var nonce = bytesToInt(nonceToken.slice(0, 4));
+    var token = nonceToken.slice(4);
 
-    var nounceToken = encrypt.decrypt(eToken);
-    var nounce = bytesToInt(nounceToken.slice(0, 4));
-    var token = nounceToken.slice(4);
-
-    localStorage.setItem("Kcpub", KcpubBase64);
-    localStorage.setItem("Kcpri", KcpriBase64);
-    localStorage.setItem("nounce", nounce);
+    localStorage.setItem("nonce", nonce);
     storeBytesToStorage("token", token);
-    return true
+    return true;
 }
 
 function bytesToInt(bytes) {
@@ -108,10 +100,45 @@ function storeBytesToStorage(name, value) {
     localStorage.setItem(name, $.base64.encode(value));
 }
 
-function generateEToken(eToken) {
+function generateEToken() {
+    var nonce = localStorage.getItem("nonce") + 1;
+    localStorage.setItem("nonce", nonce);
 
+    var token = getBytesFromStorage("token");
+
+    var eTokenContent = intToBytes(nonce);
+    for(var i=0; i<token.length; i++) {
+        eTokenContent.push(token[i]);
+    }
+
+    var encrypt = new JSEncrypt();
+    var TPub = getBytesFromStorage("TPub");
+    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
+    var eToken = encrypt.encrypt(nonce);
+
+    return eToken;
 }
 
-function parseEToken() {
 
+function generateTimeStamp(key) {
+    var key = getBytesFromStorage(key);
+
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + key + '-----END PUBLIC KEY-----');
+    var timeStamp = (new Date()).valueOf();
+    var timeStampBase64 = $.base64.encode(encrypt.encrypt(timeStamp)); // The Base64 encoded encrypted timeStamp
+
+    localStorage.setItem("timeStamp", timeStamp);
+    return timeStampBase64;
+}
+
+function validateTimeStamp(T, key) {
+    var key = getBytesFromStorage(key);
+
+    var encrypt = new JSEncrypt();
+    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');
+    var timeStamp = bytesToInt(encrypt.decrypt($.base64.decode(T)));
+    var localTimeStamp = localStorage.getItem("timeStamp") + 1;
+    localStorage.removeItem("timeStamp");
+    return timeStamp === localTimeStamp;
 }
