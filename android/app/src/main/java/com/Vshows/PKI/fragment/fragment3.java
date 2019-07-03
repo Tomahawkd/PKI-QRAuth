@@ -17,6 +17,7 @@ import com.Vshows.PKI.ChangeSelfInfo;
 import com.Vshows.PKI.Check;
 import com.Vshows.PKI.Login;
 import com.Vshows.PKI.R;
+import com.Vshows.PKI.changepsw;
 import com.Vshows.PKI.index;
 import com.Vshows.zxinglibrary.android.CaptureActivity;
 import com.Vshows.zxinglibrary.bean.ZxingConfig;
@@ -89,9 +90,9 @@ public class fragment3 extends Fragment implements View.OnClickListener {
 
         session = getActivity().getIntent().getStringExtra("session");
 
-        Log.d("sessin" ,session);
+        //Log.d("sessin" ,session);
 
-        init_info();
+        //init_info();
 
         return view;
     }
@@ -116,10 +117,11 @@ public class fragment3 extends Fragment implements View.OnClickListener {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.isSuccessful()) {
-                    String jsonString = response.body().string();;
-
+                    String jsonString = response.body().string();
                     try {
-                        JSONObject resultJson = new JSONObject(jsonString);
+                        JSONObject mesJson = new JSONObject(jsonString);
+                        String json = mesJson.getString("message");
+                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
                         username = resultJson.getString("username");
                         name = resultJson.getString("name");
                         sex = resultJson.getInt("sex");
@@ -127,7 +129,6 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                         phone = resultJson.getString("phone");
                         bio = resultJson.getString("bio");
                         //imagepath = resultJson.getString("imagepath");
-
 
                         new Thread() {
                             @Override
@@ -139,8 +140,6 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-
-                    Log.d("getInfoSuccess","<<<<d="+jsonString);
                 }
             }
         });
@@ -149,7 +148,6 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     Runnable changeInfoUI = new Runnable() {
         @Override
         public void run() {
-            Log.d("nameinfo","<<<<e="+username);
             username_information.setText(username);
             username2_information.setText(name);
             if(sex==0)
@@ -194,9 +192,13 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changeinfo:
                 Intent intent3 = new Intent(getActivity(), ChangeSelfInfo.class);
+                intent3.putExtra("session",session);
                 startActivity(intent3);
                 break;
             case R.id.changepsw:
+                Intent intent4 = new Intent(getActivity(), changepsw.class);
+                intent4.putExtra("session",session);
+                startActivity(intent4);
                 break;
             case R.id.quit:
                 Intent intent2 = new Intent(getActivity(), Login.class);

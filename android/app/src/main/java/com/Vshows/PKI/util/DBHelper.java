@@ -29,13 +29,14 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         String KEY_TABLE_CMD = "CREATE TABLE " + KEY_TABLE
                 + "("
-                + ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + KCpub +"TEXT,"
-                + KCpri+" TEXT,"
+                //+ ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + ID + " TEXT PRIMARY KEY ,"
+                + KCpub +" TEXT,"
+                + KCpri +" TEXT,"
                 + KTpub +" TEXT,"
                 + KSpub +" TEXT,"
                 + token +" TEXT,"
-                + nonce + " TEXT"
+                + nonce +" INTEGER "
                 + ");" ;
         sqLiteDatabase.execSQL(KEY_TABLE_CMD);
     }

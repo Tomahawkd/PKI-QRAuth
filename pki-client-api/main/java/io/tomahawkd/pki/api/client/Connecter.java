@@ -5,11 +5,16 @@ import com.google.gson.JsonObject;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_ADDPeer;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
 import io.tomahawkd.pki.api.client.util.Utils;
+import io.tomahawkd.pki.api.client.util.httpUtil;
 
 import javax.jws.Oneway;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -24,67 +29,46 @@ public class Connecter{
      * {"K": "Kt public",}
      */
     public String getAuthenticationServerPublicKey(){
+
+
+
+
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
         try {
+
             URL url = new URL(uri);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
+            connection.setConnectTimeout(5*1000);
             connection.setDoOutput(true); // 设置该连接是可以输出的
             connection.setRequestMethod("GET"); // 设置请求方式
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.connect();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
-            String line = null;
-            StringBuilder result = new StringBuilder();
-            while ((line = br.readLine()) != null) { // 读取数据
-                result.append(line + "\n");
+
+            InputStream inputStream=connection.getInputStream();
+            byte[] data=new byte[1024];
+            StringBuffer sb=new StringBuffer();
+            int length=0;
+            while ((length=inputStream.read(data))!=-1){
+                String s=new String(data, Charset.forName("utf-8"));
+                sb.append(s);
             }
+            String message=sb.toString();
+            inputStream.close();
             connection.disconnect();
-
-            return result.toString();
+            return message;
         }
         catch (Exception e){
-            return "连接异常，请重试!";
+            return "申请证书出错，请检查您的网络！";
         }
 
 
     }
 
     public String getServerPublicKey(String id){
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(id);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
-            }
-            bos.close();
-            return bos.toString("utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-
-
+        String url = "http://192.168.43.192:8000/serverkey/";
+        String json = httpUtil.getJsonData(id,url);
+        return json;
     }
 
 
@@ -109,12 +93,11 @@ public class Connecter{
         map1.put("password",password);
         String json1 = gson.toJson(map1);
         String temp = new String(String.valueOf(System.currentTimeMillis()));
-        //generate the seed
-        byte[] random = SecurityFunctions.generateRandom(16);
+
         //generate the symmetric ky between C and S
-        byte[] Kcs = SecurityFunctions.generateSymKey(random.toString());
+        byte[] Kcs = SecurityFunctions.generateRandom(32);
         //generate the symmetric ky between C and T
-        byte[] Kct = SecurityFunctions.generateSymKey(random.toString());
+        byte[] Kct = SecurityFunctions.generateRandom(32);
         //generte the initial vector
         byte[] iv = SecurityFunctions.generateRandom(16);
         String payload = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,json1.getBytes()));
@@ -132,40 +115,43 @@ public class Connecter{
         map.put("K",K);
         map.put("iv",IV);
         String json = gson.toJson(map);
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(json);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
-            }
-            bos.close();
-            return bos.toString("utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
 
-    }
+
+        String uri = "39.106.80.38:22222/keys/auth/pubkey";
+        String res = httpUtil.getJsonData(json,uri);
+
+
+
+
+            Map<String, String> result = Utils.wrapMapFromJson(res);
+            String[] kp =
+                    new String(SecurityFunctions.decryptSymmetric(Kct, iv, Utils.base64Decode(result.get("KP"))))
+                            .split(";");
+            KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
+            byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
+                    Utils.base64Decode(result.get("EToken")));
+            int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt();
+            byte[] token = new byte[etoken.length - Integer.BYTES];
+            System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
+
+            String tR = result.get("T");
+            int tRes = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(), Utils.base64Decode(tR)))
+                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
+            //assertThat(tRes).isEqualTo(t + 1);
+
+            Map<String,Object> re = new HashMap<>();
+            re.put("nonce",nonce);
+            re.put("Token",token);
+            re.put("Cpri",keyPair.getPrivate());
+            re.put("Cpub",keyPair.getPublic());
+
+            return gson.toJson(re);
+        }
+
+
+
+
+
 
     /**
      * @param data {"K": "Base64 encoded Kt public key encrypted Kc, t",
@@ -178,54 +164,50 @@ public class Connecter{
      *  "EToken": "Base64 encoded Kc public key encrypted token, nonce"}
      */
 
-    public String interactAuthentication(String data,PublicKey Tpub,PublicKey Spub,String token,int nonce,String time) throws Exception{
+    public String interactAuthentication(String data,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri) throws Exception{
         Gson gson = new Gson();
-        String payload = Utils.base64Encode(data.getBytes());
-        Map<String,Object> map1 = new HashMap<>();
-        map1.put("token",token);
-        map1.put("nounce",nonce+1);
-        String json1 = gson.toJson(map1);
-        byte[] EToken = SecurityFunctions.encryptAsymmetric(Tpub,json1.getBytes());
-        byte[] T = SecurityFunctions.encryptAsymmetric(Spub,time.getBytes());
 
-        Map<String,Object> map = new HashMap<>();
-        map.put("payload",payload);
-        map.put("EToken",EToken);
-        map.put("T",T);
-        String json = gson.toJson(map);
+        String payload = Utils.base64Encode(data.getBytes());
+        byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
+                .order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(token).array();
+        String etokenReq = Utils.base64Encode(
+                SecurityFunctions.encryptAsymmetric(Tpub, tokenArr));
+        int tReq = SecurityFunctions.generateRandom();
+        String tStringReq = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tReq).array()));
+        Map<String, String> reqMap = new HashMap<>();
+        reqMap.put("payload",payload);
+        reqMap.put("EToken", etokenReq);
+        reqMap.put("T", tStringReq);
+        String json = new Gson().toJson(reqMap);
+
+
+
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(json);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
+        String res = httpUtil.getJsonData(json,uri);
+
+
+//
+
+            Map<String, String> resultAuth = Utils.wrapMapFromJson(res);
+            System.out.println(resultAuth.get("M"));
+
+            String tRes2 = resultAuth.get("T");
+            int tRes2Int = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(Cpri, Utils.base64Decode(tRes2)))
+                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
+            //assertThat(tRes2Int).isEqualTo(tReq + 1);
+            int check = 1;
+            if(tRes2Int!=tReq+1){
+                check = 0;
             }
-            bos.close();
-            return bos.toString("utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
+            String payload_re = Utils.base64Decode(resultAuth.get("payload")).toString();
+
+            Map<String,Object> result = new HashMap<>();
+            result.put("check",check);
+            result.put("data",payload_re);
+            return gson.toJson(result);
         }
-        return null;
-    }
+
 
     public String updateQRStatus(String Token, String nounce1, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri) throws Exception{
         Gson gson = new Gson();
@@ -248,37 +230,9 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(json);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
-            }
-            bos.close();
-            return bos.toString("utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        String res = httpUtil.getJsonData(json,uri);
+        return res;
+
     }
 
     public String updateQRStatusConfirm(String Token, String nounce1, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri) throws Exception{
@@ -293,7 +247,6 @@ public class Connecter{
         map2.put("type",2);
 
         String M = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,gson.toJson(map2).getBytes()));
-
         String T = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,temp.getBytes()));
         Map<String,Object> map = new HashMap<>();
         map.put("M",M);
@@ -301,37 +254,9 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(json);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
-            }
-            bos.close();
-            return bos.toString("utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        String res = httpUtil.getJsonData(json,uri);
+        return res;
+
     }
 
 

@@ -1,7 +1,7 @@
 package io.tomahawkd.pki.api.client.util;
 
 import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
-import io.tomahawkd.pki.exceptions.*;
+import io.tomahawkd.pki.api.client.exceptions.*;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
 import io.tomahawkd.pki.api.client.util.Utils;
 import io.tomahawkd.pki.api.client.*;

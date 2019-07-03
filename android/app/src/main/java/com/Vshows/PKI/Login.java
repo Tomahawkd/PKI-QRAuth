@@ -42,6 +42,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+
 public class Login extends AppCompatActivity implements View.OnClickListener  {
 
     private EditText username;
@@ -88,8 +89,18 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
-                keyManager km = new keyManager();
-                km.test(this,"233333333333");
+//                deleteDatabase("keys.db");
+//                name = username.getText().toString();
+//                keyManager km = new keyManager();
+//                km.restoreNonce(this,name,2333333);
+//               int n  = km.getNonce(this,name);
+//                Toast.makeText(this,"nonce: " + n, Toast.LENGTH_LONG).show();
+
+                Intent intent1 = new Intent(this,index.class);
+
+                intent1.putExtra("session",session);
+
+                startActivity(intent1);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -107,6 +118,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                         jsonObject.put("password",psw);
 
                         String url ="http://192.168.43.159/user/login";
+
 
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = RequestBody.create(JSON,jsonObject.toString());
