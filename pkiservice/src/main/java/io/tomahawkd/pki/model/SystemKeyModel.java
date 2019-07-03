@@ -61,8 +61,10 @@ public class SystemKeyModel {
 	@Override
 	public String toString() {
 		return "SystemKeyModel{" +
-				"systemApi='" + systemApi + '\'' +
-				"registerDate=" + registerDate +
+				"systemId=" + systemId +
+				", systemUserId=" + systemUserId +
+				", systemApi='" + systemApi + '\'' +
+				", registerDate=" + registerDate +
 				'}';
 	}
 }
