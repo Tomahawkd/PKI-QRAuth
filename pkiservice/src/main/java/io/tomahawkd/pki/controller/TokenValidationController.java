@@ -103,7 +103,7 @@ public class TokenValidationController {
 				"Target: { SystemId: " + systemKeyModel.getSystemId() + "}");
 
 		/* User Key pair */
-		UserKeyModel userKeyModel = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
+		UserKeyModel userKeyModel = userKeyService.getUserByTagAndSystem(userTag, systemKeyModel.getSystemId());
 		if (userKeyModel == null) {
 			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 					"tokenInitialization", SystemLogModel.INFO,
@@ -179,7 +179,7 @@ public class TokenValidationController {
 
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
-				userKeyService, systemKeyService, userIndexService,
+				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
 	}
 }

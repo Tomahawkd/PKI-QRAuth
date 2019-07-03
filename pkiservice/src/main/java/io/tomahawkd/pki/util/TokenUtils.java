@@ -68,6 +68,7 @@ public class TokenUtils {
 	                                       UserKeyService userKeyService,
 	                                       SystemKeyService systemKeyService,
 	                                       UserIndexService userIndexService,
+	                                       Class<T> type,
 	                                       ContextCallback<
 			                                       TokenRequestMessage<T>,
 			                                       UserKeyModel,
@@ -150,7 +151,6 @@ public class TokenUtils {
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
-		String mResponse = responseMessage != null ? responseMessage.toJson() : message.toJson();
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
 		String kResponse = userKeyModel.getPublicKey();
 
