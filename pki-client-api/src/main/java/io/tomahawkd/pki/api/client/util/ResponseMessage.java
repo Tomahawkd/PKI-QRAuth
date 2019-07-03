@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.api.client.util;
+package io.tomahawkd.pki.util;
 
 public class ResponseMessage {
 

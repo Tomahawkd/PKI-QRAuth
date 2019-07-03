@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.api.client.util;
+package io.tomahawkd.pki.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,7 +8,7 @@ import java.nio.file.*;
 
 public class FileUtil {
 
-	public static final String rootPath = "./pkiservice/src/main";
+	public static final String rootPath = "./src/main";
 
 
 	public static String readFile(String path) throws IOException {

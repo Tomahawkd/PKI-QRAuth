@@ -3,6 +3,7 @@ package io.tomahawkd.pki.api.client;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_ADDPeer;
+import io.tomahawkd.pki.api.client.exceptions.*;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
 import io.tomahawkd.pki.api.client.util.Utils;
 import io.tomahawkd.pki.api.client.util.httpUtil;
@@ -29,9 +30,6 @@ public class Connecter{
      * {"K": "Kt public",}
      */
     public String getAuthenticationServerPublicKey(){
-
-
-
 
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
         try {
@@ -66,39 +64,9 @@ public class Connecter{
     }
 
     public String getServerPublicKey(String id){
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        URL url = null;
-        try {
-            url = new URL(uri);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("POST");// 提交模式
-            // conn.setConnectTimeout(10000);//连接超时 单位毫秒
-            // conn.setReadTimeout(2000);//读取超时 单位毫秒
-            // 发送POST请求必须设置如下两行
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setDoInput(true);
-            // 获取URLConnection对象对应的输出流
-            PrintWriter printWriter = new PrintWriter(httpURLConnection.getOutputStream());
-            // 发送请求参数
-            printWriter.write(id);//post的参数 xx=xx&yy=yy
-            // flush输出流的缓冲
-            printWriter.flush();
-            //开始获取数据
-            BufferedInputStream bis = new BufferedInputStream(httpURLConnection.getInputStream());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int len;
-            byte[] arr = new byte[1024];
-            while((len=bis.read(arr))!= -1){
-                bos.write(arr,0,len);
-                bos.flush();
-            }
-            bos.close();
-            String result = bos.toString("utf-8");
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "申请证书出错，请检查您的网络！";
+        String uri = "192.168.43.192:8000/serverkey";
+        String a = httpUtil.getJsonData(id,uri);
+        return a;
 
 
     }
@@ -117,6 +85,8 @@ public class Connecter{
 
 
     public String initalizeAuthentication(String user, String pass, PublicKey Tpub,PublicKey Spub) throws Exception{
+
+
         String username = user;
         String password = pass;
         Gson gson = new Gson();
@@ -147,9 +117,7 @@ public class Connecter{
         map.put("K",K);
         map.put("iv",IV);
         String json = gson.toJson(map);
-
-
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
+        String uri = "192.168.43.159...";
         String res = httpUtil.getJsonData(json,uri);
 
             Map<String, String> result = Utils.wrapMapFromJson(res);
