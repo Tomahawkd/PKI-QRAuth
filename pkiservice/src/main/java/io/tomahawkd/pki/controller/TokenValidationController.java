@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,16 +141,13 @@ public class TokenValidationController {
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Token initialized");
 
-		KeyPair skp = SecurityFunctions.readKeysFromString(
-				systemKeyModel.getPrivateKey(),
-				systemKeyModel.getPublicKey()
-		);
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenInitialization", SystemLogModel.DEBUG, "Server key pair load complete.");
+				"tokenInitialization", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
+		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
 		String mResponse = new Gson().toJson(new ResponseMessage(0, "Authenticate Complete"));
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
@@ -250,15 +248,12 @@ public class TokenValidationController {
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Token used with status: " + status);
 
-		KeyPair skp = SecurityFunctions.readKeysFromString(
-				systemKeyModel.getPrivateKey(),
-				systemKeyModel.getPublicKey()
-		);
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.DEBUG, "Server key pair load complete.");
+				"tokenValidation", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String mResponse = new Gson().toJson(message);
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
+		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
