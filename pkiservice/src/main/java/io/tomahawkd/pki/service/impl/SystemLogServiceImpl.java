@@ -21,5 +21,10 @@ public class SystemLogServiceImpl implements SystemLogService {
         int result = dao.insertLogRecord(new SystemLogModel(m, level, message));
         return result == 1;
     }
+
+    @Override
+    public void addAccessLog(String module, String function, String ip, String ua) {
+        insertLogRecord(module, function, SystemLogModel.INFO, "Request at " + ip + " using " + ua);
+    }
 }
 
