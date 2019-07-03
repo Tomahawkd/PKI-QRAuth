@@ -182,15 +182,37 @@ public class SecurityFunctions {
 	}
 
 	public static KeyPair readKeysFromString(String pri, String pub) throws CipherErrorException {
+		return readKeys(Utils.base64Decode(pri), Utils.base64Decode(pub));
+
+	}
+
+	public static KeyPair readKeys(byte[] pri, byte[] pub) throws CipherErrorException {
+		PublicKey publicKey = readPublicKey(pub);
+		PrivateKey privateKey = readPrivateKey(pri);
+		return new KeyPair(publicKey, privateKey);
+	}
+
+	public static PublicKey readPublicKey(String pub) throws CipherErrorException {
+		return readPublicKey(Utils.base64Decode(pub));
+	}
+
+	public static PrivateKey readPrivateKey(String pri) throws CipherErrorException {
+		return readPrivateKey(Utils.base64Decode(pri));
+	}
+
+	public static PublicKey readPublicKey(byte[] pub) throws CipherErrorException {
 		try {
-			PublicKey publicKey =
-					KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Utils.base64Decode(pub)));
-			PrivateKey privateKey =
-					KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Utils.base64Decode(pri)));
-			return new KeyPair(publicKey, privateKey);
+			return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pub));
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
 			throw new CipherErrorException(e);
 		}
+	}
 
+	public static PrivateKey readPrivateKey(byte[] pri) throws CipherErrorException {
+		try {
+			return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(pri));
+		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+			throw new CipherErrorException(e);
+		}
 	}
 }

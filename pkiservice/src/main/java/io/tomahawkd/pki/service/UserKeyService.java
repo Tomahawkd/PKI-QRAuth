@@ -7,7 +7,7 @@ public interface UserKeyService {
 
 	UserKeyModel generateKeysFor(String userTag, int systemId) throws CipherErrorException;
 
-	UserKeyModel getKeyPairById(String userTag, int systemId);
+	UserKeyModel getUserByTagAndSystem(String userTag, int systemId);
 
 	UserKeyModel regenerateKeysAndDeleteTokenFor(int userId) throws CipherErrorException;
 

@@ -31,6 +31,15 @@ public class UserTokenServiceImpl implements UserTokenService {
 	}
 
 	@Override
+	public TokenModel generateNewTokenViaQrCode(int userId, String device, String ip) {
+		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom(), device, ip);
+		dao.initToken(model);
+		model = dao.getByTokenId(model.getTokenId());
+
+		return model;
+	}
+
+	@Override
 	public TokenModel getTokenById(int tokenId) {
 		return dao.getByTokenId(tokenId);
 	}
@@ -40,8 +49,11 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 		TokenModel model = dao.getByTokenId(token.getTokenId());
 
-		return token.equals(model) &&
-				token.getValidBy().after(new Date(System.currentTimeMillis())) &&
-				model.getNonce() + 1 == nonce;
+		if (token.getValidBy().before(new Date(System.currentTimeMillis()))) {
+			dao.deleteUserTokens(token.getTokenId());
+			return false;
+		}
+
+		return token.equals(model) && model.getNonce() + 1 == nonce;
 	}
 }
