@@ -33,7 +33,7 @@ public class UserManagementController {
 	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1"
 	 * }
 	 */
-	@PostMapping("/info")
+	@PostMapping("/log")
 	public String getUserLogById(@RequestBody String data) throws MalformedJsonException {
 		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
 
@@ -62,7 +62,8 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "M": "Base64 encoded Kt public key encrypted token hash to revoke"
+	 *             "M": "Base64 encoded Kt public key encrypted token hash to revoke",
+	 *             "D": "Device information(device;ip)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -85,6 +86,7 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "Device information(device;ip)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -98,7 +100,7 @@ public class UserManagementController {
 	 */
 	@PostMapping("/keys/regen")
 	public String regenerateKeys(String data) throws MalformedJsonException {
-		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T");
+		Map<String, String> bodyData = Utils.wrapMapFromJson(data, "EToken", "T", "D");
 
 		return "";
 	}

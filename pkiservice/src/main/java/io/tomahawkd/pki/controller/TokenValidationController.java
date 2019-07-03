@@ -8,12 +8,10 @@ import io.tomahawkd.pki.model.SystemKeyModel;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
-import io.tomahawkd.pki.service.SystemKeyService;
-import io.tomahawkd.pki.service.SystemLogService;
-import io.tomahawkd.pki.service.UserKeyService;
-import io.tomahawkd.pki.service.UserTokenService;
-import io.tomahawkd.pki.util.ResponseMessage;
+import io.tomahawkd.pki.service.*;
+import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.util.TokenUtils;
 import io.tomahawkd.pki.util.Utils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.security.KeyPair;
-import java.util.Arrays;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,19 +34,24 @@ public class TokenValidationController {
 	@Resource
 	private UserTokenService tokenService;
 	@Resource
+	private UserLogService userLogService;
+	@Resource
 	private SystemKeyService systemKeyService;
 	@Resource
 	private SystemLogService systemLogService;
+	@Resource
+	private UserIndexService userIndexService;
 
 	/**
 	 * @param data {
 	 *             "K": "Base64 encoded Kt public key encrypted Kc,t",
 	 *             "iv": "Base64 encoded Kt public key encrypted iv",
 	 *             "id": "Base64 encoded Kt public key encrypted String(userTag;systemid)",
-	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "device information(device;ip)"
 	 *             }
 	 * @return {
-	 * "K": "Base64 encoded Kc,t encrypted Kc public",
+	 * "K": "Base64 encoded Kc public",
 	 * "M": "result message
 	 * {
 	 * "status": number(0:success, 1:failed),
@@ -56,71 +59,92 @@ public class TokenValidationController {
 	 * }",
 	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
 	 * "KP": "Base64 encoded Kc,t encrypted client key pair String(base64 public;base64 private)",
-	 * "EToken": "Base64 encoded Kc public key encrypted String(token;nonce)"}
+	 * "EToken": "Base64 encoded Kc public key encrypted base64String(byteArr(nonce,token))"}
 	 */
 	@PostMapping("/init")
 	public String tokenInitialization(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException {
 
 
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T");
+		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
+
+		String[] d = requestMap.get("D").split(";", 2);
+		String device = "";
+		String ip = "";
+		if (d.length == 2) {
+			device = d[0];
+			ip = d[1];
+		}
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
+		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
+
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
+		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
-		String[] id = Arrays.toString(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+		String[] id = new String(SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 				Utils.base64Decode(requestMap.get("id")))).split(";");
 		String userTag = id[0];
 		String systemApi = id[1];
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.INFO,
-				"Target: {user: +" + userTag + "system: " + systemApi + "}");
+				"Target: {user: +" + userTag + ", systemApi: " + systemApi + "}");
 
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(systemApi);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.INFO,
+				"Target: { SystemId: " + systemKeyModel.getSystemId() + "}");
 
 		/* User Key pair */
-		UserKeyModel model = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
-		if (model == null) {
+		UserKeyModel userKeyModel = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
+		if (userKeyModel == null) {
 			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 					"tokenInitialization", SystemLogModel.INFO,
 					"user: +" + userTag + " not found, initializing");
-			model = userKeyService.generateKeysFor(userTag, systemKeyModel.getSystemId());
+			userKeyModel = userKeyService.generateKeysFor(userTag, systemKeyModel.getSystemId());
 		}
 
 		KeyPair ckp = SecurityFunctions.readKeysFromString(
-				model.getPrivateKey(),
-				model.getPublicKey()
+				userKeyModel.getPrivateKey(),
+				userKeyModel.getPublicKey()
 		);
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client key pair load complete.");
 
-		String kpString = model.getPublicKey() + ";" + model.getPrivateKey();
+		String kpString = userKeyModel.getPublicKey() + ";" + userKeyModel.getPrivateKey();
 		String kpResponse = Utils.base64Encode(
 				SecurityFunctions.encryptSymmetric(k, iv, kpString.getBytes()));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client key pair encryption complete.");
 
 
 		/* Token */
-		String token = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(ckp.getPublic(),
-						tokenService.generateNewToken(userTag, systemKeyModel.getSystemId())));
-		int nonce = SecurityFunctions.generateRandom();
+		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId(), device, ip);
+		String etokenResponse = TokenUtils.encodeToken(token.serialize(), token.getNonce(), ckp.getPublic());
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Client token encryption complete.");
 
-		String etokenString = token + ";" + nonce;
-		String etokenResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), etokenString.getBytes()));
+		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+				device, ip, "Token initialized");
 
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Server public key load complete.");
 
-		KeyPair skp = SecurityFunctions.readKeysFromString(
-				systemKeyModel.getPrivateKey(),
-				systemKeyModel.getPublicKey()
-		);
+		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
-		String kResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(skp.getPublic(), ckp.getPublic().getEncoded()));
+		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
+		String mResponse = new Gson().toJson(new Message<>(0, "Authenticate Complete"));
 
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
-		String mResponse = new Gson().toJson(new ResponseMessage(0, "Authenticate Complete"));
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
 
 		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
@@ -135,55 +159,27 @@ public class TokenValidationController {
 	/**
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-	 *             "T": "Base64 encoded Kt public key encrypted challenge number"
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "Device information(device;ip)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
 	 * "M": "
 	 * {
 	 * "status": number(0:valid, 1:invalid),
-	 * "message": "status description"
+	 * "message": "service message"
 	 * }",
-	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1"}
+	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
+	 * "U": "Base64 encoded Ks public key encrypted user tag"
+	 * }
 	 */
 	@PostMapping("/validate")
 	public String tokenValidation(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T");
 
-		String[] etoken = Arrays.toString(
-				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-						Utils.base64Decode(requestMap.get("EToken")))).split(";");
-
-		TokenModel tokenModel = TokenModel.deserializeFromString(etoken[0]);
-		int nonce = Integer.parseInt(etoken[1]);
-
-		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
-
-		if (tokenService.validateToken(tokenModel, nonce)) message.setOK().setMessage("Valid");
-		else message.setError().setMessage("Invalid");
-
-
-		UserKeyModel userKeyModel = userKeyService.getUserById(tokenModel.getUserId());
-		if (userKeyModel == null) throw new NotFoundException("User not found");
-		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
-
-		KeyPair skp = SecurityFunctions.readKeysFromString(
-				systemKeyModel.getPrivateKey(),
-				systemKeyModel.getPublicKey()
-		);
-
-		String mResponse = new Gson().toJson(message);
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), skp.getPublic());
-		String kResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(
-						skp.getPublic(), Utils.base64Decode(userKeyModel.getPublicKey())));
-
-		Map<String, String> responseMap = new HashMap<>();
-		responseMap.put("K", kResponse);
-		responseMap.put("M", mResponse);
-		responseMap.put("T", tResponse);
-
-		return new Gson().toJson(responseMap);
+		return TokenUtils.tokenValidate(data,
+				systemLogService, tokenService, userLogService,
+				userKeyService, systemKeyService, userIndexService,
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
 	}
 }

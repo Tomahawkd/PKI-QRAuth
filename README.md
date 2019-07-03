@@ -22,6 +22,10 @@ PKI based QR code authentication system
           | -- README.md (Directory explanation)
           | -- .gitignore
           | -- OWNERS (Directory permission controll)
+   | -- pkiservice (third party key/token distribution and management)
+   | -- pki-client-api (client api part for pkiservice)
+   | -- pki-server-api (server api part for pkiservice)
+   | -- pki-api-common (common class in client and server)
    | -- android (for android client)
           | -- app
                 | -- build

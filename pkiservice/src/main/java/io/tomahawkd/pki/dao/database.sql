@@ -5,26 +5,11 @@ use pki;
 create table if not exists system_log
 (
     `index`   int auto_increment primary key,
-    `module`  varchar(255)                           not null,
-    `level`   int                                    not null,
-    `date`    timestamp    default CURRENT_TIMESTAMP not null,
-    `message` varchar(255) default ''
+    `module`  varchar(255)                        not null,
+    `level`   int                                 not null,
+    `date`    timestamp default CURRENT_TIMESTAMP not null,
+    `message` mediumtext
 );
-
-create table if not exists system_api_index
-(
-    `system_id`     int auto_increment primary key, # framework api index
-    `system_api`    varchar(255) unique                 not null,
-    `register_date` timestamp default CURRENT_TIMESTAMP not null,
-    `public_key`    mediumtext                          not null,
-    `private_key`   mediumtext                          not null
-);
-
-create view system_api_view as
-    (
-        select `system_api`, `public_key`
-        from system_api_index
-    );
 
 create table if not exists system_user
 (
@@ -33,16 +18,24 @@ create table if not exists system_user
     `password`       varchar(255)        not null
 );
 
-create table if not exists system_user_registeration
+create table if not exists system_api_index
 (
-    `system_user_id` int not null,
-    `system_id`      int not null,
+    `system_id`      int auto_increment primary key, # framework api index
+    `system_user_id` int                                 not null,
+    `system_api`     varchar(255) unique                 not null,
+    `register_date`  timestamp default CURRENT_TIMESTAMP not null,
+    `public_key`     mediumtext                          not null,
+    `private_key`    mediumtext                          not null,
 
-    constraint system_user_fk
-        foreign key (`system_user_id`) references system_user (`system_user_id`),
-    constraint system_api_user_fk
-        foreign key (`system_id`) references system_api_index (`system_id`)
+    constraint system_user_id_fk
+        foreign key (`system_user_id`) references system_user (`system_user_id`)
 );
+
+create view system_api_view as
+    (
+        select `system_api`, `public_key`
+        from system_api_index
+    );
 
 create table if not exists user_key
 (
@@ -87,6 +80,8 @@ create table if not exists user_token
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
     `valid_by`  timestamp                           not null,
     `nonce`     int                                 not null,
+    `device`    varchar(255),
+    `ip`        varchar(30),
 
     constraint user_token_user_fk
         foreign key (`user_id`) references user_key (`user_id`) on delete cascade
@@ -96,10 +91,12 @@ create table if not exists user_token
 
 create table if not exists qrcode_status
 (
+    `nonce`    int unique    not null,
     `token_id` int,
-    `nonce`    int           not null,
     `sym_key`  text          not null,
+    `iv`       text          not null,
     `status`   int default 0 not null,
+    `valid_by` timestamp     not null,
 
     constraint qrcode_token_fk
         foreign key (`token_id`) references user_token (`token_id`) on delete cascade

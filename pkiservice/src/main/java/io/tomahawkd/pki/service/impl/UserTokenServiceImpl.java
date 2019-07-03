@@ -2,7 +2,6 @@ package io.tomahawkd.pki.service.impl;
 
 import io.tomahawkd.pki.dao.UserIndexDao;
 import io.tomahawkd.pki.dao.UserTokenDao;
-import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.service.UserTokenService;
 import io.tomahawkd.pki.util.SecurityFunctions;
@@ -22,13 +21,13 @@ public class UserTokenServiceImpl implements UserTokenService {
 	private UserIndexDao indexDao;
 
 	@Override
-	public byte[] generateNewToken(String userTag, int systemId) {
+	public TokenModel generateNewToken(String userTag, int systemId, String device, String ip) {
 		int userId = indexDao.getUserIdByTag(userTag);
-		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom());
+		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom(), device, ip);
 		dao.initToken(model);
 		model = dao.getByTokenId(model.getTokenId());
 
-		return model.serialize();
+		return model;
 	}
 
 	@Override
@@ -39,8 +38,13 @@ public class UserTokenServiceImpl implements UserTokenService {
 	@Override
 	public boolean validateToken(TokenModel token, int nonce) {
 
-		return token.equals(dao.getByTokenId(token.getTokenId())) &&
-				token.getValidBy().compareTo(new Date(System.currentTimeMillis())) < 0 &&
-				token.getNonce() + 1 == nonce;
+		TokenModel model = dao.getByTokenId(token.getTokenId());
+
+		if (token.getValidBy().before(new Date(System.currentTimeMillis()))) {
+			dao.deleteUserTokens(token.getTokenId());
+			return false;
+		}
+
+		return token.equals(model) && model.getNonce() + 1 == nonce;
 	}
 }
