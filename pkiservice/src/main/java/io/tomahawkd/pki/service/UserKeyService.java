@@ -5,7 +5,11 @@ import io.tomahawkd.pki.model.UserKeyModel;
 
 public interface UserKeyService {
 
-	String createKeyForm(int userId, int systemId, String random) throws CipherErrorException;
+	UserKeyModel generateKeysFor(String userTag, int systemId) throws CipherErrorException;
 
-	UserKeyModel getKeyFormById(int userId, int systemId);
+	UserKeyModel getKeyPairById(String userTag, int systemId);
+
+	UserKeyModel regenerateKeysAndDeleteTokenFor(int userId) throws CipherErrorException;
+
+	UserKeyModel getUserById(int userId);
 }

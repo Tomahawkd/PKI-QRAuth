@@ -211,3 +211,4 @@ application.properties
 
 auth.pub
 auth.pri
+auth.key
