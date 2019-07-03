@@ -1,0 +1,120 @@
+<div class="row mt-2" id="card-prof">
+    <div class="col-md-12">
+        <div class="card hovercard">
+            <div class="tab" role="tabpanel">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item col-md-6" onclick="showPasswordTab()">
+                        <a class="nav-link active" id="update-password-link" role="tab" data-toggle="tab"><span><i
+                                class="fa fa-user"></i></span>修改密码</a>
+                    </li>
+                    <li class="nav-item col-md-6" onclick="showKeysTab()">
+                        <a class="nav-link" id="update-keys-link" role="tab" data-toggle="tab"><span><i
+                                class="fa fa-cog"></i></span>密钥管理</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content tabs">
+                    <div role="tabpanel" class="tab-pane fade show active" id="update-password-tab">
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <div class="col-4"></div>
+                                    <div class="col-1">
+                                        <label style="width: 85px;" class="col-form-label">旧的密码</label>
+                                    </div>
+                                    <div class="col-3">
+                                        <input class="form-control" type="text" placeholder="请输入旧密码"
+                                               id="old-password" name="email">
+                                    </div>
+                                    <div class="col-4"></div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-4"></div>
+                                    <div class="col-1">
+                                        <label style="width: 85px;" class=" col-form-label">新的密码</label>
+                                    </div>
+                                    <div class="col-3">
+                                        <input class="form-control" type="text" placeholder="请输入新密码"
+                                               id="new-password" name="email">
+                                    </div>
+                                    <div class="col-4"></div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-4"></div>
+                                    <div class="col-1">
+                                        <label for="email-input" style="width: 85px;"
+                                               class=" col-form-label">重复密码</label>
+                                    </div>
+                                    <div class="col-3">
+                                        <input class="form-control" type="text" placeholder="请重复新密码"
+                                               id="repeat-new-password" name="email">
+                                    </div>
+                                    <div class="col-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mx-2">
+                            <div class="col-md-5"></div>
+                            <div class="col-md-3">
+                                <button id="change-password-btn" type="button" class="btn btn-success">保存修改</button>
+                            </div>
+                            <div class="col-md-4"></div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="update-keys-tab">
+                        <div class="row mx-2">
+                            <div class="col-md-12">
+                                <div class="form-group row">
+                                    <div class="col-2"></div>
+                                    <div class="col-7">
+                                        <p>Client 1</p>
+                                    </div>
+                                    <div class="col-3">
+                                        <button id="delete0" type="button" class="btn btn-success"
+                                                style="width: 100px; height: 38px; padding: 0px">注销
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-2"></div>
+                                    <div class="col-7">
+                                        <p>Client 2</p>
+                                    </div>
+                                    <div class="col-3">
+                                        <button id="delete1" type="button" class="btn btn-success"
+                                                style="width: 100px; height: 38px; padding: 0px">注销
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mx-2">
+                            <div class="col-md-5"></div>
+                            <div class="col-md-3">
+                                <button id="save-profile-btn" type="button" class="btn btn-success">重置密钥</button>
+                            </div>
+                            <div class="col-md-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function showPasswordTab() {
+        $('.nav-link.active').removeClass('active');
+        $('#update-password-link').addClass('active');
+        $('.tab-content .active').removeClass('show').removeClass('active');
+        $('#update-password-tab').addClass('show').addClass('active');
+    }
+
+    function showKeysTab() {
+        $('.nav-link.active').removeClass('active');
+        $('#update-keys-link').addClass('active');
+        $('.tab-content .active').removeClass('show').removeClass('active');
+        $('#update-keys-tab').addClass('show').addClass('active');
+    }
+
+</script>
