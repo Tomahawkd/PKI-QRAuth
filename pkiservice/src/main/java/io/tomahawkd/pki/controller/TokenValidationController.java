@@ -11,7 +11,9 @@ import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.*;
 import io.tomahawkd.pki.util.ResponseMessage;
 import io.tomahawkd.pki.util.SecurityFunctions;
+import io.tomahawkd.pki.util.TokenUtils;
 import io.tomahawkd.pki.util.Utils;
+import javafx.util.Pair;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -126,15 +128,7 @@ public class TokenValidationController {
 
 		/* Token */
 		TokenModel token = tokenService.generateNewToken(userTag, systemKeyModel.getSystemId(), device, ip);
-		byte[] tokenBytes = SecurityFunctions.encryptUsingAuthenticateServerKey(token.serialize());
-		int nonce = token.getNonce();
-		byte[] tokenArr = ByteBuffer.allocate(tokenBytes.length + Integer.BYTES)
-				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(tokenBytes).array();
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenInitialization", SystemLogModel.DEBUG, "Client token generate complete.");
-
-		String etokenResponse = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(ckp.getPublic(), tokenArr));
+		String etokenResponse = TokenUtils.encodeToken(token.serialize(), token.getNonce(), ckp.getPublic());
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Client token encryption complete.");
 
@@ -192,17 +186,9 @@ public class TokenValidationController {
 			ip = d[1];
 		}
 
-		byte[] etoken = SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-				Utils.base64Decode(requestMap.get("EToken")));
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.DEBUG, "EToken decryption complete.");
-
-		int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt(0);
-		byte[] token = new byte[etoken.length - Integer.BYTES];
-		System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
-
-		byte[] decToken = SecurityFunctions.decryptUsingAuthenticateServerKey(token);
-		TokenModel tokenModel = TokenModel.deserialize(decToken);
+		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMap.get("EToken"));
+		int nonce = tokenPair.getKey();
+		TokenModel tokenModel = TokenModel.deserialize(tokenPair.getValue());
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenValidation", SystemLogModel.DEBUG, "Token data wrapped complete.");
 
