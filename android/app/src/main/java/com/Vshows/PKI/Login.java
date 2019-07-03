@@ -88,8 +88,13 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
+                //deleteDatabase("keys.db");
+                name = username.getText().toString();
                 keyManager km = new keyManager();
-                km.test(this,"233333333333");
+                km.restoreNonce(this,name,"23333");
+                String str = km.getNonce(this,name);
+                Toast.makeText(this,str, Toast.LENGTH_LONG).show();
+                //km.test(this,"233333333333");
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
