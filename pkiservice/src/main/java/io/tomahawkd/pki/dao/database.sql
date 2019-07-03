@@ -91,10 +91,12 @@ create table if not exists user_token
 
 create table if not exists qrcode_status
 (
+    `nonce`    int unique    not null,
     `token_id` int,
-    `nonce`    int           not null,
     `sym_key`  text          not null,
+    `iv`       text          not null,
     `status`   int default 0 not null,
+    `valid_by` timestamp     not null,
 
     constraint qrcode_token_fk
         foreign key (`token_id`) references user_token (`token_id`) on delete cascade
