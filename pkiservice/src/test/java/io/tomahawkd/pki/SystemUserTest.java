@@ -25,7 +25,7 @@ public class SystemUserTest {
 
 	public void register() throws IOException {
 
-		String body = "{\"user\": \"456\", \"pass\": \"456\"}";
+		String body = "{\"user\": \"123\", \"pass\": \"123\"}";
 		String auth = this.testRestTemplate.postForObject("/manage/register", body, String.class);
 		assertThat(auth).isEqualTo("success");
 	}
