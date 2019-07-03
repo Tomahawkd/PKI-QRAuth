@@ -9,7 +9,7 @@ import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.*;
-import io.tomahawkd.pki.util.ResponseMessage;
+import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.SecurityFunctions;
 import io.tomahawkd.pki.util.TokenUtils;
 import io.tomahawkd.pki.util.Utils;
@@ -78,13 +78,13 @@ public class TokenValidationController {
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new ResponseMessage<>(1, "invalid key"));
+		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new ResponseMessage<>(1, "invalid iv"));
+		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -141,7 +141,7 @@ public class TokenValidationController {
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		String mResponse = new Gson().toJson(new ResponseMessage<>(0, "Authenticate Complete"));
+		String mResponse = new Gson().toJson(new Message<>(0, "Authenticate Complete"));
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
@@ -179,7 +179,7 @@ public class TokenValidationController {
 
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
-				userKeyService, systemKeyService, userIndexService, String.class,
-				(requestMap, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
+				userKeyService, systemKeyService, userIndexService,
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
 	}
 }
