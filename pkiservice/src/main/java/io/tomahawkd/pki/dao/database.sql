@@ -80,6 +80,8 @@ create table if not exists user_token
     `init_date` timestamp default CURRENT_TIMESTAMP not null,
     `valid_by`  timestamp                           not null,
     `nonce`     int                                 not null,
+    `device`    varchar(255),
+    `ip`        varchar(30),
 
     constraint user_token_user_fk
         foreign key (`user_id`) references user_key (`user_id`) on delete cascade
@@ -89,10 +91,12 @@ create table if not exists user_token
 
 create table if not exists qrcode_status
 (
+    `nonce`    int unique    not null,
     `token_id` int,
-    `nonce`    int           not null,
     `sym_key`  text          not null,
+    `iv`       text          not null,
     `status`   int default 0 not null,
+    `valid_by` timestamp     not null,
 
     constraint qrcode_token_fk
         foreign key (`token_id`) references user_token (`token_id`) on delete cascade
@@ -115,7 +119,3 @@ create definer = root@localhost event event_auto_cancel_order
     enable
     do
     call out_of_date();
-
-# add some test data
-insert into system_user (username, password)
-values ('123', '123');

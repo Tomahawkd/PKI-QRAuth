@@ -21,9 +21,9 @@ public class UserTokenServiceImpl implements UserTokenService {
 	private UserIndexDao indexDao;
 
 	@Override
-	public TokenModel generateNewToken(String userTag, int systemId) {
+	public TokenModel generateNewToken(String userTag, int systemId, String device, String ip) {
 		int userId = indexDao.getUserIdByTag(userTag);
-		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom());
+		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom(), device, ip);
 		dao.initToken(model);
 		model = dao.getByTokenId(model.getTokenId());
 
@@ -40,8 +40,11 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 		TokenModel model = dao.getByTokenId(token.getTokenId());
 
-		return token.equals(model) &&
-				token.getValidBy().after(new Date(System.currentTimeMillis())) &&
-				model.getNonce() + 1 == nonce;
+		if (token.getValidBy().before(new Date(System.currentTimeMillis()))) {
+			dao.deleteUserTokens(token.getTokenId());
+			return false;
+		}
+
+		return token.equals(model) && model.getNonce() + 1 == nonce;
 	}
 }

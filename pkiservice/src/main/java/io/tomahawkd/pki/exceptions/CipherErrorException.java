@@ -1,6 +1,6 @@
 package io.tomahawkd.pki.exceptions;
 
-public class CipherErrorException extends Exception {
+public class CipherErrorException extends RuntimeException {
 
 	public CipherErrorException(Throwable cause) {
 		super(cause);

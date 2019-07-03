@@ -16,36 +16,23 @@
                 <!-- Tab panes -->
                 <div class="tab-content tabs">
                     <div role="tabpanel" class="tab-pane fade show active" id="profile-tab">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nec urna aliquam,
-                            ornare eros vel, malesuada lorem. Nullam faucibus lorem at eros consectetur
-                            lobortis. Maecenas nec nibh congue, placerat sem id, rutrum velit. </p>
+                        <p id="bio-display"></p>
                         <div class="row mt-3">
                             <h5 class="col-12 mb-2">User Info</h5>
                             <div class="col-6">
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-envelope"> E-mail: </i></strong>
-                                    steena@gmail.com
+                                <div class="form-group" id="name-display">
+                                    <strong class="mr-5">姓名</strong>
                                 </div>
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-phone"> Phone: </i></strong> +91 1233
-                                    45 5678
-                                </div>
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-map"> City: </i></strong> New York
+                                <div class="form-group" id="email-display">
+                                    <strong class="mr-5">邮箱</strong>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-globe"> Country: </i></strong>
-                                    steena@gmail.com
+                                <div class="form-group" id="sex-display">
+                                    <strong class="mr-5">性别</strong>
                                 </div>
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-map-marker"> Address: </i></strong> 25,
-                                    Dist town Street, Logn California, US
-                                </div>
-                                <div class="form-group">
-                                    <strong class="mr-5"><i class="fa fa-globe"> Website: </i></strong>
-                                    www.Businessbox.com
+                                <div class="form-group" id="phone-display">
+                                    <strong class="mr-5">电话</strong>
                                 </div>
                             </div>
                         </div>
@@ -53,64 +40,74 @@
                     <div role="tabpanel" class="tab-pane fade" id="references-tab">
                         <div class="row mx-2">
                             <div class="col-md-12 panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-comment"></i> Edit Info</h3><br>
+                                <h3 class="panel-title"><i class="fa fa-comment"></i>编辑信息</h3><br>
                             </div>
-                            <div class="col-md-6 ">
-                                <div class="form-group row">
-                                    <label for="example-text-input" style="width: 85px;"
-                                           class=" col-form-label">Name</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="text" value="Steena Ben"
-                                               id="example-text-input1">
+                            <form id="update-info-form">
+
+                                <div class="col-md-12">
+                                    <div class="form-group row">
+                                        <div class="col-md-5"></div>
+                                        <div class="col-md-2">
+                                            <img src="img/avatar-1.jpg" class="img-fluid rounded-circle"
+                                                 id="show-image">
+                                            <input name="image" type="file" id="image-file" accept="image/*">
+                                        </div>
+                                        <div class="col-md-5"></div>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label for="example-email-input" style="width: 85px;"
-                                           class=" col-form-label">Email</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="email" value="steena@gmail.com"
-                                               id="example-email-input">
+                                <div class="col-md-12">
+                                    <div class="form-group row">
+                                        <label for="bio-input" style="width: 85px;"
+                                               class=" col-form-label">个人简介</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Steena Ben"
+                                                   id="bio-input" name="bio">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label for="example-url-input" style="width: 85px;"
-                                           class=" col-form-label">URL</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="url" value="www.Businessbox.com"
-                                               id="example-url-input">
+                                <div class="col-md-6 ">
+                                    <div class="form-group row">
+                                        <label for="name-input" style="width: 85px;"
+                                               class=" col-form-label">姓名</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Steena Ben"
+                                                   id="name-input" name="name">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="email-input" style="width: 85px;"
+                                               class=" col-form-label">邮箱</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="email" value="steena@gmail.com"
+                                                   id="email-input" name="email">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group row">
-                                    <label for="example-text-input" style="width: 85px;"
-                                           class=" col-form-label">Department</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="text" value="Programming"
-                                               id="example-text-input">
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label for="sex-input" style="width: 85px;"
+                                               class=" col-form-label">性别</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="text" value="Programming"
+                                                   id="sex-input" name="sex">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
+                                        <div class="col-9">
+                                            <input class="form-control" type="tel" value="+91-(555)-555-5555"
+                                                   id="phone-input" name="phone">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label for="example-date-input" style="width: 85px;"
-                                           class=" col-form-label">Hire Date</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="date" value="2018-08-19"
-                                               id="example-date-input">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="example-tel-input" style="width: 85px;" class=" col-form-label">Telephone</label>
-                                    <div class="col-9">
-                                        <input class="form-control" type="tel" value="+91-(555)-555-5555"
-                                               id="example-tel-input">
-                                    </div>
-                                </div>
-                            </div>
+                            </form>
                         </div>
+
+
                         <div class="row mx-2">
                             <div class="col-md-4"></div>
                             <div class="col-md-4">
-                                <button id="save-profile" type="button" class="btn btn-success">保存修改</button>
+                                <button id="save-profile-btn" type="button" class="btn btn-success">保存修改</button>
                             </div>
                             <div class="col-md-4"></div>
                         </div>
@@ -135,6 +132,42 @@
         $('#references-tab').addClass('show').addClass('active');
     }
 
+    $("#image-file").change(function (e) {
+        console.log("change image");
+        var file = e.target.files[0] || e.dataTransfer.files[0];
+        console.log(file);
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                $("#show-image").attr("src", this.result);
+            }
+            reader.readAsDataURL(file);
+        }
+        console.log("change image finish");
+    });
+
+    //方式一 Jquery实现
+    $("#save-profile-btn").click(function () {
+        var formArray = $("#update-info-form").serializeArray();
+        var formObject = {};
+        $.each(formArray, function (i, item) {
+            formObject[item.name] = item.value;
+        });
+
+        $.ajax({
+            url: "/user/info/update/info",
+            type: "post",
+            data: JSON.stringify(formObject),
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            success: function (data) {
+                console.log(data);
+            },
+            error: function (data) {
+                console.log(data);
+            }
+        });
+    });
 
 
 </script>

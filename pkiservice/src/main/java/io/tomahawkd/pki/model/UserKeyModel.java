@@ -53,8 +53,6 @@ public class UserKeyModel {
 		return "UserKeyModel{" +
 				"userId=" + userId +
 				", systemId=" + systemId +
-				", publicKey='" + publicKey + '\'' +
-				", privateKey='" + privateKey + '\'' +
 				'}';
 	}
 }
