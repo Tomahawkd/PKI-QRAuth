@@ -23,7 +23,7 @@ public class UserKeyServiceImpl implements UserKeyService {
 	private UserTokenDao tokenDao;
 
 	@Override
-	public UserKeyModel getKeyPairById(String userTag, int systemId) {
+	public UserKeyModel getUserByTagAndSystem(String userTag, int systemId) {
 		return dao.getUserKeyDataById(userTag, systemId);
 	}
 

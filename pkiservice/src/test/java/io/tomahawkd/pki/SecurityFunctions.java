@@ -134,15 +134,6 @@ public class SecurityFunctions {
 		return new KeyPair(readAuthenticateServerPublicKey(), readAuthenticateServerPrivateKey());
 	}
 
-	public static void generateNewAuthenticateServerKeys() throws CipherErrorException, IOException {
-		KeyPair pair = SecurityFunctions.generateKeyPair();
-		String pubBase64 = Utils.base64Encode(pair.getPublic().getEncoded());
-		String priBase64 = Utils.base64Encode(pair.getPrivate().getEncoded());
-
-		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pub", pubBase64, true);
-		FileUtil.writeFile(FileUtil.rootPath + "/resources/auth.pri", priBase64, true);
-	}
-
 	public static PublicKey readPublicKey(String pub) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Utils.base64Decode(pub)));
 	}
@@ -152,15 +143,19 @@ public class SecurityFunctions {
 	}
 
 	public static KeyPair readKeysFromString(String pri, String pub) throws CipherErrorException {
+		return readKeys(Utils.base64Decode(pri), Utils.base64Decode(pub));
+
+	}
+
+	public static KeyPair readKeys(byte[] pri, byte[] pub) throws CipherErrorException {
 		try {
 			PublicKey publicKey =
-					KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Utils.base64Decode(pub)));
+					KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pub));
 			PrivateKey privateKey =
-					KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Utils.base64Decode(pri)));
+					KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(pri));
 			return new KeyPair(publicKey, privateKey);
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
 			throw new CipherErrorException(e);
 		}
-
 	}
 }

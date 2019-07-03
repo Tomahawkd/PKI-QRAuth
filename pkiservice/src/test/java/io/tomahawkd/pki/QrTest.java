@@ -3,8 +3,6 @@ package io.tomahawkd.pki;
 import com.google.gson.Gson;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
-import io.tomahawkd.pki.util.TokenRequestMessage;
-import io.tomahawkd.pki.util.TokenResponseMessage;
 import io.tomahawkd.pki.util.Utils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TokenTest {
+public class QrTest {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
 	@Test
-	public void token()
+	public void qr()
 			throws InvalidKeySpecException, NoSuchAlgorithmException, CipherErrorException, MalformedJsonException {
 
 		String auth = this.testRestTemplate.getForObject("/keys/auth", String.class);
@@ -45,10 +43,7 @@ public class TokenTest {
 		String ivString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k, iv));
 		String kctString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k, kct));
 
-		String userTag = Utils.base64Encode(SecurityFunctions.generateHash("1"));
 		String system = "cab4af0fc499491eb9bb16120e3ae195";
-		String idString =
-				Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k, (userTag + ";" + system).getBytes()));
 
 		int t = SecurityFunctions.generateRandom();
 		String tString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k,
@@ -57,15 +52,14 @@ public class TokenTest {
 		Map<String, String> request = new HashMap<>();
 		request.put("K", kctString);
 		request.put("iv", ivString);
-		request.put("id", idString);
+		request.put("system", system);
 		request.put("T", tString);
-		request.put("D", "JavaTest;127.0.0.1");
 
 		String re = new Gson().toJson(request);
 		System.out.println(re);
-		String res = this.testRestTemplate.postForObject("/token/init", re, String.class);
-
+		String res = this.testRestTemplate.postForObject("/qr/genqr", re, String.class);
 		System.out.println(res);
+
 		Map<String, String> result = Utils.wrapMapFromJson(res);
 		System.out.println(result.get("M"));
 		assertThat(result.get("M")).contains("\"status\":0");
@@ -76,46 +70,10 @@ public class TokenTest {
 				.order(ByteOrder.LITTLE_ENDIAN).getInt();
 		assertThat(tRes).isEqualTo(t + 1);
 
-		String[] kp =
-				new String(SecurityFunctions.decryptSymmetric(kct, iv, Utils.base64Decode(result.get("KP"))))
-						.split(";");
-		KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
-
-
-		byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
-				Utils.base64Decode(result.get("EToken")));
-
-		int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt();
-		byte[] token = new byte[etoken.length - Integer.BYTES];
-		System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
-
-		nonce++;
-		byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
-				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(token).array();
-		String etokenReq = Utils.base64Encode(
-				SecurityFunctions.encryptAsymmetric(k, tokenArr));
-
-		int tReq = SecurityFunctions.generateRandom();
-		String tStringReq = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k,
-				ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tReq).array()));
-
-		TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<>();
-		tokenRequestMessage.setToken(etokenReq);
-		tokenRequestMessage.setTime(tStringReq);
-		tokenRequestMessage.setDevice("JavaTest;127.0.0.1");
-
-		String reqJ = tokenRequestMessage.toJson();
-		System.out.println(reqJ);
-		String resAuth = this.testRestTemplate.postForObject("/token/validate", reqJ, String.class);
-		System.out.println(resAuth);
-
-		TokenResponseMessage<String> resultAuth = TokenResponseMessage.fromJson(resAuth);
-		System.out.println(resultAuth.getMessage().toJson());
-		assertThat(resultAuth.getMessage().getStatus()).isEqualTo(0);
-
-		String tRes2 = resultAuth.getTime();
-		int tRes2Int = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(kpr, Utils.base64Decode(tRes2)))
+		String nonR = result.get("nonce2");
+		int nonRes = ByteBuffer.wrap(SecurityFunctions.decryptSymmetric(kct, iv, Utils.base64Decode(nonR)))
 				.order(ByteOrder.LITTLE_ENDIAN).getInt();
-		assertThat(tRes2Int).isEqualTo(tReq + 1);
+		System.out.println(nonRes);
+
 	}
 }
