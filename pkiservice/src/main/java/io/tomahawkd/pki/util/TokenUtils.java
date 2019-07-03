@@ -1,6 +1,7 @@
 package io.tomahawkd.pki.util;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.SystemKeyModel;
@@ -14,8 +15,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TokenUtils {
 
@@ -69,19 +68,21 @@ public class TokenUtils {
 	                                       UserKeyService userKeyService,
 	                                       SystemKeyService systemKeyService,
 	                                       UserIndexService userIndexService,
-	                                       T responseMessageClazz,
 	                                       ContextCallback<
-			                                       Map<String, String>,
+			                                       TokenRequestMessage<T>,
 			                                       UserKeyModel,
 			                                       TokenModel,
 			                                       SystemKeyModel,
-			                                       ResponseMessage<String>,
-			                                       ResponseMessage<T>>
+			                                       Message<String>,
+			                                       Message<T>>
 			                                       callback) throws IOException {
 
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T", "D");
+		TokenRequestMessage<T> requestMessage =
+				new Gson().fromJson(data,
+						new TypeToken<TokenRequestMessage<T>>() {
+						}.getType());
 
-		String[] d = requestMap.get("D").split(";", 2);
+		String[] d = requestMessage.getDevice().split(";", 2);
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
@@ -89,13 +90,13 @@ public class TokenUtils {
 			ip = d[1];
 		}
 
-		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMap.get("EToken"));
+		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMessage.getToken());
 		int nonce = tokenPair.getKey();
 		TokenModel tokenModel = TokenModel.deserialize(tokenPair.getValue());
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
 				"tokenValidate", SystemLogModel.DEBUG, "Token data wrapped complete.");
 
-		ResponseMessage<String> message = new ResponseMessage<>(1, "Unknown Error");
+		Message<String> message = new Message<>(1, "Unknown Error");
 
 		if (tokenService.validateToken(tokenModel, nonce)) {
 			message.setOK().setMessage("Valid");
@@ -135,14 +136,14 @@ public class TokenUtils {
 				device, ip, "Tokenid " + tokenModel.getTokenId() +
 						" used with status: " + message.getStatus());
 
-		ResponseMessage<T> responseMessage = null;
+		Message<T> responseMessage = null;
 		if (message.isOk()) {
 			systemLogService.insertLogRecord(TokenUtils.class.getName(),
 					"tokenValidate", SystemLogModel.WARN,
 					"Context loaded, invoke controller callback");
 
 			responseMessage =
-					callback.invoke(requestMap, userKeyModel, tokenModel, systemKeyModel, message);
+					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message);
 		}
 
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
@@ -150,7 +151,7 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String mResponse = responseMessage != null ? responseMessage.toJson() : message.toJson();
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
+		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
@@ -159,12 +160,12 @@ public class TokenUtils {
 		String uResponse = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(spub,
 				userIndexService.getUserTagById(userKeyModel.getUserId()).getBytes()));
 
-		Map<String, String> responseMap = new HashMap<>();
-		responseMap.put("K", kResponse);
-		responseMap.put("M", mResponse);
-		responseMap.put("T", tResponse);
-		responseMap.put("U", uResponse);
+		TokenResponseMessage<T> tokenResponseMessage = new TokenResponseMessage<>();
+		tokenResponseMessage.setClientKey(kResponse);
+		tokenResponseMessage.setMessage(responseMessage != null ? responseMessage : message);
+		tokenResponseMessage.setTime(tResponse);
+		tokenResponseMessage.setUserTag(uResponse);
 
-		return new Gson().toJson(responseMap);
+		return new Gson().toJson(tokenResponseMessage);
 	}
 }
