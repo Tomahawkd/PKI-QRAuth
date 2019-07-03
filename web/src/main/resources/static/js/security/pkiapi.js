@@ -21,8 +21,8 @@ function randomPassword(size)
 
 function createInitialPackage(user, pass) {
     var message = {user: user, password: pass};
-    var SPub = $.base64.decode(localStorage.getItem("SPub"));
-    var TPub = $.base64.decode(localStorage.getItem("TPub"));
+    var SPub = getBytesFromStorage("SPub");
+    var TPub = getBytesFromStorage("TPub");
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + SPub + '-----END PUBLIC KEY-----');
@@ -32,14 +32,14 @@ function createInitialPackage(user, pass) {
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
 
-    var kct = $.md5(RandomSeed);
-    var Kct = $.base64.encode(encrypt.encrypt(kct)); // the Base64 encoded initial vector for encryption
-    var iv = sha256_digest(RandomSeed);
-    var IV = $.base64.encode(encrypt.encrypt(iv)); // the Base64 encoded Kct
+    var kct = aesjs.utils.hex.toBytes($.md5(RandomSeed));
+    var Kct = encrypt.encrypt(kct); // the Base64 encoded initial vector for encryption
+    var iv = aesjs.utils.hex.toBytes(sha256(RandomSeed));
+    var IV = encrypt.encrypt(iv); // the Base64 encoded Kct
 
-
-    localStorage.setItem("kct", kct);
-    localStorage.setItem("iv", iv);
+    localStorage.setItem("timeStamp", timeStamp);
+    storeBytesToStorage("kct", kct);
+    storeBytesToStorage("iv", iv);
     return {payload: message, S: TimeStampBase64, K: Kct, iv: IV};
 }
 
@@ -47,23 +47,34 @@ function createInitialPackage(user, pass) {
 function parseInitialResponsePackage(package) {
     var eToken = $.base64.decode(package.EToken);
     var KP = $.base64.decode(package.KP);
-    var timeStamp = $.base64.decode(package.T);
+    var timeStampEncrypted = $.base64.decode(package.T);
 
     //decrypt KP to get the Kcpri and Kcpub;
-    var kct = localStorage.getItem("kct");
-    var iv = localStorage.getItem("iv");
+    var kct = getBytesFromStorage("kct");
+    var iv = getBytesFromStorage("iv");
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
     var decryptedBytes = aesCbc.decrypt(KP);
     var keyPair = $.base64.encode(decryptedBytes).split(";");
     var KcpubBase64 = keyPair[0];
     var KcpriBase64 = keyPair[1];
+
+    var encrypt = new JSEncrypt();
+    encrypt.setPrivateKey('-----BEGIN PUBLIC KEY-----' + $.base64.decode(KcpriBase64) + '-----END PUBLIC KEY-----');
+
+    //validate the timeStamp
+    var timeStamp = bytesToInt(encrypt.decrypt(timeStampEncrypted));
+    if (timeStamp !== localStorage.getItem("timeStamp") + 1)
+        return false;
+
+    var nounceToken = encrypt.decrypt(eToken);
+    var nounce = bytesToInt(nounceToken.slice(0, 4));
+    var token = nounceToken.slice(4);
+
     localStorage.setItem("Kcpub", KcpubBase64);
     localStorage.setItem("Kcpri", KcpriBase64);
-
-    var Kcpri = $.base64.decode(KcpriBase64);
-    var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PUBLIC KEY-----' + Kcpri + '-----END PUBLIC KEY-----');
-
+    localStorage.setItem("nounce", nounce);
+    storeBytesToStorage("token", token);
+    return true
 }
 
 function bytesToInt(bytes) {
@@ -83,8 +94,24 @@ function intToBytes(int) {
 
     var byteArray = new Int8Array(ints);
     var bytes = [];
-    for(var i=0; i<4; i++) {
+    for(i=0; i<4; i++) {
         bytes.push(byteArray[i]);
     }
     return bytes;
+}
+
+function getBytesFromStorage(name) {
+    return $.base64.decode(localStorage.getItem(name));
+}
+
+function storeBytesToStorage(name, value) {
+    localStorage.setItem(name, $.base64.encode(value));
+}
+
+function generateEToken(eToken) {
+
+}
+
+function parseEToken() {
+
 }
