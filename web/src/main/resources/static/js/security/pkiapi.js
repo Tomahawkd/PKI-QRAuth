@@ -1,26 +1,78 @@
-function createQRCode(randomNum, element) {
-    var message = {text:　randomNum};
+function initialize() {
+    if (localStorage.getItem("SPub") === null || localStorage.getItem("TPub") === null) {
+        $.ajax({
+            url: "",
+            type: "get",
+            success: function (data) {
+                localStorage.setItem("SPub", data.SPub);
+                localStorage.setItem("TPub", data.TPub);
+                console.log("success to get public keys of server and Third party");
+            },
+            error: function () {
+                console.log("failed to get public keys of server and Third party");
+            }
+        })
+    }
+}
+
+function generateQRCode(randomNum, element) {
+    var message = {text: randomNum};
     element.qrcode(message);
 }
 
-function randomPassword(size)
-{
-    var seed = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z',
-        'a','b','c','d','e','f','g','h','i','j','k','m','n','p','Q','r','s','t','u','v','w','x','y','z',
-        '2','3','4','5','6','7','8','9'
+function polling(poller) {
+    $.ajax({
+        url: "",
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            if (data.status === 1) {
+                window.location.href="home.html";
+            } else {
+                clearInterval(poller);
+                console.log("incorrect status code.");
+            }
+        },
+        error: function () {
+            clearInterval(poller);
+            console.log("unknown fault.");
+        }
+    })
+}
+
+function QRAuthentation(element) {
+    $.ajax({
+        url: "",
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            element.empty();
+            generateQRCode(data.nonce, element);
+            var poller = setInterval(function(){polling(poller, element);}, 3000);
+        },
+        error: function () {
+            element.innerHTML("<p>未能成功获取二维码，请检查网络连接后重试</p>");
+        }
+    })
+}
+
+
+function randomPassword(size) {
+    var seed = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'Q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        '2', '3', '4', '5', '6', '7', '8', '9'
     ];//数组
     var seedlength = seed.length;//数组长度
     var createPassword = '';
-    for (var i=0;i<size;i++) {
-        var j = Math.floor(Math.random()*seedlength);
+    for (var i = 0; i < size; i++) {
+        var j = Math.floor(Math.random() * seedlength);
         createPassword += seed[j];
     }
     return createPassword;
 }
 
 
-function createInitialPackage(user, pass) {
-    var message = {user: user, password: pass};
+function generateInitialPackage(message) {
     var TPub = getBytesFromStorage("TPub");
     var TimeStampBase64 = generateTimeStamp("SPub");
 
@@ -35,14 +87,13 @@ function createInitialPackage(user, pass) {
 
     storeBytesToStorage("kct", kct);
     storeBytesToStorage("iv", iv);
-    return {payload: message, S: TimeStampBase64, K: Kct, iv: IV};
+    return {payload: message, T: TimeStampBase64, K: Kct, iv: IV};
 }
 
 
 function parseInitialResponsePackage(package) {
     var eToken = $.base64.decode(package.EToken);
     var KP = $.base64.decode(package.KP);
-    var timeStampEncrypted = $.base64.decode(package.T);
 
     //decrypt KP to get the Kcpri and Kcpub;
     var kct = getBytesFromStorage("kct");
@@ -72,7 +123,7 @@ function parseInitialResponsePackage(package) {
 function bytesToInt(bytes) {
     bytes = new Int8Array(bytes);
     var int = bytes[3];
-    for(var i=2; i>=0; i--) {
+    for (var i = 2; i >= 0; i--) {
         int = (int << 8 | bytes[i]);
     }
     return int;
@@ -80,13 +131,13 @@ function bytesToInt(bytes) {
 
 function intToBytes(int) {
     var ints = [];
-    for(var i=0; i<4; i++) {
-        ints.push((int>>(8*i)) & (0xFF));
+    for (var i = 0; i < 4; i++) {
+        ints.push((int >> (8 * i)) & (0xFF));
     }
 
     var byteArray = new Int8Array(ints);
     var bytes = [];
-    for(i=0; i<4; i++) {
+    for (i = 0; i < 4; i++) {
         bytes.push(byteArray[i]);
     }
     return bytes;
@@ -107,7 +158,7 @@ function generateEToken() {
     var token = getBytesFromStorage("token");
 
     var eTokenContent = intToBytes(nonce);
-    for(var i=0; i<token.length; i++) {
+    for (var i = 0; i < token.length; i++) {
         eTokenContent.push(token[i]);
     }
 
@@ -116,12 +167,12 @@ function generateEToken() {
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var eToken = encrypt.encrypt(nonce);
 
-    return eToken;
+    return $.base64.encode(eToken);
 }
 
 
 function generateTimeStamp(key) {
-    var key = getBytesFromStorage(key);
+    key = getBytesFromStorage(key);
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + key + '-----END PUBLIC KEY-----');
@@ -133,7 +184,7 @@ function generateTimeStamp(key) {
 }
 
 function validateTimeStamp(T, key) {
-    var key = getBytesFromStorage(key);
+    key = getBytesFromStorage(key);
 
     var encrypt = new JSEncrypt();
     encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');

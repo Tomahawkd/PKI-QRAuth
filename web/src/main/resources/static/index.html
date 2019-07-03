@@ -15,7 +15,7 @@
     <script type="text/javascript" src="js/security/jquery.base64.js"></script>
     <script type="text/javascript" src="js/security/jquery.md5.js"></script>
     <script type="text/javascript" src="js/security/sha256.js"></script>
-    <script type="text/javascript" src="js/aes-js-3.1.2/index.js"></script>
+    <script type="text/javascript" src="js/security/aes.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var $tab_li = $('#login_tab ul li');
@@ -28,7 +28,7 @@
             $('#login_with_qrcode').click(function () {
                 var element = $('#qrcode');
                 element.empty();
-                createQRCode("aaaaaaaaaaaaaaaa", element);
+                generateQRCode("aaaaaaaaaaaaaaaa", element);
             });
 
             $('#go_to_register').click(function () {

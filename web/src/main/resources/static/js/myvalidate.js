@@ -1,6 +1,3 @@
-/**
- * Created by Administrator on 2019/6/24.
- */
 $(document).ready(function () {
     $.validator.setDefaults({
         debug: false,
@@ -117,16 +114,18 @@ $(document).ready(function () {
         if (!$("#register_form").valid()) {
             return;
         }
+
         var formObject = {};
         var formArray = $("#register_form").serializeArray();
         $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
+        var package = generateInitialPackage(formObject);
         $.ajax({
             url: "/user/register",
             type: "post",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(package),
             dataType: "json",
             success: function (data) {
                 if (data.status == -1) {
