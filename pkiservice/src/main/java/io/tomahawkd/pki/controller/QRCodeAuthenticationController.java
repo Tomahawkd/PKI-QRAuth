@@ -183,7 +183,7 @@ public class QRCodeAuthenticationController {
 	@PostMapping("/query")
 	public String queryQRStatus(@RequestBody String data) throws MalformedJsonException, IOException {
 
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "nonce2", "M");
+		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "nonce2", "T", "D", "system");
 
 		String[] d = requestMap.get("D").split(";", 2);
 		String device = "";
