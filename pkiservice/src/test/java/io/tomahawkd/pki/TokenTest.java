@@ -3,6 +3,8 @@ package io.tomahawkd.pki;
 import com.google.gson.Gson;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
+import io.tomahawkd.pki.util.TokenRequestMessage;
+import io.tomahawkd.pki.util.TokenResponseMessage;
 import io.tomahawkd.pki.util.Utils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,21 +99,21 @@ public class TokenTest {
 		String tStringReq = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k,
 				ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tReq).array()));
 
-		Map<String, String> reqMap = new HashMap<>();
-		reqMap.put("EToken", etokenReq);
-		reqMap.put("T", tStringReq);
-		reqMap.put("D", "JavaTest;127.0.0.1");
+		TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<>();
+		tokenRequestMessage.setToken(etokenReq);
+		tokenRequestMessage.setTime(tStringReq);
+		tokenRequestMessage.setDevice("JavaTest;127.0.0.1");
 
-		String reqJ = new Gson().toJson(reqMap);
+		String reqJ = tokenRequestMessage.toJson();
 		System.out.println(reqJ);
 		String resAuth = this.testRestTemplate.postForObject("/token/validate", reqJ, String.class);
 		System.out.println(resAuth);
 
-		Map<String, String> resultAuth = Utils.wrapMapFromJson(resAuth);
-		System.out.println(resultAuth.get("M"));
-		assertThat(resultAuth.get("M")).contains("\"status\":0");
+		TokenResponseMessage<String> resultAuth = TokenResponseMessage.fromJson(resAuth);
+		System.out.println(resultAuth.getMessage().toJson());
+		assertThat(resultAuth.getMessage().getStatus()).isEqualTo(0);
 
-		String tRes2 = resultAuth.get("T");
+		String tRes2 = resultAuth.getTime();
 		int tRes2Int = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(kpr, Utils.base64Decode(tRes2)))
 				.order(ByteOrder.LITTLE_ENDIAN).getInt();
 		assertThat(tRes2Int).isEqualTo(tReq + 1);
