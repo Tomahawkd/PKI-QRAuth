@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class httpUtil {
     public static String getJsonData(String jsonObject,String urls){
@@ -68,10 +69,42 @@ public class httpUtil {
             e.printStackTrace(writer);
             StringBuffer buffer= stringWriter.getBuffer();
             sb.append(buffer.toString());
-        } finally {
-            sb.append("connect finally");
         }
 
         return sb.toString();
+    }
+
+    public static String getJsonData(String urls){
+        //String uri = "39.106.80.38:22222/keys/auth/pubkey";
+        try {
+            //String
+            URL url = new URL(urls);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(5*1000);
+            connection.setDoInput(true); // 设置该连接是可以输出的
+            connection.setRequestMethod("GET"); // 设置请求方式
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.connect();
+
+            InputStream inputStream=connection.getInputStream();
+            byte[] data=new byte[1024];
+            StringBuffer sb=new StringBuffer();
+            int length=0;
+            while ((length=inputStream.read(data))!=-1){
+                String s=new String(data, Charset.forName("utf-8"));
+                sb.append(s);
+            }
+            String message=sb.toString();
+            inputStream.close();
+            connection.disconnect();
+            return message;
+        }
+        catch (Exception e){
+            StringWriter stringWriter= new StringWriter();
+            PrintWriter writer= new PrintWriter(stringWriter);
+            e.printStackTrace(writer);
+            StringBuffer buffer= stringWriter.getBuffer();
+            return buffer.toString();
+        }
     }
 }

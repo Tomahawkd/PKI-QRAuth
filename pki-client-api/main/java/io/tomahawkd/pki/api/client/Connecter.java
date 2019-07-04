@@ -29,40 +29,9 @@ public class Connecter{
      * {"K": "Kt public",}
      */
     public String getAuthenticationServerPublicKey(){
-
-
-
-
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        try {
-
-            URL url = new URL(uri);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(5*1000);
-            connection.setDoOutput(true); // 设置该连接是可以输出的
-            connection.setRequestMethod("GET"); // 设置请求方式
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            connection.connect();
-
-
-            InputStream inputStream=connection.getInputStream();
-            byte[] data=new byte[1024];
-            StringBuffer sb=new StringBuffer();
-            int length=0;
-            while ((length=inputStream.read(data))!=-1){
-                String s=new String(data, Charset.forName("utf-8"));
-                sb.append(s);
-            }
-            String message=sb.toString();
-            inputStream.close();
-            connection.disconnect();
-            return message;
-        }
-        catch (Exception e){
-            return "申请证书出错，请检查您的网络！";
-        }
-
-
+        String url = "";
+        String json = httpUtil.getJsonData(url);
+        return json;
     }
 
     public String getServerPublicKey(String id){

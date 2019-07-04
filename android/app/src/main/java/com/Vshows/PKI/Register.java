@@ -158,7 +158,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey);
                                 result = gson.fromJson(resultJson,result.getClass());
 
-                                String nonce = result.get();
+                                //String nonce = result.get();
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -171,16 +171,16 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 //                /**
 //                 * 可以使用线程池进行优化
 //                 */
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Connecter connecter = new Connecter();
-//                        String mes = connecter.getServerPublicKey("2");
-//                        //String mes = a.a();
-//                        Log.d("conntest",mes);
-//                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
-//                    }
-//                }).start();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Connecter connecter = new Connecter();
+                        String mes = connecter.getAuthenticationServerPublicKey();
+                        //String mes = a.a();
+                        Log.d("conntest",mes);
+                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
+                    }
+                }).start();
 
 
 //                try {
