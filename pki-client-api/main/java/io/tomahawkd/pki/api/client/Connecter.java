@@ -116,37 +116,33 @@ public class Connecter{
         map.put("iv",IV);
         String json = gson.toJson(map);
 
-
         String uri = "39.106.80.38:22222/keys/auth/pubkey";
         String res = httpUtil.getJsonData(json,uri);
 
+        Map<String, String> result = Utils.wrapMapFromJson(res);
+        String[] kp =
+                new String(SecurityFunctions.decryptSymmetric(Kct, iv, Utils.base64Decode(result.get("KP"))))
+                        .split(";");
+        KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
+        byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
+                Utils.base64Decode(result.get("EToken")));
+        int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        byte[] token = new byte[etoken.length - Integer.BYTES];
+        System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
 
+        String tR = result.get("T");
+        int tRes = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(), Utils.base64Decode(tR)))
+                .order(ByteOrder.LITTLE_ENDIAN).getInt();
+        //assertThat(tRes).isEqualTo(t + 1);
 
+        Map<String,Object> re = new HashMap<>();
+        re.put("nonce",nonce);
+        re.put("Token",token);
+        re.put("Cpri",keyPair.getPrivate());
+        re.put("Cpub",keyPair.getPublic());
 
-            Map<String, String> result = Utils.wrapMapFromJson(res);
-            String[] kp =
-                    new String(SecurityFunctions.decryptSymmetric(Kct, iv, Utils.base64Decode(result.get("KP"))))
-                            .split(";");
-            KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
-            byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
-                    Utils.base64Decode(result.get("EToken")));
-            int nonce = ByteBuffer.wrap(etoken).order(ByteOrder.LITTLE_ENDIAN).getInt();
-            byte[] token = new byte[etoken.length - Integer.BYTES];
-            System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
-
-            String tR = result.get("T");
-            int tRes = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(), Utils.base64Decode(tR)))
-                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
-            //assertThat(tRes).isEqualTo(t + 1);
-
-            Map<String,Object> re = new HashMap<>();
-            re.put("nonce",nonce);
-            re.put("Token",token);
-            re.put("Cpri",keyPair.getPrivate());
-            re.put("Cpub",keyPair.getPublic());
-
-            return gson.toJson(re);
-        }
+        return gson.toJson(re);
+    }
 
 
 

@@ -32,6 +32,7 @@ import java.security.spec.X509EncodedKeySpec;
 import io.tomahawkd.pki.api.client.Connecter;
 import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -94,42 +95,43 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 else if (!TextUtils.equals(password1,password2))
                     Toast.makeText(this, "两次输入的密码不一致，请重新输入！", Toast.LENGTH_LONG).show();
                 else {
-                    try {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("username",username);
-                        jsonObject.put("password",password1);
-                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
-                        //base64解码
-                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
-                        String url ="http://192.168.43.159/user/register";
-
-                        OkHttpClient client = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-
-                        final Request request = new Request.Builder()
-                                .url(url)
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        call.enqueue(new Callback() {
-                            public void onFailure(Call call, IOException e) {
-                                Log.d("error","<<<<e="+e);
-                            }
-
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                if(response.isSuccessful()) {
-                                    String jsonString = response.body().string();
-                                    handle_response(jsonString);
-
-                                    Log.d("success","<<<<d="+jsonString);
-                                    //Log.d("success","<<<<status="+status);
-                                }
-                            }
-                        });
-                    } catch (JSONException e){
-                        e.printStackTrace();
-                    }
+//                    try {
+////                        JSONObject jsonObject = new JSONObject();
+////                        jsonObject.put("username",username);
+////                        jsonObject.put("password",password1);
+////                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
+////                        //base64解码
+////                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
+////                        String url ="http://192.168.43.159/user/register";
+////
+////                        OkHttpClient client = new OkHttpClient();
+////                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+////
+////                        final Request request = new Request.Builder()
+////                                .url(url)
+////                                .post(body)
+////                                .build();
+////                        Call call = client.newCall(request);
+////                        call.enqueue(new Callback() {
+////                            public void onFailure(Call call, IOException e) {
+////                                Log.d("error","<<<<e="+e);
+////                            }
+////
+////                            @Override
+////                            public void onResponse(Call call, Response response) throws IOException {
+////                                if(response.isSuccessful()) {
+////                                    String jsonString = response.body().string();
+////                                    handle_response(jsonString);
+////
+////                                    Log.d("success","<<<<d="+jsonString);
+////                                    //Log.d("success","<<<<status="+status);
+////                                }
+////                            }
+////                        });
+////                    } catch (JSONException e){
+////                        e.printStackTrace();
+////                    }
+                    
                 }
                 break;
             case R.id.forget_re:
@@ -146,26 +148,28 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 //                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
 //                    }
 //                }).start();
-                try {
-                    SecurityFunctions securityFunctions = new SecurityFunctions();
-                    KeyPair keyPair = securityFunctions.generateKeyPair();
-                    PublicKey publicKey =keyPair.getPublic();
-                    PrivateKey privateKey =   keyPair.getPrivate();
-                    String pu = publicKey.toString();
-                    String pr = privateKey.toString();
-                    Log.d("pu","" + publicKey);
-                    Log.d("pr","" + privateKey);
-                    Log.d("pus",pu);
-                    Log.d("prs",pr);
-                    PublicKey a = getPublicKey(pu);
-                    PrivateKey b = getPrivateKey(pr);
-                    Log.d("pu1","" +a);
-                    Log.d("pr1","" + b);
-                    Log.d("pus1",a.toString());
-                    Log.d("prs1",b.toString());
-                } catch (CipherErrorException e){
-                    e.printStackTrace();
-                }
+
+
+//                try {
+//                    SecurityFunctions securityFunctions = new SecurityFunctions();
+//                    KeyPair keyPair = securityFunctions.generateKeyPair();
+//                    PublicKey publicKey =keyPair.getPublic();
+//                    PrivateKey privateKey =   keyPair.getPrivate();
+//                    String pu = Utils.base64Encode(publicKey.getEncoded());
+//                    String pr = Utils.base64Encode(privateKey.getEncoded());
+//                    Log.d("pu","" + publicKey);
+//                    Log.d("pr","" + privateKey);
+//                    Log.d("pus",pu);
+//                    Log.d("prs",pr);
+//                    PublicKey a = getPublicKey(pu);
+//                    PrivateKey b = getPrivateKey(pr);
+//                    Log.d("pu1","" +a);
+//                    Log.d("pr1","" + b);
+//                    Log.d("pus1",a.toString());
+//                    Log.d("prs1",b.toString());
+//                } catch (CipherErrorException e){
+//                    e.printStackTrace();
+//                }
 
                 break;
             case R.id.login_re_:
@@ -180,7 +184,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         PublicKey a = null;
         try {
             //byte[] bytekey = Base64.decode(pu.getBytes(),Base64.DEFAULT);
-            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(pu.getBytes());
+            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Utils.base64Decode(pu));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             a = keyFactory.generatePublic(x509EncodedKeySpec);
             //Base64.decode(pu);
@@ -194,7 +198,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         PrivateKey a = null;
         try {
             //byte[] bytekey = Base64.decode(pr.getBytes(),Base64.DEFAULT);
-            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(pr.getBytes());
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Utils.base64Decode(pr));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             a =  keyFactory.generatePrivate(pkcs8EncodedKeySpec);
             //Base64.decode(pu);

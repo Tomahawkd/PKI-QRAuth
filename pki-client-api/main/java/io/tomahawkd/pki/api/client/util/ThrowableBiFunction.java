@@ -1,4 +1,4 @@
-package io.tomahawkd.pki.util;
+package io.tomahawkd.pki.api.client.util;
 
 @FunctionalInterface
 public interface ThrowableBiFunction<T,U,R> {

@@ -6,33 +6,7 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="479e972b-5de0-4717-8ceb-20dd724d46b2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/changepsw.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../android/app/src/main/res/layout/changepsw.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/test.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_code_gson_gson_2_8_5.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__io_tomahawkd_pki_api_common_1_0_SNAPSHOT.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/util/httpUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/META-INF/pki-client-api.kotlin_module" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/ChangeSelfInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/ChangeSelfInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/Login.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/Login.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/Register.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/Register.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/fragment/fragment3.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/fragment/fragment3.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/util/DBHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/util/DBHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/util/keyManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/java/com/Vshows/PKI/util/keyManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/res/layout/changeinfo.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/res/layout/changeinfo.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/res/layout/infomation.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/res/layout/infomation.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../android/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../android/app/src/main/res/values/strings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/Connecter.java" beforeDir="false" afterPath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/Connecter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/exceptions/ControllerExceptionHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/util/SecurityFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/main/java/io/tomahawkd/pki/api/client/util/SecurityFunctions.java" afterDir="false" />
-    </list>
+    <list default="true" id="479e972b-5de0-4717-8ceb-20dd724d46b2" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/classes/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -141,69 +115,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="classes" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="classes" type="462c0819:PsiDirectoryNode" />
-              <item name="artifacts" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="classes" type="462c0819:PsiDirectoryNode" />
-              <item name="artifacts" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="exceptions" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pki-client-api" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pki-client-api" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="util" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
+      <pane id="ProjectPane" />
       <pane id="PackagesPane" />
       <pane id="Scope" />
     </panes>
@@ -212,7 +124,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="project.structure.last.edited" value="Artifacts" />
@@ -242,16 +154,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1562118410748</updated>
-      <workItem from="1562118416155" duration="11132000" />
+      <workItem from="1562118416155" duration="11373000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11132000" />
+    <option name="totallyTimeSpent" value="11373000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="848" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Designer" order="0" />
       <window_info id="UI Designer" order="1" />
