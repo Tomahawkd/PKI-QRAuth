@@ -47,18 +47,24 @@ $(document).ready(function () {
         $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
+
+        var data = generateInitialPackage(formObject);
         $.ajax({
             url: "/user/login",
             type: "post",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(data),
             dataType: "json",
             success: function (data) {
                 if (data.status == -1) {
                     $(".error_box").text("用户名不存在！");
                 } else if (data.status == 0) {
-                    $(".error_box").text("登录成功！");
-                    window.location.href = "home.html";
+                    if (validateInitialResponsePackage(data)) {
+                        $(".error_box").text("登录成功！");
+                        window.location.href = "home.html";
+                    } else {
+                        $(".error_box").text("数据验证失败！");
+                    }
                 } else if (data.status == 1) {
                     $(".error_box").text("密码错误！");
                 }

@@ -36,7 +36,7 @@ function generateQRCode(QRCodeNonce, QRCodeElement) {
  * @param QRCodeElement the html "div" element where the QRCode is placed
  */
 function polling(pollingUrl, targetUrl, QRCodeElement) {
-    var nonce = localStorage.getItem("QRNonce");
+    var nonce = sessionStorage.getItem("QRCodeNonce");
     var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStorage") : 0;
     $.ajax({
         url: pollingUrl,
@@ -50,7 +50,7 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
                     sessionStorage.setItem("currentStatus", 1);
                     QRCodeElement.innerHTML("<p>已扫描，等待确认</p>");
                 } else if (data.status === 2) {
-                    localStorage.removeItem("QRNonce");
+                    sessionStorage.removeItem("QRCodeNonce");
                     sessionStorage.removeItem("currentStatus");
                     window.location.href = targetUrl;
                 } else {
@@ -75,6 +75,13 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
 var poller;
 
 /**
+ * clear the poller of the QRCode request.
+ */
+function clearPolling() {
+    if (poller) clearInterval(poller);
+}
+
+/**
  * the function complete the whole procession during the login with QRCode
  * @param QRCodeUrl the url of the server, to which we get the QRCode.
  * @param pollingUrl pollingUrl a url, which the browser polling to
@@ -95,7 +102,7 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
         dataType: "json",
         success: function (data) {
             QRCodeElement.empty();
-            localStorage.setItem("QRNonce", data.nonce);
+            sessionStorage.setItem("QRCodeNonce", data.nonce);
             generateQRCode(data.nonce, QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
@@ -128,7 +135,7 @@ function randomPassword(size) {
 
 /**
  * generate a package(place as the payload) used to login with username and password
- * @param message {json} the username and password of the user.
+ * @param message the username and password of the user.
  * @returns {{message: json, T: string, K: string, iv: string}} the request package for login
  */
 function generateInitialPackage(message) {
@@ -155,7 +162,7 @@ function generateInitialPackage(message) {
  * @param package {json} the payload of the response package
  * @returns {boolean} return true when there is no fault
  */
-function parseInitialResponsePackage(package) {
+function validateInitialResponsePackage(package) {
     var eToken = $.base64.decode(package.EToken);
     var KP = $.base64.decode(package.KP);
 
