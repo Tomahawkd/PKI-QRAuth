@@ -1,7 +1,11 @@
-function initialize() {
+/**
+ * get the SPub and TPub from server, store it in localStorage
+ * @param serverUrl the url of the server.
+ */
+function initialize(serverUrl) {
     if (localStorage.getItem("SPub") === null || localStorage.getItem("TPub") === null) {
         $.ajax({
-            url: "",
+            url: serverUrl,
             type: "get",
             success: function (data) {
                 localStorage.setItem("SPub", data.SPub);
@@ -15,22 +19,47 @@ function initialize() {
     }
 }
 
-function generateQRCode(randomNum, element) {
-    var message = {text: randomNum};
-    element.qrcode(message);
+/**
+ * generate a QRCode with the QRCodeNonce and place it in QRCodeElement
+ * @param QRCodeNonce {string} the nonce displayed in the QRCode
+ * @param QRCodeElement the html "div" element used to place the QRCode
+ */
+function generateQRCode(QRCodeNonce, QRCodeElement) {
+    var message = {text: QRCodeNonce};
+    QRCodeElement.qrcode(message);
 }
 
-function polling(poller) {
+/**
+ * the function executed when polling to the server
+ * @param pollingUrl a url, which the browser polling to
+ * @param targetUrl a url, where the page turned to when the polling is successful
+ * @param QRCodeElement the html "div" element where the QRCode is placed
+ */
+function polling(pollingUrl, targetUrl, QRCodeElement) {
+    var nonce = localStorage.getItem("QRNonce");
+    var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStorage") : 0;
     $.ajax({
-        url: "",
-        type: "get",
+        url: pollingUrl,
+        type: "post",
         dataType: "json",
+        data: JSON.stringify({nonce: nonce}),
         success: function (data) {
-            if (data.status === 1) {
-                window.location.href="home.html";
+            if (data.status >= currentStatus + 1) {
+                if (data.status === 0) {
+                } else if (data.status === 1) {
+                    sessionStorage.setItem("currentStatus", 1);
+                    QRCodeElement.innerHTML("<p>已扫描，等待确认</p>");
+                } else if (data.status === 2) {
+                    localStorage.removeItem("QRNonce");
+                    sessionStorage.removeItem("currentStatus");
+                    window.location.href = targetUrl;
+                } else {
+                    clearInterval(poller);
+                    console.log("incorrect status code.");
+                }
             } else {
-                clearInterval(poller);
-                console.log("incorrect status code.");
+                sessionStorage.removeItem("currentStatus");
+                QRCodeElement.innerHTML("<p>状态码错误，点击刷新</p>");
             }
         },
         error: function () {
@@ -40,23 +69,49 @@ function polling(poller) {
     })
 }
 
-function QRAuthentation(element) {
+/**
+ * a timer, used to polling to the server,(can be visited by the user of the api)
+ */
+var poller;
+
+/**
+ * the function complete the whole procession during the login with QRCode
+ * @param QRCodeUrl the url of the server, to which we get the QRCode.
+ * @param pollingUrl pollingUrl a url, which the browser polling to
+ * @param targetUrl a url, where the page turned to when the polling is successful
+ * @param QRCodeElement the html "div" element where the QRCode is placed
+ * @param click_function the function which is executed when the QRCode is clicked, default is to refresh the QRCode.
+ */
+function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function) {
+    if (poller !== null)
+        clearInterval(poller);
+    QRCodeElement.clear("click");
+    QRCodeElement.click(click_function ? click_function : function () {
+        QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function);
+    });
     $.ajax({
-        url: "",
+        url: QRCodeUrl,
         type: "get",
         dataType: "json",
         success: function (data) {
-            element.empty();
-            generateQRCode(data.nonce, element);
-            var poller = setInterval(function(){polling(poller, element);}, 3000);
+            QRCodeElement.empty();
+            localStorage.setItem("QRNonce", data.nonce);
+            generateQRCode(data.nonce, QRCodeElement);
+            poller = setInterval(function () {
+                polling(pollingUrl, targetUrl, QRCodeElement);
+            }, 1000);
         },
         error: function () {
-            element.innerHTML("<p>未能成功获取二维码，请检查网络连接后重试</p>");
+            QRCodeElement.innerHTML("<p>获取二维码失败，点击刷新</p>");
         }
-    })
+    });
 }
 
-
+/**
+ * create a random String at a set length, which is used to create kct and iv for AES CBC mode
+ * @param size the length of the string.
+ * @returns {string} the string will be used to create kct and iv
+ */
 function randomPassword(size) {
     var seed = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'Q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -71,7 +126,11 @@ function randomPassword(size) {
     return createPassword;
 }
 
-
+/**
+ * generate a package(place as the payload) used to login with username and password
+ * @param message {json} the username and password of the user.
+ * @returns {{message: json, T: string, K: string, iv: string}} the request package for login
+ */
 function generateInitialPackage(message) {
     var TPub = getBytesFromStorage("TPub");
     var TimeStampBase64 = generateTimeStamp("SPub");
@@ -87,10 +146,15 @@ function generateInitialPackage(message) {
 
     storeBytesToStorage("kct", kct);
     storeBytesToStorage("iv", iv);
-    return {payload: message, T: TimeStampBase64, K: Kct, iv: IV};
+    var package = {message: message, T: TimeStampBase64, K: Kct, iv: IV}
+    return package;
 }
 
-
+/**
+ * used to parse the response package from the server during the login process
+ * @param package {json} the payload of the response package
+ * @returns {boolean} return true when there is no fault
+ */
 function parseInitialResponsePackage(package) {
     var eToken = $.base64.decode(package.EToken);
     var KP = $.base64.decode(package.KP);
@@ -120,6 +184,11 @@ function parseInitialResponsePackage(package) {
     return true;
 }
 
+/**
+ * convert a byte[4] array to a integer
+ * @param bytes a byte array with length 4
+ * @returns {int} return a integer
+ */
 function bytesToInt(bytes) {
     bytes = new Int8Array(bytes);
     var int = bytes[3];
@@ -129,6 +198,11 @@ function bytesToInt(bytes) {
     return int;
 }
 
+/**
+ * convert a integer to a byte array
+ * @param int the integer
+ * @returns {Array} the byte array converted from the integer
+ */
 function intToBytes(int) {
     var ints = [];
     for (var i = 0; i < 4; i++) {
@@ -143,14 +217,28 @@ function intToBytes(int) {
     return bytes;
 }
 
+/**
+ * read a byte array from the localStorage, such as key, token and so on.
+ * @param name the name of the byte array.
+ * @returns {*|String} the byte array.
+ */
 function getBytesFromStorage(name) {
     return $.base64.decode(localStorage.getItem(name));
 }
 
+/**
+ * store a byte array to localStorage
+ * @param name the name of the byte array.
+ * @param value the value of the byte array.
+ */
 function storeBytesToStorage(name, value) {
     localStorage.setItem(name, $.base64.encode(value));
 }
 
+/**
+ * use the nonce and token in localStorage to generate EToken.
+ * @returns {*|String} a EToken
+ */
 function generateEToken() {
     var nonce = localStorage.getItem("nonce") + 1;
     localStorage.setItem("nonce", nonce);
@@ -170,19 +258,29 @@ function generateEToken() {
     return $.base64.encode(eToken);
 }
 
-
+/**
+ * use current Date to generate a timeStamp, store it to localStorage
+ * @param key the key used to encrypt the timeStamp
+ * @returns {*|String} the base64 encoded encrypted timeStamp.
+ */
 function generateTimeStamp(key) {
     key = getBytesFromStorage(key);
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + key + '-----END PUBLIC KEY-----');
     var timeStamp = (new Date()).valueOf();
-    var timeStampBase64 = $.base64.encode(encrypt.encrypt(timeStamp)); // The Base64 encoded encrypted timeStamp
+    var timeStampBase64 = $.base64.encode(encrypt.encrypt(intToBytes(timeStamp))); // The Base64 encoded encrypted timeStamp
 
     localStorage.setItem("timeStamp", timeStamp);
     return timeStampBase64;
 }
 
+/**
+ * validate the timestamp with the last timeStamp
+ * @param T the base64 encoded encrypted timeStamp
+ * @param key the key used to decrypt the timeStamp
+ * @returns {boolean} return true when the validate is successful
+ */
 function validateTimeStamp(T, key) {
     key = getBytesFromStorage(key);
 

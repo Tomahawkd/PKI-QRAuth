@@ -16,6 +16,11 @@
 
 </body>
 <script type="text/javascript">
-    console.log(localStorage.getItem("aaaa"));
+    function test(a, b, c, d) {
+        console.log(d===undefined);
+        console.log(d);
+        return a+b;
+    }
+    console.log(test(1, 2, d=3));
 </script>
 </html>
