@@ -104,7 +104,7 @@ public class QRCodeAuthenticationController {
 
 	/**
 	 * @param data { "M": {
-	 *             "status": "Base64 encoded Kt public key encrypt number(1:scanned, 2:confirmed)",
+	 *             "status": "number(1:scanned, 2:confirmed)",
 	 *             "message":"Base64 encoded Kt public key encrypted nonce2(1), 1:true/0:false(2)"
 	 *             }
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce",
@@ -146,7 +146,9 @@ public class QRCodeAuthenticationController {
 						// confirmed
 					} else if (status == 2) {
 
-						String stateString = requestMessage.getMessage().getMessage();
+						String stateString = new String(
+								SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+										Utils.base64Decode(requestMessage.getMessage().getMessage())));
 						if (stateString.equals("1")) {
 							qrStatusService.updateQrNonceStatusToConfirmed(tokenModel.getTokenId());
 							return new Message<>(0, "Status update to Confirm");
@@ -164,7 +166,7 @@ public class QRCodeAuthenticationController {
 
 	/**
 	 * @param data {
-	 *             "nonce2": "Base64 encoded Kc,t encrypted QrCode nonce",
+	 *             "nonce2": "Base64 encoded Kt public key encrypted QrCode nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
 	 *             "system": "systemid",
 	 *             "D": "device"
@@ -173,11 +175,11 @@ public class QRCodeAuthenticationController {
 	 * "M": "result message
 	 * {
 	 * "type": "number(0:not exist, 1:scanned, 2:confirmed)",
-	 * "KP"(appears if type:2): "Base64 encoded Kc,t encrypted client key pair",
-	 * "EToken"(appears if type:2): "Base64 encoded Kc public key encrypted token,nonce"
 	 * "message": "message"
 	 * }"
 	 * "T": "Base64 encoded Kc,t encrypted challenge number+1"
+	 * "KP"(appears if type:2): "Base64 encoded Kc,t encrypted client key pair",
+	 * "EToken"(appears if type:2): "Base64 encoded Kc public key encrypted token,nonce"
 	 * }
 	 */
 	@PostMapping("/query")
@@ -207,7 +209,7 @@ public class QRCodeAuthenticationController {
 
 		Map<String, String> message = new HashMap<>();
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);
-		if (model == null || model.getStatus() != 1 || model.getStatus() != 2) {
+		if (model == null || model.getStatus() != 1 && model.getStatus() != 2) {
 			message.put("type", "0");
 			message.put("message", "qrcode invalid");
 
