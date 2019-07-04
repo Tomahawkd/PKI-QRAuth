@@ -43,7 +43,6 @@
                                 <h3 class="panel-title"><i class="fa fa-comment"></i>编辑信息</h3><br>
                             </div>
                             <form id="update-info-form">
-
                                 <div class="col-md-12">
                                     <div class="form-group row">
                                         <div class="col-md-5"></div>
@@ -65,7 +64,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6 ">
+                                <div class="row mx-2">
+                                    <div class="col-md-6">
                                     <div class="form-group row">
                                         <label for="name-input" style="width: 85px;"
                                                class=" col-form-label">姓名</label>
@@ -83,7 +83,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                    <div class="col-md-6">
                                     <div class="form-group row">
                                         <label for="sex-input" style="width: 85px;"
                                                class=" col-form-label">性别</label>
@@ -100,10 +100,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                </div>
                             </form>
-                        </div>
-
-
+                            </div>
                         <div class="row mx-2">
                             <div class="col-md-4"></div>
                             <div class="col-md-4">
@@ -146,7 +145,7 @@
         console.log("change image finish");
     });
 
-    //方式一 Jquery实现
+
     $("#save-profile-btn").click(function () {
         var formArray = $("#update-info-form").serializeArray();
         var formObject = {};
@@ -168,6 +167,4 @@
             }
         });
     });
-
-
 </script>
