@@ -21,7 +21,7 @@ public interface QrStatusDao {
 
 	@Select("select token_id, nonce, sym_key, iv, status, valid_by from qrcode_status where nonce = #{nonce}")
 	@Results({
-			@Result(property = "tokenId", column = "token_id"),
+			@Result(property = "tokenId", column = "token_id", javaType = Integer.class),
 			@Result(property = "nonce", column = "nonce"),
 			@Result(property = "symKey", column = "sym_key"),
 			@Result(property = "iv", column = "iv"),
