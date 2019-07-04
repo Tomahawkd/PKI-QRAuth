@@ -6,10 +6,7 @@ import io.tomahawkd.pki.exceptions.MalformedJsonException;
 import io.tomahawkd.pki.exceptions.NotFoundException;
 import io.tomahawkd.pki.model.*;
 import io.tomahawkd.pki.service.*;
-import io.tomahawkd.pki.util.Message;
-import io.tomahawkd.pki.util.SecurityFunctions;
-import io.tomahawkd.pki.util.TokenUtils;
-import io.tomahawkd.pki.util.Utils;
+import io.tomahawkd.pki.util.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -91,6 +88,7 @@ public class QRCodeAuthenticationController {
 
 		String nonce2Response = Utils.base64Encode(SecurityFunctions.encryptSymmetric(k, iv, nonceBytes));
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
+		ThreadContext.getContext().set(tResponse);
 
 		String mResponse = new Gson().toJson(new Message<>(0, "Generate Complete"));
 
@@ -238,6 +236,7 @@ public class QRCodeAuthenticationController {
 				"queryQRStatus", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
+		ThreadContext.getContext().set(tResponse);
 
 		Map<String, String> message = new HashMap<>();
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);

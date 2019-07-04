@@ -152,6 +152,7 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
+		ThreadContext.getContext().set(tResponse);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
