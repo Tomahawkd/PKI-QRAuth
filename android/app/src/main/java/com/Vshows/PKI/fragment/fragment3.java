@@ -2,6 +2,7 @@ package com.Vshows.PKI.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,6 +17,7 @@ import com.Vshows.PKI.ChangeSelfInfo;
 import com.Vshows.PKI.Check;
 import com.Vshows.PKI.Login;
 import com.Vshows.PKI.R;
+import com.Vshows.PKI.changepsw;
 import com.Vshows.PKI.index;
 import com.Vshows.zxinglibrary.android.CaptureActivity;
 import com.Vshows.zxinglibrary.bean.ZxingConfig;
@@ -23,6 +25,9 @@ import com.Vshows.zxinglibrary.common.Constant;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,12 +59,18 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     TextView mail_information;
 
     private String session;
-    private String username;
+    private Handler handler = null;
+
+    private String username,name,email,phone,bio,imagepath;
+    private int sex;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.infomation,container,false);
+
+        handler = new Handler();
+
         scanBtn = (ImageButton) view.findViewById(R.id.scan);
         scanBtn.setOnClickListener(this);
         changeSelfInfo = (Button) view.findViewById(R.id.changeinfo);
@@ -78,12 +89,10 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
         session = getActivity().getIntent().getStringExtra("session");
-        username = getActivity().getIntent().getStringExtra("username");
 
-        Log.d("sessin" ,session);
-//        Log.d("name" ,username);
+        //Log.d("sessin" ,session);
 
-        init_info();
+        //init_info();
 
         return view;
     }
@@ -109,12 +118,49 @@ public class fragment3 extends Fragment implements View.OnClickListener {
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.isSuccessful()) {
                     String jsonString = response.body().string();
-                    //handle_response(jsonString);
-                    Log.d("getInfoSuccess","<<<<d="+jsonString);
+                    try {
+                        JSONObject mesJson = new JSONObject(jsonString);
+                        String json = mesJson.getString("message");
+                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
+                        username = resultJson.getString("username");
+                        name = resultJson.getString("name");
+                        sex = resultJson.getInt("sex");
+                        email = resultJson.getString("email");
+                        phone = resultJson.getString("phone");
+                        bio = resultJson.getString("bio");
+                        //imagepath = resultJson.getString("imagepath");
+
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                //super.run();
+                                handler.post(changeInfoUI);
+                            }
+                        }.start();
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         });
     }
+
+    Runnable changeInfoUI = new Runnable() {
+        @Override
+        public void run() {
+            username_information.setText(username);
+            username2_information.setText(name);
+            if(sex==0)
+                sex_information.setText("性别未知");
+            else if (sex==1)
+                sex_information.setText("男");
+            else
+                sex_information.setText("女");
+            mail_information.setText(email);
+            phone_information.setText(phone);
+            sig_information.setText(bio);
+        }
+    };
 
     @Override
     public void onClick(View view) {
@@ -146,9 +192,13 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changeinfo:
                 Intent intent3 = new Intent(getActivity(), ChangeSelfInfo.class);
+                intent3.putExtra("session",session);
                 startActivity(intent3);
                 break;
             case R.id.changepsw:
+                Intent intent4 = new Intent(getActivity(), changepsw.class);
+                intent4.putExtra("session",session);
+                startActivity(intent4);
                 break;
             case R.id.quit:
                 Intent intent2 = new Intent(getActivity(), Login.class);

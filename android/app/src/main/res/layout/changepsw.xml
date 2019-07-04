@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:id="@+id/changeInfoTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@mipmap/head"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="修改密码"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/linearlayout_line"
+            android:divider="@drawable/divider"
+            android:orientation="vertical"
+            android:showDividers="middle">
+
+
+            <EditText
+                android:id="@+id/oldpsw"
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:hint="@string/psw"
+                android:maxLength="20"
+                android:paddingLeft="20dp"
+                android:paddingRight="60dp"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/newpsw"
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:layout_marginTop="5dp"
+                android:hint="@string/newpsw"
+                android:maxLength="20"
+                android:paddingLeft="20dp"
+                android:paddingRight="60dp"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/newpswagain"
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:hint="@string/newpswagain"
+                android:maxLength="20"
+                android:paddingLeft="20dp"
+                android:paddingRight="60dp"
+                android:textSize="16sp" />
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/confirm_psw"
+            android:layout_width="139dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/button_line"
+
+            android:text="确认修改"
+
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="#ffffff"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
