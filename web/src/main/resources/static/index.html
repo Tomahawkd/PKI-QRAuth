@@ -10,6 +10,12 @@
     <script type="text/javascript" src="js/jquery-qrcode.js"></script>
     <script type="text/javascript" src="js/jquery.form.js"></script>
     <script type="text/javascript" src="js/myvalidate.js"></script>
+    <script type="text/javascript" src="js/security/jsencrypt.js"></script>
+    <script type="text/javascript" src="js/security/pkiapi.js"></script>
+    <script type="text/javascript" src="js/security/jquery.base64.js"></script>
+    <script type="text/javascript" src="js/security/jquery.md5.js"></script>
+    <script type="text/javascript" src="js/security/sha256.js"></script>
+    <script type="text/javascript" src="js/aes-js-3.1.2/index.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var $tab_li = $('#login_tab ul li');
@@ -20,8 +26,9 @@
             });
 
             $('#login_with_qrcode').click(function () {
-                $('#qrcode').empty();
-                $('#qrcode').qrcode({text: "www.baidu.com"});
+                var element = $('#qrcode');
+                element.empty();
+                createQRCode("aaaaaaaaaaaaaaaa", element);
             });
 
             $('#go_to_register').click(function () {
