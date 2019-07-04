@@ -180,6 +180,6 @@ public class TokenValidationController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> null);
 	}
 }

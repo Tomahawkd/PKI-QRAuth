@@ -129,7 +129,7 @@ public class QRCodeAuthenticationController {
 				systemLogService, tokenService,
 				userLogService, userKeyService,
 				systemKeyService, userIndexService, String.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> {
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					int status = requestMessage.getMessage().getStatus();
 

@@ -1,6 +1,7 @@
 package io.tomahawkd.pki.controller;
 
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
+import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.UserLogModel;
 import io.tomahawkd.pki.service.*;
 import io.tomahawkd.pki.util.Message;
@@ -62,7 +63,7 @@ public class UserManagementController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, List.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> {
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 					List<UserLogModel> logModelList =
 							userLogService.getUserActivitiesById(userKeyModel.getUserId(), userKeyModel.getSystemId());
 					Message<List> message = new Message<>();
@@ -92,7 +93,7 @@ public class UserManagementController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, List.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> {
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					List<Map<String, String>> tokenIdList =
 							tokenService.getTokenListByUserId(userKeyModel.getUserId());
@@ -127,7 +128,7 @@ public class UserManagementController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> {
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					String token = requestMessage.getMessage().getMessage();
 					int tokenId = ByteBuffer.wrap(
@@ -136,8 +137,19 @@ public class UserManagementController {
 
 					int res = tokenService.deleteUserTokenById(tokenId, tokenModel.getUserId());
 					if (res != 1) {
+
+						systemLogService.insertLogRecord(UserManagementController.class.getName(),
+								"revokeToken", SystemLogModel.WARN,
+								"User " + tokenModel.getUserId() +
+										" try to delete token " + tokenId + " with failure");
 						return new Message<String>().setError().setMessage("You are not the token owner");
 					} else {
+						systemLogService.insertLogRecord(UserManagementController.class.getName(),
+								"revokeToken", SystemLogModel.INFO,
+								"User " + tokenModel.getUserId() +
+										" try to delete token " + tokenId + " with success");
+						userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+								device, ip, "Token revoked");
 						return new Message<String>().setOK().setMessage("Revoke Complete");
 					}
 				});
@@ -165,7 +177,7 @@ public class UserManagementController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> {
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					userKeyService.regenerateKeysAndDeleteTokenFor(userKeyModel.getUserId());
 					return new Message<String>().setOK().setMessage("Key pair regenerated");
