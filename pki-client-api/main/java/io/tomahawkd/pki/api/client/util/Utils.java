@@ -3,14 +3,22 @@ package io.tomahawkd.pki.api.client.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import io.tomahawkd.pki.api.client.exceptions.*;
+import io.tomahawkd.pki.api.client.exceptions.Base64EncodeException;
+import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
+import io.tomahawkd.pki.api.client.exceptions.MalformedJsonException;
+import io.tomahawkd.pki.api.client.exceptions.ParamNotFoundException;
 
-
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class Utils {
 
@@ -48,10 +56,30 @@ public class Utils {
 	public static String responseChallenge(String t, PublicKey key) throws IOException, CipherErrorException {
 		return Utils.base64Encode(
 				SecurityFunctions.encryptAsymmetric(key,
-						String.valueOf(
-								Integer.parseInt(
-										Arrays.toString(
+						ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(
+										ByteBuffer.wrap(
 												SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-														Utils.base64Decode(t)))) + 1).getBytes()));
+														Utils.base64Decode(t)))
+												.order(ByteOrder.LITTLE_ENDIAN).getInt() + 1).array()));
+	}
+
+	public static byte[] gzipEncode(byte[] source) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		GZIPOutputStream gzip = new GZIPOutputStream(out);
+		gzip.write(source);
+		gzip.close();
+		return out.toByteArray();
+	}
+
+	public static byte[] gzipDecode(byte[] source) throws IOException {
+		GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(source));
+		BufferedInputStream is = new BufferedInputStream(in);
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		byte[] buf = new byte[1024];
+		int count;
+		while ((count = is.read(buf)) != -1) {
+			os.write(buf, 0, count);
+		}
+		return os.toByteArray();
 	}
 }
