@@ -32,9 +32,9 @@
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="20dp"
             android:background="@drawable/linearlayout_line"
             android:divider="@drawable/divider"
             android:orientation="vertical"
@@ -44,8 +44,7 @@
             <LinearLayout
                 android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-
+                android:layout_height="40dp"
                 android:layout_marginTop="10dp"
                 android:background="#ffffff"
                 android:orientation="horizontal">
@@ -56,22 +55,23 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="20dp"
                     android:gravity="center|start"
-                    android:text="用户名:"
+                    android:text="昵称:"
                     android:textSize="16sp" />
 
                 <EditText
                     android:id="@+id/usernmae_info"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@null"
                     android:layout_marginRight="20dp"
                     android:gravity="start|center_vertical"
-                    android:text="Vshows"
+                    android:text=""
                     android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="40dp"
                 android:background="#ffffff"
                 android:orientation="horizontal">
 
@@ -86,18 +86,19 @@
 
                 <EditText
                     android:id="@+id/sex_info"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@null"
                     android:layout_marginRight="20dp"
                     android:gravity="start|center_vertical"
-                    android:text="男"
+                    android:text=""
                     android:textSize="16sp" />
             </LinearLayout>
 
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="40dp"
                 android:background="#ffffff"
                 android:orientation="horizontal">
 
@@ -107,23 +108,24 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="20dp"
                     android:gravity="center|start"
-                    android:text="手机号"
+                    android:text="手机"
                     android:textSize="16sp" />
 
                 <EditText
                     android:id="@+id/textView10"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@null"
                     android:layout_marginRight="20dp"
                     android:gravity="start|center_vertical"
-                    android:text="18340019029"
+                    android:text=""
                     android:textSize="16sp" />
             </LinearLayout>
 
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="40dp"
                 android:background="#ffffff"
                 android:orientation="horizontal">
 
@@ -138,17 +140,19 @@
 
                 <EditText
                     android:id="@+id/mail_info"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@null"
                     android:layout_marginRight="20dp"
                     android:gravity="start|center_vertical"
-                    android:text="930657665@qq.com"
+                    android:text=""
                     android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="40dp"
+                android:layout_marginBottom="10dp"
                 android:background="#ffffff"
                 android:orientation="horizontal">
 
@@ -162,34 +166,28 @@
 
                 <EditText
                     android:id="@+id/information_info"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@null"
                     android:layout_marginRight="20dp"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:scrollbars="horizontal"/>
+                    android:gravity="start|center_vertical" />
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginBottom="10dp"
-                android:background="#75928F8F" />
         </LinearLayout>
 
         <Button
             android:id="@+id/confirm_info"
-            android:layout_width="wrap_content"
+            android:layout_width="139dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="10dp"
-            android:background="#0099ff"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/button_line"
 
             android:text="确认修改"
 
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="#000000"
-            android:textSize="20dp" />
+            android:textColor="#ffffff"
+            android:textSize="15sp" />
 
     </LinearLayout>
 
