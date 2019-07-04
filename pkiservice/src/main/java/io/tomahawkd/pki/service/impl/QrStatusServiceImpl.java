@@ -22,4 +22,28 @@ public class QrStatusServiceImpl implements QrStatusService {
 		dao.addQrCode(model);
 		return model;
 	}
+
+	@Override
+	public void updateQrNonceStatusToScanned(int tokenId, int nonce) {
+		dao.cleanAllStatus(tokenId);
+		dao.updateTokenToScanned(tokenId, nonce);
+	}
+
+	@Override
+	public void updateQrNonceStatusToConfirmed(int tokenId) {
+		dao.updateTokenToConfirmed(tokenId);
+	}
+
+	@Override
+	public void clearStatus(int tokenId) {
+		dao.cleanAllStatus(tokenId);
+	}
+
+	@Override
+	public QrStatusModel getQrStatusByNonce(int nonce) {
+		return dao.getByNonce(nonce);
+
+	}
+
+
 }

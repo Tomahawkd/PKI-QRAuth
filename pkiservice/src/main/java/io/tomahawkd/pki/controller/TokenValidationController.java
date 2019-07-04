@@ -9,11 +9,10 @@ import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.*;
-import io.tomahawkd.pki.util.ResponseMessage;
+import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.SecurityFunctions;
 import io.tomahawkd.pki.util.TokenUtils;
 import io.tomahawkd.pki.util.Utils;
-import javafx.util.Pair;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -42,6 +39,8 @@ public class TokenValidationController {
 	private SystemKeyService systemKeyService;
 	@Resource
 	private SystemLogService systemLogService;
+	@Resource
+	private UserIndexService userIndexService;
 
 	/**
 	 * @param data {
@@ -79,13 +78,13 @@ public class TokenValidationController {
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new ResponseMessage(1, "invalid key"));
+		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new ResponseMessage(1, "invalid iv"));
+		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -104,7 +103,7 @@ public class TokenValidationController {
 				"Target: { SystemId: " + systemKeyModel.getSystemId() + "}");
 
 		/* User Key pair */
-		UserKeyModel userKeyModel = userKeyService.getKeyPairById(userTag, systemKeyModel.getSystemId());
+		UserKeyModel userKeyModel = userKeyService.getUserByTagAndSystem(userTag, systemKeyModel.getSystemId());
 		if (userKeyModel == null) {
 			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 					"tokenInitialization", SystemLogModel.INFO,
@@ -142,7 +141,7 @@ public class TokenValidationController {
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		String mResponse = new Gson().toJson(new ResponseMessage(0, "Authenticate Complete"));
+		String mResponse = new Gson().toJson(new Message<>(0, "Authenticate Complete"));
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
@@ -168,88 +167,19 @@ public class TokenValidationController {
 	 * "M": "
 	 * {
 	 * "status": number(0:valid, 1:invalid),
-	 * "message": "status description"
+	 * "message": "service message"
 	 * }",
-	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1"}
+	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
+	 * "U": "Base64 encoded Ks public key encrypted user tag"
+	 * }
 	 */
 	@PostMapping("/validate")
 	public String tokenValidation(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
 
-		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "EToken", "T", "D");
-
-		String[] d = requestMap.get("D").split(";", 2);
-		String device = "";
-		String ip = "";
-		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
-		}
-
-		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMap.get("EToken"));
-		int nonce = tokenPair.getKey();
-		TokenModel tokenModel = TokenModel.deserialize(tokenPair.getValue());
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.DEBUG, "Token data wrapped complete.");
-
-		ResponseMessage message = new ResponseMessage(1, "Unknown Error");
-
-		int status = 1;
-		if (tokenService.validateToken(tokenModel, nonce)) {
-			status = 0;
-			message.setOK().setMessage("Valid");
-			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-					"tokenValidation", SystemLogModel.INFO,
-					"Target: {user: +" + tokenModel.getUserId() + "} loaded");
-		} else {
-			message.setError().setMessage("Invalid");
-			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-					"tokenValidation", SystemLogModel.WARN,
-					"Token invalid");
-		}
-
-
-		UserKeyModel userKeyModel = userKeyService.getUserById(tokenModel.getUserId());
-		if (userKeyModel == null) {
-			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-					"tokenValidation", SystemLogModel.FATAL,
-					"Token valid but user not exist, this should not happen");
-			throw new NotFoundException("User not found");
-		}
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.WARN,
-				"get user context: " + userKeyModel.toString());
-
-		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
-		if (systemKeyModel == null) {
-			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-					"tokenValidation", SystemLogModel.FATAL,
-					"User valid but system not exist, this should not happen");
-			throw new NotFoundException("System not found");
-		}
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.WARN,
-				"get system context: " + systemKeyModel.toString());
-
-		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
-				device, ip, "Token used with status: " + status);
-
-		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.DEBUG, "Server public key load complete.");
-
-		String mResponse = new Gson().toJson(message);
-		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		String kResponse = userKeyModel.getPublicKey();
-
-		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
-				"tokenValidation", SystemLogModel.DEBUG, "Response data process complete.");
-
-		Map<String, String> responseMap = new HashMap<>();
-		responseMap.put("K", kResponse);
-		responseMap.put("M", mResponse);
-		responseMap.put("T", tResponse);
-
-		return new Gson().toJson(responseMap);
+		return TokenUtils.tokenValidate(data,
+				systemLogService, tokenService, userLogService,
+				userKeyService, systemKeyService, userIndexService, String.class,
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
 	}
 }
