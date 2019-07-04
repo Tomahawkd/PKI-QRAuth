@@ -180,6 +180,11 @@ public class UserManagementController {
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					userKeyService.regenerateKeysAndDeleteTokenFor(userKeyModel.getUserId());
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"regenerateKeys", SystemLogModel.INFO,
+							"User " + tokenModel.getUserId() + " reset key pair");
+					userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+							device, ip, "Key pair reset");
 					return new Message<String>().setOK().setMessage("Key pair regenerated");
 				});
 	}

@@ -132,33 +132,65 @@ public class QRCodeAuthenticationController {
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
 					int status = requestMessage.getMessage().getStatus();
+					systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+							"updateQRStatus", SystemLogModel.DEBUG,
+							"Get status: " + status);
 
 					// scanned
 					if (status == 1) {
+
+						systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+								"updateQRStatus", SystemLogModel.INFO,
+								"Client ask to update status to scanned.");
+
 						String nonceString = requestMessage.getMessage().getMessage();
 						int nonce = ByteBuffer.wrap(
 								SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 										Utils.base64Decode(nonceString))).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
 						qrStatusService.updateQrNonceStatusToScanned(tokenModel.getTokenId(), nonce);
+						systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+								"updateQRStatus", SystemLogModel.INFO,
+								"update status to scanned.");
+						userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+								device, ip, "Client scanned the Qr code");
+
 						return new Message<>(0, "Status update to Scanned");
 
 						// confirmed
 					} else if (status == 2) {
+
+						systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+								"updateQRStatus", SystemLogModel.INFO,
+								"Client ask to update status to confirmed.");
 
 						String stateString = new String(
 								SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
 										Utils.base64Decode(requestMessage.getMessage().getMessage())));
 						if (stateString.equals("1")) {
 							qrStatusService.updateQrNonceStatusToConfirmed(tokenModel.getTokenId());
+
+							systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+									"updateQRStatus", SystemLogModel.INFO,
+									"update status to confirmed.");
+							userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+									device, ip, "Client confirm to login using the Qr code");
 							return new Message<>(0, "Status update to Confirm");
 
 						} else {
 							qrStatusService.clearStatus(tokenModel.getTokenId());
+							systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+									"updateQRStatus", SystemLogModel.INFO,
+									"Client canceled confirm");
+							userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+									device, ip, "Client canceled to login using the Qr code");
 							return new Message<>(0, "Status reset");
 						}
 
 					} else {
+						systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+								"updateQRStatus", SystemLogModel.WARN,
+								"Client send malformed status");
 						return new Message<>(1, "Invalid status");
 					}
 				});
@@ -217,6 +249,9 @@ public class QRCodeAuthenticationController {
 			responseMap.put("M", new Gson().toJson(message));
 			responseMap.put("T", tResponse);
 
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"queryQRStatus", SystemLogModel.DEBUG, "Invalid query nonce to qrcode.");
+
 			return new Gson().toJson(responseMap);
 		} else if (model.getStatus() == 1) {
 			message.put("type", "1");
@@ -226,9 +261,15 @@ public class QRCodeAuthenticationController {
 			responseMap.put("M", new Gson().toJson(message));
 			responseMap.put("T", tResponse);
 
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"queryQRStatus", SystemLogModel.DEBUG, "query nonce to qrcode status scanned.");
+
 			return new Gson().toJson(responseMap);
 
 		} else {
+
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"queryQRStatus", SystemLogModel.DEBUG, "query nonce to qrcode status confirmed.");
 
 			byte[] k = Utils.base64Decode(model.getSymKey());
 			byte[] iv = Utils.base64Decode(model.getIv());
