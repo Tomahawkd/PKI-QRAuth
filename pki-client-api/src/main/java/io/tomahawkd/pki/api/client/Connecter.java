@@ -237,7 +237,7 @@ public class Connecter{
 
     }
 
-    public String updateQRStatusConfirm(String Token, String nounce1, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri) throws Exception{
+    public String updateQRStatusConfirm(String Token, String nounce1, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,int confirm) throws Exception{
         Gson gson = new Gson();
         Map<String,Object> map1 = new HashMap<>();
         map1.put("Token",Token);
@@ -247,6 +247,7 @@ public class Connecter{
         String temp = new String(String.valueOf(System.currentTimeMillis()));
         Map<String,Object> map2 = new HashMap<>();
         map2.put("type",2);
+        map2.put("confirm",confirm);
 
         String M = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,gson.toJson(map2).getBytes()));
         String T = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,temp.getBytes()));
