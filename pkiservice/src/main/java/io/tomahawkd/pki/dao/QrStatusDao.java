@@ -10,13 +10,16 @@ public interface QrStatusDao {
 			"TIMESTAMPADD(MINUTE, 10, CURRENT_TIMESTAMP));")
 	int addQrCode(@Param("qr") QrStatusModel status);
 
-	@Update("update qrcode_status set token_id = #{token} where nonce = #{nonce}")
-	int updateToken(int token, int nonce);
+	@Update("update qrcode_status set token_id = #{token}, status = 1 where nonce = #{nonce}")
+	int updateTokenToScanned(int token, int nonce);
+
+	@Update("update qrcode_status set status = 2 where token_id = #{token}")
+	int updateTokenToConfirmed(int token);
 
 	@Delete("delete from qrcode_status where token_id = #{token}")
 	int cleanAllStatus(int token);
 
-	@Select("select token_id, nonce, sym_key, iv, status, valid_by from qrcode_status where token_id = #{token}")
+	@Select("select token_id, nonce, sym_key, iv, status, valid_by from qrcode_status where nonce = #{nonce}")
 	@Results({
 			@Result(property = "tokenId", column = "token_id"),
 			@Result(property = "nonce", column = "nonce"),
@@ -25,5 +28,5 @@ public interface QrStatusDao {
 			@Result(property = "status", column = "status"),
 			@Result(property = "validBy", column = "valid_by")
 	})
-	QrStatusModel getByToken(int token);
+	QrStatusModel getByNonce(int nonce);
 }
