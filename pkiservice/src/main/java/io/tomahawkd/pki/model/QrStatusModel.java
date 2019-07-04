@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public class QrStatusModel {
 
-	private int tokenId;
+	private Integer tokenId;
 	private int nonce;
 	private String symKey;
 	private String iv;
@@ -12,10 +12,10 @@ public class QrStatusModel {
 	private Timestamp validBy;
 
 	public QrStatusModel(int nonce, String symKey, String iv) {
-		this(-1, nonce, symKey, iv, 0, null);
+		this(null, nonce, symKey, iv, 0, null);
 	}
 
-	private QrStatusModel(int tokenId, int nonce, String symKey, String iv, int status, Timestamp validBy) {
+	private QrStatusModel(Integer tokenId, int nonce, String symKey, String iv, int status, Timestamp validBy) {
 		this.tokenId = tokenId;
 		this.nonce = nonce;
 		this.symKey = symKey;
