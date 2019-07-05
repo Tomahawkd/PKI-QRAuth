@@ -39,6 +39,7 @@ import io.tomahawkd.pki.api.client.Connecter;
 import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
 import io.tomahawkd.pki.api.client.util.Utils;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -56,12 +57,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
-//    private jwt jwt = new jwt();
-//    private String s = jwt.init();
-
-
-
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,41 +97,41 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                     Toast.makeText(this, "两次输入的密码不一致，请重新输入！", Toast.LENGTH_LONG).show();
                 else {
 //                    try {
-////                        JSONObject jsonObject = new JSONObject();
-////                        jsonObject.put("username",username);
-////                        jsonObject.put("password",password1);
-////                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
-////                        //base64解码
-////                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
-////                        String url ="http://192.168.43.159/user/register";
-////
-////                        OkHttpClient client = new OkHttpClient();
-////                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-////
-////                        final Request request = new Request.Builder()
-////                                .url(url)
-////                                .post(body)
-////                                .build();
-////                        Call call = client.newCall(request);
-////                        call.enqueue(new Callback() {
-////                            public void onFailure(Call call, IOException e) {
-////                                Log.d("error","<<<<e="+e);
-////                            }
-////
-////                            @Override
-////                            public void onResponse(Call call, Response response) throws IOException {
-////                                if(response.isSuccessful()) {
-////                                    String jsonString = response.body().string();
-////                                    handle_response(jsonString);
-////
-////                                    Log.d("success","<<<<d="+jsonString);
-////                                    //Log.d("success","<<<<status="+status);
-////                                }
-////                            }
-////                        });
-////                    } catch (JSONException e){
-////                        e.printStackTrace();
-////                    }
+//                        JSONObject jsonObject = new JSONObject();
+//                        jsonObject.put("username",username);
+//                        jsonObject.put("password",password1);
+//                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
+//                        //base64解码
+//                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
+//                        String url ="http://192.168.43.159/user/register";
+//
+//                        OkHttpClient client = new OkHttpClient();
+//                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+//
+//                        final Request request = new Request.Builder()
+//                                .url(url)
+//                                .post(body)
+//                                .build();
+//                        Call call = client.newCall(request);
+//                        call.enqueue(new Callback() {
+//                            public void onFailure(Call call, IOException e) {
+//                                Log.d("error","<<<<e="+e);
+//                            }
+//
+//                            @Override
+//                            public void onResponse(Call call, Response response) throws IOException {
+//                                if(response.isSuccessful()) {
+//                                    String jsonString = response.body().string();
+//                                    handle_response(jsonString);
+//
+//                                    Log.d("success","<<<<d="+jsonString);
+//                                    //Log.d("success","<<<<status="+status);
+//                                }
+//                            }
+//                        });
+//                    } catch (JSONException e){
+//                        e.printStackTrace();
+//                    }
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -158,7 +153,11 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey);
                                 result = gson.fromJson(resultJson,result.getClass());
 
-                                //String nonce = result.get();
+                                String nonce = (String) result.get("nonce");
+                                String token = (String) result.get("Token");
+                                PublicKey Cpub = (PublicKey) result.get("Cpub");
+                                PrivateKey Cpri = (PrivateKey) result.get("Cpri");
+
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -171,16 +170,16 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 //                /**
 //                 * 可以使用线程池进行优化
 //                 */
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Connecter connecter = new Connecter();
-                        String mes = connecter.getAuthenticationServerPublicKey();
-                        //String mes = a.a();
-                        Log.d("conntest",mes);
-                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
-                    }
-                }).start();
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Connecter connecter = new Connecter();
+//                        String mes = connecter.getAuthenticationServerPublicKey();
+//                        //String mes = a.a();
+//                        Log.d("conntest",mes);
+//                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
+//                    }
+//                }).start();
 
 
 //                try {

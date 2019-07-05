@@ -61,7 +61,8 @@ public class Connecter{
         map1.put("username",username);
         map1.put("password",password);
         String json1 = gson.toJson(map1);
-        String temp = new String(String.valueOf(System.currentTimeMillis()));
+        //String temp = new String(String.valueOf(System.currentTimeMillis()));
+        int t = SecurityFunctions.generateRandom();
 
         //generate the symmetric ky between C and S
         byte[] Kcs = SecurityFunctions.generateRandom(32);
@@ -72,7 +73,7 @@ public class Connecter{
         String payload = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,json1.getBytes()));
         Map<String,Object> map2 = new HashMap<>();
         map2.put("Kcs",Kcs);
-        map2.put("time",temp);
+        //map2.put("time",temp);
         String json2 = gson.toJson(map2);
         String S = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,json2.getBytes()));
         String K = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,Kct));
