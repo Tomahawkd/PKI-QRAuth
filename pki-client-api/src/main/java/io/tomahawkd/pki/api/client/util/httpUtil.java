@@ -1,67 +1,108 @@
-package io.tomahawkd.pki.api.client.util;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
 
-import java.io.*;
+package io.tomahawkd.pki.api.client.util;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class httpUtil {
-    public static String getJsonData(String jsonObject,String urls){
-        StringBuffer sb=new StringBuffer();
-            try {
-             // 创建url资源  
+    public httpUtil() {
+    }
+
+    public static String getJsonData(String jsonObject, String urls) {
+        StringBuffer sb = new StringBuffer();
+
+        try {
             URL url = new URL(urls);
-             // 建立http连接  
-             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-             // 设置允许输出  
-             conn.setDoOutput(true);
-            // 设置允许输入  
-             conn.setDoInput(true);
-            // 设置不用缓存  
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
             conn.setUseCaches(false);
-            // 设置传递方式  
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(3000);
             conn.setRequestMethod("POST");
-            // 设置维持长连接  
             conn.setRequestProperty("Connection", "Keep-Alive");
-            // 设置文件字符集:  
             conn.setRequestProperty("Charset", "UTF-8");
-            // 转换为字节数组  
-            byte[] data = (jsonObject.getBytes());
-             // 设置文件长度  
+            byte[] data = jsonObject.getBytes();
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
-            // 设置文件类型:  
-            conn.setRequestProperty("Content-Type","application/json; charset=UTF-8");
-            conn.setRequestProperty("accept","application/json");
-            // 开始连接请求  
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("accept", "application/json");
             conn.connect();
-            OutputStream out = new DataOutputStream(conn.getOutputStream()) ;
-             // 写入请求的字符串  
-             out.write(jsonObject.getBytes());
-             out.flush();
-             out.close();
-             System.out.println(conn.getResponseCode());
-             // 请求返回的状态  
-             if (HttpURLConnection.HTTP_OK == conn.getResponseCode()){
-             System.out.println("连接成功");
-             // 请求返回的数据  
-             InputStream in1 = conn.getInputStream();
-             try {
-                                 String readLine=new String();
-                                 BufferedReader responseReader=new BufferedReader(new InputStreamReader(in1,"UTF-8"));
-                                 while((readLine=responseReader.readLine())!=null){
-                                 sb.append(readLine).append("\n");
-                                 }
-                             responseReader.close();
-                             System.out.println(sb.toString());
-                        } catch (Exception e1) {
-                             e1.printStackTrace();
-                 }
-             } else {
-                     System.out.println("error++");
-                 }
-             } catch (Exception e) {
-             }
-             return sb.toString();
+            OutputStream out = new DataOutputStream(conn.getOutputStream());
+            out.write(jsonObject.getBytes());
+            out.flush();
+            out.close();
+            if (200 == conn.getResponseCode()) {
+                InputStream in1 = conn.getInputStream();
+
+                try {
+                    new String();
+                    BufferedReader responseReader = new BufferedReader(new InputStreamReader(in1, "UTF-8"));
+
+                    String readLine;
+                    while((readLine = responseReader.readLine()) != null) {
+                        sb.append(readLine).append("\n");
+                    }
+
+                    responseReader.close();
+                } catch (Exception var10) {
+                    sb.append(var10.getMessage());
+                }
+            } else {
+                sb.append("connect error");
+            }
+        } catch (Exception var11) {
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            var11.printStackTrace(writer);
+            StringBuffer buffer = stringWriter.getBuffer();
+            sb.append(buffer.toString());
+        }
+
+        return sb.toString();
+    }
+
+    public static String getJsonData(String urls) {
+        try {
+            URL url = new URL(urls);
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setDoInput(true);
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.connect();
+            InputStream inputStream = connection.getInputStream();
+            byte[] data = new byte[1024];
+            StringBuffer sb = new StringBuffer();
+            boolean var6 = false;
+
+            String message;
+            while(inputStream.read(data) != -1) {
+                message = new String(data, Charset.forName("utf-8"));
+                sb.append(message);
+            }
+
+            message = sb.toString();
+            inputStream.close();
+            connection.disconnect();
+            return message;
+        } catch (Exception var8) {
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            var8.printStackTrace(writer);
+            StringBuffer buffer = stringWriter.getBuffer();
+            return buffer.toString();
+        }
     }
 }
