@@ -75,7 +75,7 @@ public class TokenUtils {
 			                                       TokenModel,
 			                                       SystemKeyModel,
 			                                       Message<String>,
-			                                       Message<T>>
+			                                       String, String, Message<T>>
 			                                       callback) throws IOException {
 
 		TokenRequestMessage<T> requestMessage =
@@ -144,7 +144,7 @@ public class TokenUtils {
 					"Context loaded, invoke controller callback");
 
 			responseMessage =
-					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message);
+					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message, device, ip);
 		}
 
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
@@ -152,6 +152,7 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
+		ThreadContext.getContext().set(tResponse);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
