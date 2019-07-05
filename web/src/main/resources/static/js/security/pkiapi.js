@@ -19,6 +19,7 @@ function initialize(serverUrl) {
     }
 }
 
+
 /**
  * generate a QRCode with the QRCodeNonce and place it in QRCodeElement
  * @param QRCodeNonce {string} the nonce displayed in the QRCode
@@ -28,6 +29,7 @@ function generateQRCode(QRCodeNonce, QRCodeElement) {
     var message = {text: QRCodeNonce};
     QRCodeElement.qrcode(message);
 }
+
 
 /**
  * the function executed when polling to the server
@@ -69,10 +71,12 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
     })
 }
 
+
 /**
  * a timer, used to polling to the server,(can be visited by the user of the api)
  */
 var poller;
+
 
 /**
  * clear the poller of the QRCode request.
@@ -80,6 +84,7 @@ var poller;
 function clearPolling() {
     if (poller) clearInterval(poller);
 }
+
 
 /**
  * the function complete the whole procession during the login with QRCode
@@ -114,6 +119,7 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
     });
 }
 
+
 /**
  * create a random String at a set length, which is used to create kct and iv for AES CBC mode
  * @param size the length of the string.
@@ -133,12 +139,13 @@ function randomPassword(size) {
     return createPassword;
 }
 
+
 /**
  * generate a package(place as the payload) used to login with username and password
- * @param message the username and password of the user.
+ * @param data the username and password of the user.
  * @returns {{message: json, T: string, K: string, iv: string}} the request package for login
  */
-function generateInitialPackage(message) {
+function generateInitialPackage(data) {
     var TPub = getBytesFromStorage("TPub");
     var TimeStampBase64 = generateTimeStamp("SPub");
 
@@ -153,9 +160,9 @@ function generateInitialPackage(message) {
 
     storeBytesToStorage("kct", kct);
     storeBytesToStorage("iv", iv);
-    var package = {message: message, T: TimeStampBase64, K: Kct, iv: IV}
-    return package;
+    return {message: data, T: TimeStampBase64, K: Kct, iv: IV};
 }
+
 
 /**
  * used to parse the response package from the server during the login process
@@ -191,6 +198,7 @@ function validateInitialResponsePackage(package) {
     return true;
 }
 
+
 /**
  * convert a byte[4] array to a integer
  * @param bytes a byte array with length 4
@@ -204,6 +212,7 @@ function bytesToInt(bytes) {
     }
     return int;
 }
+
 
 /**
  * convert a integer to a byte array
@@ -224,6 +233,7 @@ function intToBytes(int) {
     return bytes;
 }
 
+
 /**
  * read a byte array from the localStorage, such as key, token and so on.
  * @param name the name of the byte array.
@@ -233,6 +243,7 @@ function getBytesFromStorage(name) {
     return $.base64.decode(localStorage.getItem(name));
 }
 
+
 /**
  * store a byte array to localStorage
  * @param name the name of the byte array.
@@ -241,6 +252,7 @@ function getBytesFromStorage(name) {
 function storeBytesToStorage(name, value) {
     localStorage.setItem(name, $.base64.encode(value));
 }
+
 
 /**
  * use the nonce and token in localStorage to generate EToken.
@@ -265,6 +277,7 @@ function generateEToken() {
     return $.base64.encode(eToken);
 }
 
+
 /**
  * use current Date to generate a timeStamp, store it to localStorage
  * @param key the key used to encrypt the timeStamp
@@ -282,6 +295,7 @@ function generateTimeStamp(key) {
     return timeStampBase64;
 }
 
+
 /**
  * validate the timestamp with the last timeStamp
  * @param T the base64 encoded encrypted timeStamp
@@ -297,4 +311,27 @@ function validateTimeStamp(T, key) {
     var localTimeStamp = localStorage.getItem("timeStamp") + 1;
     localStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
+}
+
+
+/**
+ * generate the package(place as payload) used for interaction with server
+ * @param data the data for usual business logic
+ * @returns {{data: *, T: (*|String), EToken: (*|String)}} the packaged package
+ */
+function generateInteractionPackage(data) {
+    var timeStamp = generateTimeStamp("SPub");
+    var eToken = generateEToken();
+    return {data: data, T:timeStamp, EToken: eToken};
+}
+
+
+/**
+ * parse the interaction package with server, validate timeStamp
+ * @param data the package containing the business data and timeStamp
+ * @returns {{}} after passing validation, return the business data
+ */
+function parseInteractionPackage(data) {
+    if (!validateTimeStamp(data.T, "Kcpri")) return {};
+    return data.data;
 }
