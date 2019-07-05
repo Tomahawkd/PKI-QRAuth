@@ -1,6 +1,5 @@
 package com.Vshows.PKI;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,9 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.Vshows.PKI.util.keyManager;
-import com.google.gson.Gson;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,14 +28,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
 import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
 import io.tomahawkd.pki.api.client.util.SecurityFunctions;
 import io.tomahawkd.pki.api.client.util.Utils;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -57,6 +50,12 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
+//    private jwt jwt = new jwt();
+//    private String s = jwt.init();
+
+
+
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,8 +83,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.registerBtn:
-                final String username = username_r.getText().toString();
-                final String password1 = password_r.getText().toString();
+                String username = username_r.getText().toString();
+                String password1 = password_r.getText().toString();
                 String password2 = re_password_r.getText().toString();
                 if(TextUtils.isEmpty(username))
                     Toast.makeText(this,"用户名不能为空！", Toast.LENGTH_LONG).show();
@@ -132,38 +131,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Context context = getBaseContext();
-                                Connecter connecter = new Connecter();
-                                keyManager manager = new keyManager();
-
-                                String Tpub = connecter.getAuthenticationServerPublicKey();
-                                manager.restoreTpub(context,username,Tpub);
-
-                                String Spub = connecter.getServerPublicKey("1");
-                                manager.restoreSpub(context,username,Spub);
-
-                                Gson gson = new Gson();
-                                Map<String,Object> result = new HashMap<>();
-                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
-                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
-                                String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey);
-                                result = gson.fromJson(resultJson,result.getClass());
-
-                                String nonce = (String) result.get("nonce");
-                                String token = (String) result.get("Token");
-                                PublicKey Cpub = (PublicKey) result.get("Cpub");
-                                PrivateKey Cpri = (PrivateKey) result.get("Cpri");
-
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }).start();
                 }
                 break;
             case R.id.forget_re:
@@ -174,7 +141,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 //                    @Override
 //                    public void run() {
 //                        Connecter connecter = new Connecter();
-//                        String mes = connecter.getAuthenticationServerPublicKey();
+//                        String mes = connecter.getServerPublicKey("2");
 //                        //String mes = a.a();
 //                        Log.d("conntest",mes);
 //                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
