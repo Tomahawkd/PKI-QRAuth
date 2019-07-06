@@ -1,13 +1,22 @@
+/**
+ * add validator to the forms, add listener for login and register event
+ */
 $(document).ready(function () {
+    /**
+     * set the display location of error message.
+     */
     $.validator.setDefaults({
         debug: false,
         errorElement: 'div',
-        errorPlacement: function (error, element) {
+        errorPlacement: function (error) {
             $('.error_box').empty();
             $('.error_box').append(error);
         }
     });
 
+    /**
+     * the validation rules for login
+     */
     $('#login_form').validate({
         rules: {
             username: {
@@ -38,6 +47,9 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * implements the login event
+     */
     $("#login_btn").click(function () {
         if (!$("#login_form").valid()) {
             return;
@@ -75,7 +87,9 @@ $(document).ready(function () {
         });
     });
 
-
+    /**
+     * the validation rules for register
+     */
     $('#register_form').validate({
         rules: {
             username: {
@@ -116,6 +130,9 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * implements the register event
+     */
     $("#register_btn").click(function () {
         if (!$("#register_form").valid()) {
             return;

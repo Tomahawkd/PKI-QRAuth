@@ -39,7 +39,7 @@ function generateQRCode(QRCodeNonce, QRCodeElement) {
  */
 function polling(pollingUrl, targetUrl, QRCodeElement) {
     var nonce = sessionStorage.getItem("QRCodeNonce");
-    var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStorage") : 0;
+    var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStatus") : 0;
     $.ajax({
         url: pollingUrl,
         type: "post",
@@ -146,55 +146,55 @@ function randomPassword(size) {
  * @returns {{message: json, T: string, K: string, iv: string}} the request package for login
  */
 function generateInitialPackage(data) {
-    var TPub = getBytesFromStorage("TPub");
-    var TimeStampBase64 = generateTimeStamp("SPub");
+    var TPub = localStorage.getItem("TPub");
+    var TimeStampBase64 = generateTimeStamp();
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
 
-    var kct = aesjs.utils.hex.toBytes($.md5(RandomSeed));
+    var kct = $.md5(RandomSeed);
     var Kct = encrypt.encrypt(kct); // the Base64 encoded initial vector for encryption
-    var iv = aesjs.utils.hex.toBytes(sha256(RandomSeed));
+    var iv = sha256(RandomSeed);
     var IV = encrypt.encrypt(iv); // the Base64 encoded Kct
 
-    storeBytesToStorage("kct", kct);
-    storeBytesToStorage("iv", iv);
+    localStorage.setItem("kct", kct);
+    localStorage.setItem("iv", iv);
     return {message: data, T: TimeStampBase64, K: Kct, iv: IV};
 }
 
 
 /**
  * used to parse the response package from the server during the login process
- * @param package {json} the payload of the response package
+ * @param dataPackage {json} the payload of the response package
  * @returns {boolean} return true when there is no fault
  */
-function validateInitialResponsePackage(package) {
-    var eToken = $.base64.decode(package.EToken);
-    var KP = $.base64.decode(package.KP);
+function validateInitialResponsePackage(dataPackage) {
+    var eToken = $.base64.decode(dataPackage.EToken);
+    var Kp = $.base64.decode(dataPackage.Kp);
 
     //decrypt KP to get the Kcpri and Kcpub;
     var kct = getBytesFromStorage("kct");
     var iv = getBytesFromStorage("iv");
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
-    var decryptedBytes = aesCbc.decrypt(KP);
+    var decryptedBytes = aesCbc.decrypt(Kp);
     var keyPair = $.base64.encode(decryptedBytes).split(";");
     localStorage.setItem("Kcpub", keyPair[0]);
     localStorage.setItem("Kcpri", keyPair[1]);
 
     // validate timeStamp
-    if (!validateTimeStamp(package.T, "Kcpri")) return false;
+    if (!validateTimeStamp(dataPackage.T)) return false;
 
     // parse token and nonce from eToken
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + $.base64.decode(keyPair[1]) + '-----END PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + keyPair[1] + '-----END PRIVATE KEY-----');
 
     var nonceToken = encrypt.decrypt(eToken);
-    var nonce = bytesToInt(nonceToken.slice(0, 4));
+    var nonce = bytesToInt(HexString2Bytes(nonceToken).slice(0, 4));
     var token = nonceToken.slice(4);
 
     localStorage.setItem("nonce", nonce);
-    storeBytesToStorage("token", token);
+    localStorage.setItem("token", token);
     return true;
 }
 
@@ -205,10 +205,10 @@ function validateInitialResponsePackage(package) {
  * @returns {int} return a integer
  */
 function bytesToInt(bytes) {
-    bytes = new Int8Array(bytes);
+    bytes = new Uint8Array(bytes);
     var int = bytes[3];
     for (var i = 2; i >= 0; i--) {
-        int = (int << 8 | bytes[i]);
+        int = ((int << 8) + bytes[i]);
     }
     return int;
 }
@@ -225,7 +225,7 @@ function intToBytes(int) {
         ints.push((int >> (8 * i)) & (0xFF));
     }
 
-    var byteArray = new Int8Array(ints);
+    var byteArray = new Uint8Array(ints);
     var bytes = [];
     for (i = 0; i < 4; i++) {
         bytes.push(byteArray[i]);
@@ -270,26 +270,25 @@ function generateEToken() {
     }
 
     var encrypt = new JSEncrypt();
-    var TPub = getBytesFromStorage("TPub");
+    var TPub = localStorage.getItem("TPub");
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
-    var eToken = encrypt.encrypt(nonce);
+    var eToken = encrypt.encrypt(eTokenContent);
 
-    return $.base64.encode(eToken);
+    return eToken;
 }
 
 
 /**
  * use current Date to generate a timeStamp, store it to localStorage
- * @param key the key used to encrypt the timeStamp
- * @returns {*|String} the base64 encoded encrypted timeStamp.
+ * @returns {*|String} the base64 encoded encrypted(with SPub) timeStamp.
  */
-function generateTimeStamp(key) {
-    key = getBytesFromStorage(key);
+function generateTimeStamp() {
+    var key = localStorage.getItem("SPub");
 
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + key + '-----END PUBLIC KEY-----');
-    var timeStamp = (new Date()).valueOf();
-    var timeStampBase64 = $.base64.encode(encrypt.encrypt(intToBytes(timeStamp))); // The Base64 encoded encrypted timeStamp
+    var timeStamp = Math.floor(Math.random()*10000);
+    var timeStampBase64 = encrypt.encrypt(Bytes2HexString(intToBytes(timeStamp))); // The Base64 encoded encrypted timeStamp
 
     localStorage.setItem("timeStamp", timeStamp);
     return timeStampBase64;
@@ -299,16 +298,17 @@ function generateTimeStamp(key) {
 /**
  * validate the timestamp with the last timeStamp
  * @param T the base64 encoded encrypted timeStamp
- * @param key the key used to decrypt the timeStamp
  * @returns {boolean} return true when the validate is successful
  */
-function validateTimeStamp(T, key) {
-    key = getBytesFromStorage(key);
+function validateTimeStamp(T) {
+    var key = localStorage.getItem("Kcpri");
 
     var encrypt = new JSEncrypt();
     encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');
-    var timeStamp = bytesToInt(encrypt.decrypt($.base64.decode(T)));
-    var localTimeStamp = localStorage.getItem("timeStamp") + 1;
+    var de = encrypt.decrypt(T);
+    var tim = HexString2Bytes(de);
+    var timeStamp = bytesToInt(tim);
+    var localTimeStamp = parseInt(localStorage.getItem("timeStamp")) + 1;
     localStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
 }
@@ -320,7 +320,7 @@ function validateTimeStamp(T, key) {
  * @returns {{data: *, T: (*|String), EToken: (*|String)}} the packaged package
  */
 function generateInteractionPackage(data) {
-    var timeStamp = generateTimeStamp("SPub");
+    var timeStamp = generateTimeStamp();
     var eToken = generateEToken();
     return {data: data, T:timeStamp, EToken: eToken};
 }
@@ -332,6 +332,74 @@ function generateInteractionPackage(data) {
  * @returns {{}} after passing validation, return the business data
  */
 function parseInteractionPackage(data) {
-    if (!validateTimeStamp(data.T, "Kcpri")) return {};
+    if (!validateTimeStamp(data.T)) return {};
     return data.data;
+}
+
+
+function encrypt() {
+    var pub = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN" +
+    "FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76" +
+    "xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4" +
+    "gwQco1KRMDSmXSMkDwIDAQAB";
+    var pri = "MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I" +
+        "5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJT" +
+        "eucF+S76xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKB" +
+        "USLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQABAoGAfY" +
+        "9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+" +
+        "57fI4fvxTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLo" +
+        "q06V+FyBfDSwL8KbLyeHm7KUZnLNQbk8yGLzB3iYKkRHlmUanQG" +
+        "aNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd8XJTSdcIX4a3gy3GGC" +
+        "JxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAFz/7+B" +
+        "SMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE" +
+        "0/mPwmP5rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8R" +
+        "v7QnD/YBvi52POIlRSSIMV7SwWvSK4WSMnGb1ZBbhgdg57DXasp" +
+        "cwHsFV7hByQ5BvMtIduHcT14ECfcECQATeaTgjFnqE/lQ22Rk0e" +
+        "GaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5AzilpsLB" +
+        "YuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRU" +
+        "nU8Jfm3Ozuku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876";
+
+    localStorage.setItem("SPub", pub);
+    localStorage.setItem("Kcpri", pri);
+    var timeStamp = generateTimeStamp();
+    console.log(timeStamp);
+    console.log(validateTimeStamp(timeStamp));
+}
+
+
+function HexString2Bytes(str) {
+    var pos = 0;
+    var len = str.length;
+    if (len % 2 !== 0) {
+        return null;
+    }
+    len /= 2;
+    var arrBytes = [];
+    for (var i = 0; i < len; i++) {
+        var s = str.substr(pos, 2);
+        var v = parseInt(s, 16);
+        arrBytes.push(v);
+        pos += 2;
+    }
+    return arrBytes;
+}
+
+
+function Bytes2HexString(arrBytes) {
+    var str = "";
+    for (var i = 0; i < arrBytes.length; i++) {
+        var tmp;
+        var num=arrBytes[i];
+        if (num < 0) {
+            //此处填坑，当byte因为符合位导致数值为负时候，需要对数据进行处理
+            tmp =(255+num+1).toString(16);
+        } else {
+            tmp = num.toString(16);
+        }
+        if (tmp.length === 1) {
+            tmp = "0" + tmp;
+        }
+        str += tmp;
+    }
+    return str;
 }
