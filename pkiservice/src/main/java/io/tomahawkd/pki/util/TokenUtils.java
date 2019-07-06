@@ -133,6 +133,14 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.WARN,
 				"get system context: " + systemKeyModel.toString());
 
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
+		systemLogService.insertLogRecord(TokenUtils.class.getName(),
+				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
+
+		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
+		ThreadContext.getContext().set(tResponse);
+
+
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Tokenid " + tokenModel.getTokenId() +
 						" used with status: " + message.getStatus());
@@ -147,12 +155,6 @@ public class TokenUtils {
 					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message, device, ip);
 		}
 
-		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
-		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
-
-		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
-		ThreadContext.getContext().set(tResponse);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
