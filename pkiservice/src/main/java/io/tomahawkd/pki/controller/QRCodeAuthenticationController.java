@@ -204,7 +204,7 @@ public class QRCodeAuthenticationController {
 	 * @return {
 	 * "M": "result message
 	 * {
-	 * "type": "number(0:not exist, 1:scanned, 2:confirmed)",
+	 * "type": "number(-1:not exist, 0:not scanned, 1:scanned, 2:confirmed)",
 	 * "message": "message"
 	 * }"
 	 * "T": "Base64 encoded Kc,t encrypted challenge number+1"
@@ -240,8 +240,8 @@ public class QRCodeAuthenticationController {
 
 		Map<String, String> message = new HashMap<>();
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);
-		if (model == null || model.getStatus() != 1 && model.getStatus() != 2) {
-			message.put("type", "0");
+		if (model == null) {
+			message.put("type", "-1");
 			message.put("message", "qrcode invalid");
 
 			Map<String, String> responseMap = new HashMap<>();
@@ -250,6 +250,15 @@ public class QRCodeAuthenticationController {
 
 			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 					"queryQRStatus", SystemLogModel.DEBUG, "Invalid query nonce to qrcode.");
+
+			return new Gson().toJson(responseMap);
+		} else if (model.getStatus() != 1 && model.getStatus() != 2) {
+			message.put("type", "0");
+			message.put("message", "qrcode not scanned");
+
+			Map<String, String> responseMap = new HashMap<>();
+			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("T", tResponse);
 
 			return new Gson().toJson(responseMap);
 		} else if (model.getStatus() == 1) {
