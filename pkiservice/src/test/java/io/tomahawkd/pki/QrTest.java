@@ -222,8 +222,14 @@ public class QrTest {
 		update2Message.setMessage(Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k,
 				"1".getBytes())));
 
+		nonce++;
+		byte[] tokenArrCon = ByteBuffer.allocate(token.length + Integer.BYTES)
+				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(token).array();
+		String etokenReqCon = Utils.base64Encode(
+				SecurityFunctions.encryptAsymmetric(k, tokenArrCon));
+
 		TokenRequestMessage<String> update2tokenRequestMessage = new TokenRequestMessage<>();
-		update2tokenRequestMessage.setToken(etokenReq);
+		update2tokenRequestMessage.setToken(etokenReqCon);
 		update2tokenRequestMessage.setTime(tStringReqcon);
 		update2tokenRequestMessage.setDevice("JavaTest;127.0.0.1");
 		update2tokenRequestMessage.setMessage(update2Message);

@@ -9,10 +9,7 @@ import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.model.TokenModel;
 import io.tomahawkd.pki.model.UserKeyModel;
 import io.tomahawkd.pki.service.*;
-import io.tomahawkd.pki.util.Message;
-import io.tomahawkd.pki.util.SecurityFunctions;
-import io.tomahawkd.pki.util.TokenUtils;
-import io.tomahawkd.pki.util.Utils;
+import io.tomahawkd.pki.util.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -141,6 +138,7 @@ public class TokenValidationController {
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
+		ThreadContext.getContext().set(tResponse);
 		String mResponse = new Gson().toJson(new Message<>(0, "Authenticate Complete"));
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
@@ -180,6 +178,6 @@ public class TokenValidationController {
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
-				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage) -> null);
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> null);
 	}
 }

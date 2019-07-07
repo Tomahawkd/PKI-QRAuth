@@ -4,10 +4,13 @@ import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.util.SecurityFunctions;
 import io.tomahawkd.pki.util.Utils;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TokenModel {
 
@@ -35,12 +38,15 @@ public class TokenModel {
 		this.validBy = validBy;
 	}
 
-	private TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy, int nonce) {
+	public TokenModel(int tokenId, int userId, Timestamp createDate, Timestamp validBy, int nonce,
+	                  String device, String ip) {
 		this.tokenId = tokenId;
 		this.userId = userId;
 		this.createDate = createDate;
 		this.validBy = validBy;
 		this.nonce = nonce;
+		this.device = device;
+		this.ip = ip;
 	}
 
 	public int getTokenId() {
@@ -154,5 +160,20 @@ public class TokenModel {
 	public static TokenModel deserializeFromString(String data)
 			throws IllegalArgumentException, CipherErrorException {
 		return deserialize(Base64.getDecoder().decode(data));
+	}
+
+	public Map<String, String> toMap() throws IOException {
+		Map<String, String> data = new HashMap<>();
+		data.put("id", Utils.base64Encode(SecurityFunctions.encryptUsingAuthenticateServerKey(
+				ByteBuffer.allocate(16)
+						.order(ByteOrder.LITTLE_ENDIAN)
+						.putInt(tokenId).array()
+				)
+		));
+
+		data.put("date", createDate.toString());
+		data.put("device", device);
+		data.put("ip", ip);
+		return data;
 	}
 }
