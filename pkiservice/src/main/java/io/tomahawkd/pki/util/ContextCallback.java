@@ -1,7 +1,9 @@
 package io.tomahawkd.pki.util;
 
-@FunctionalInterface
-public interface ContextCallback<L, M, N, O, P, R> {
+import java.io.IOException;
 
-	R invoke(L l, M m, N n, O o, P p) throws RuntimeException;
+@FunctionalInterface
+public interface ContextCallback<L, M, N, O, P, D, I, R> {
+
+	R invoke(L l, M m, N n, O o, P p, D d, I i) throws RuntimeException, IOException;
 }

@@ -68,13 +68,14 @@ public class TokenUtils {
 	                                       UserKeyService userKeyService,
 	                                       SystemKeyService systemKeyService,
 	                                       UserIndexService userIndexService,
+	                                       Class<T> type,
 	                                       ContextCallback<
 			                                       TokenRequestMessage<T>,
 			                                       UserKeyModel,
 			                                       TokenModel,
 			                                       SystemKeyModel,
 			                                       Message<String>,
-			                                       Message<T>>
+			                                       String, String, Message<T>>
 			                                       callback) throws IOException {
 
 		TokenRequestMessage<T> requestMessage =
@@ -132,6 +133,14 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.WARN,
 				"get system context: " + systemKeyModel.toString());
 
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
+		systemLogService.insertLogRecord(TokenUtils.class.getName(),
+				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
+
+		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
+		ThreadContext.getContext().set(tResponse);
+
+
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Tokenid " + tokenModel.getTokenId() +
 						" used with status: " + message.getStatus());
@@ -143,15 +152,9 @@ public class TokenUtils {
 					"Context loaded, invoke controller callback");
 
 			responseMessage =
-					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message);
+					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message, device, ip);
 		}
 
-		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
-		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
-
-		String mResponse = responseMessage != null ? responseMessage.toJson() : message.toJson();
-		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),

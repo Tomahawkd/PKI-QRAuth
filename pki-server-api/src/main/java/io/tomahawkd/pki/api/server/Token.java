@@ -29,6 +29,7 @@ public class Token {
     private PrivateKey privateKey;
     private PublicKey TpublicKey;
     private String Kcs;
+
     public   static String systemid;
    // private String systemid = "a5e1fc6f2f4941fe981e0361a99ded64";
 
@@ -62,6 +63,7 @@ public class Token {
         return  TpublicKey.toString();
 
     }
+
     /**
      * @Param data {"payload": "Base64 encoded Ks public key encrypted (username,password)",
      *              "S": "Base64 encoded Ks public key encrypted (Kc,s,time1)",
@@ -75,6 +77,7 @@ public class Token {
      */
     @PostMapping("/init")
     public String acceptInitializeAuthenticationMessage(@RequestParam String body, HttpServletRequest request, ThrowableBiFunction<String, Integer> callback) throws Exception {
+
         Map<String, String> bodyData =
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -93,6 +96,7 @@ public class Token {
         int t = SecurityFunctions.generateRandom();
         String time2 = new String((SecurityFunctions.encryptAsymmetric(TpublicKey,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())), StandardCharsets.UTF_8);
+
         //String time2 = new String(SecurityFunctions.encryptAsymmetric(TpublicKey,String.valueOf(timestamp).getBytes()),"UTF-8");
         String userid = String.valueOf(usrid);     //userid获得
             //systemid获得
@@ -114,7 +118,9 @@ public class Token {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
+      
         String content = "{\"K\":\"" + K + "\",\"id\":\"" + encid + "\",\"idc\":\"" + encidc + "\",\"D\":\"" + D + "\",\"T\":\"" + enctime2 + "\"}";
+
         OutputStream os = connection.getOutputStream();
         byte[] input = content.getBytes(StandardCharsets.UTF_8);
         os.write(input,0,input.length);
@@ -145,19 +151,25 @@ public class Token {
         Map<String, String> result =
                 new Gson().fromJson(eresult, new TypeToken<Map<String, String>>() {
                 }.getType());
+
         String m = result.get("M");
+
         Map<String,Object> message = new Gson().fromJson(m,new TypeToken<Map<String,Integer>>(){}.getType());
         if((int)message.get("status") == 0){
             String etoken = result.get("EToken");
             String KP = result.get("KP");
+
             String T = new String(SecurityFunctions.decryptAsymmetric(privateKey,new String(decoder.decode(result.get("T")), StandardCharsets.UTF_8).getBytes()));
             String k = new String(decoder.decode(result.get("K")), StandardCharsets.UTF_8);
             PublicKey Kcpub = SecurityFunctions.readPublicKey(k);
+
             int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
             if((t1 == t + 1)){
                 int tem = ByteBuffer.wrap(time1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
                 String time = new String((SecurityFunctions.encryptAsymmetric(Kcpub,
+
                         ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tem).array())), StandardCharsets.UTF_8);
+
                 return "{\"EToken\":\"" + etoken + "\",\"KP\":\"" + KP + "\",\"T1\":\"" + Base64.getEncoder().encodeToString(time.getBytes()) + "\",\"M\":{\"status\":" + 0 + ",\"message\":\"success\"}}";
             }
             return "{\"M\":{\"status\":1,\"message\":\"time authentication failed\"}}";
@@ -196,7 +208,9 @@ public class Token {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
+      
         String content = "{\"EToken\":\"" + etoken + "\",\"D\":\"" + d + "\",\"T\":\"" + Base64.getEncoder().encodeToString(time2.getBytes()) +  "\"}";
+
         OutputStream os = connection.getOutputStream();
         byte[] input = content.getBytes(StandardCharsets.UTF_8);
         os.write(input,0,input.length);
@@ -225,6 +239,7 @@ public class Token {
 
         String ereceive = text.toString();
         Map<String,String> receive = new Gson().fromJson(ereceive, new TypeToken<Map<String, String>>() {}.getType());
+
         String M = receive.get("M");
         Map<String,String> message = new Gson().fromJson(M,new TypeToken<Map<String,Integer>>(){}.getType());
         String K = new String(decoder.decode(receive.get("K")), StandardCharsets.UTF_8);
@@ -236,6 +251,7 @@ public class Token {
             int tem = ByteBuffer.wrap(time1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
             String time = new String((SecurityFunctions.encryptAsymmetric(Kcpub,
                     ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tem).array())), StandardCharsets.UTF_8);
+
             //String time = new String(SecurityFunctions.encryptAsymmetric(Kcpub,String.valueOf(Long.parseLong(time1) + 1).getBytes()),"UTF-8");
             Base64.Encoder encoder = Base64.getEncoder();
             String Payload = encoder.encodeToString(data.getBytes());
@@ -256,10 +272,12 @@ public class Token {
      */
     @PostMapping("/scan")
     public String scanner(@RequestParam String body,HttpServletRequest request) throws Exception {
+
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String,String> bodydata = new Gson().fromJson(body,new TypeToken<Map<String,String>>(){}.getType());
         String EToken = bodydata.get("EToken");
         String N = bodydata.get("N");
+
         String time1 = new String(SecurityFunctions.decryptAsymmetric(privateKey,decoder.decode(bodydata.get("T").getBytes())), StandardCharsets.UTF_8);
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey,ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
@@ -271,6 +289,7 @@ public class Token {
                 "\"EToken\":\"" + EToken + "\",\"T\":\"" + Base64.getEncoder().encodeToString(time.getBytes()) +
                 "\",\"D\":\"" + d + "\"}";
         String target_url = "/qr/update";
+
         StringBuilder target = new StringBuilder(target_url);
         URL url = new URL(target.toString());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -309,6 +328,7 @@ public class Token {
         Map<String,Object> mes = new Gson().fromJson(M,new TypeToken<Map<String,Object>>(){}.getType());
         if((int)mes.get("status") == 1)
             return "\"M\":{\"status\":3,\"message\":\"" + mes.get("message") + "\"}";
+
         String T1 = new String(SecurityFunctions.decryptAsymmetric(privateKey,decoder.decode(receive.get("T"))) ,"UTF-8");
         int authtime = ByteBuffer.wrap(T1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
         if(authtime == time2 + 1){
@@ -318,6 +338,7 @@ public class Token {
                     ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tem).array())),"UTF-8");
             //String time_1 = new String(SecurityFunctions.encryptAsymmetric(Kcpub,String.valueOf(Long.parseLong(time1) + 1).getBytes()),"UTF-8") ;
             String T_1 = Base64.getEncoder().encodeToString(time_1.getBytes());
+
             return "{\"M\":" + mes.get("message") + ",\"T\":\"" + T_1 + "\"}";
         }
         return "\"M\":{\"status\":1,\"message\":\"time authentiaction failed\"}";
@@ -350,6 +371,7 @@ public class Token {
                 "\"T\":\"" + Base64.getEncoder().encodeToString(time.getBytes()) +
                 "\",\"D\":\"" + d + "\"}";
         String target_url = "/qr/update";
+      
         StringBuilder target = new StringBuilder(target_url);
         URL url = new URL(target.toString());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -389,6 +411,7 @@ public class Token {
         if((int)jm.get("status") == 1)
             return "{\"M\":{\"status\":3,\"message\":\"" + jm.get("message") + "\"}}";
         String message = (String)jm.get("message");
+
         int tem = ByteBuffer.wrap(time1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
         String time_1 = new String((SecurityFunctions.encryptAsymmetric(Kcpub,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(tem).array())),"UTF-8");
@@ -396,6 +419,7 @@ public class Token {
         //String time_1 = new String(SecurityFunctions.encryptAsymmetric(publicKey,String.valueOf(Long.parseLong(time1) + 1).getBytes()),"UTF-8") ;
         String T_1 = Base64.getEncoder().encodeToString(time_1.getBytes());
         return "{\"M\":" + message + ",\"T\":\"" + T_1 + "\"}";
+
     }
     /**
      * @return

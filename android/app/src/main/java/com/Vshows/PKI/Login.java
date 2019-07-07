@@ -15,6 +15,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.keyManager;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import javax.net.ssl.KeyManager;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -36,6 +41,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
 
 public class Login extends AppCompatActivity implements View.OnClickListener  {
 
@@ -72,6 +78,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
         login = (ImageButton) findViewById(R.id.loginBtn);
         login.setOnClickListener(this);
         register.setOnClickListener(this);
+        Toast.makeText(this, SystemUtil.getSystemModel(), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -82,7 +89,18 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
+//                deleteDatabase("keys.db");
+//                name = username.getText().toString();
+//                keyManager km = new keyManager();
+//                km.restoreNonce(this,name,2333333);
+//               int n  = km.getNonce(this,name);
+//                Toast.makeText(this,"nonce: " + n, Toast.LENGTH_LONG).show();
 
+                Intent intent1 = new Intent(this,index.class);
+
+                intent1.putExtra("session",session);
+
+                startActivity(intent1);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -100,6 +118,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                         jsonObject.put("password",psw);
 
                         String url ="http://192.168.43.159/user/login";
+
 
                         OkHttpClient client = new OkHttpClient();
                         RequestBody body = RequestBody.create(JSON,jsonObject.toString());
