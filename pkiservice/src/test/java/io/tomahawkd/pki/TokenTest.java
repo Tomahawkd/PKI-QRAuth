@@ -1,10 +1,8 @@
 package io.tomahawkd.pki;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.tomahawkd.pki.exceptions.CipherErrorException;
 import io.tomahawkd.pki.exceptions.MalformedJsonException;
-import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.TokenRequestMessage;
 import io.tomahawkd.pki.util.TokenResponseMessage;
 import io.tomahawkd.pki.util.Utils;
