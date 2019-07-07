@@ -158,8 +158,8 @@ function generateInitialPackage(data) {
     var iv = sha256(RandomSeed);
     var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
-    localStorage.setItem("kct", kct);
-    localStorage.setItem("iv", iv);
+    sessionStorage.setItem("kct", kct);
+    sessionStorage.setItem("iv", iv);
     return {message: data, T: TimeStampBase64, K: Kct, iv: IV};
 }
 
@@ -174,11 +174,13 @@ function validateInitialResponsePackage(dataPackage) {
     var Kp = $.base64.decode(dataPackage.Kp);
 
     //decrypt KP to get the Kcpri and Kcpub;
-    var kct = getBytesFromStorage("kct");
-    var iv = getBytesFromStorage("iv");
+    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+    sessionStorage.removeItem("kct");
+    sessionStorage.removeItem("iv");
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
     var decryptedBytes = aesCbc.decrypt(Kp);
-    var keyPair = $.base64.encode(decryptedBytes).split(";");
+    var keyPair = $.base64.decode(decryptedBytes).split(";");
     localStorage.setItem("Kcpub", keyPair[0]);
     localStorage.setItem("Kcpri", keyPair[1]);
 
@@ -187,11 +189,11 @@ function validateInitialResponsePackage(dataPackage) {
 
     // parse token and nonce from eToken
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + keyPair[1] + '-----END PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
 
     var nonceToken = encrypt.decrypt(eToken);
-    var nonce = bytesToInt(HexString2Bytes(nonceToken).slice(0, 4));
-    var token = nonceToken.slice(4);
+    var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
+    var token = nonceToken.substr(8);
 
     localStorage.setItem("nonce", nonce);
     localStorage.setItem("token", token);
@@ -259,22 +261,18 @@ function storeBytesToStorage(name, value) {
  * @returns {*|String} a EToken
  */
 function generateEToken() {
-    var nonce = localStorage.getItem("nonce") + 1;
+    var nonce = parseInt(localStorage.getItem("nonce")) + 1;
     localStorage.setItem("nonce", nonce);
 
-    var token = getBytesFromStorage("token");
+    var token = localStorage.getItem("token");
 
-    var eTokenContent = intToBytes(nonce);
-    for (var i = 0; i < token.length; i++) {
-        eTokenContent.push(token[i]);
-    }
+    var eTokenContent = Bytes2HexString(intToBytes(nonce)) + token;
 
     var encrypt = new JSEncrypt();
     var TPub = localStorage.getItem("TPub");
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
-    var eToken = encrypt.encrypt(eTokenContent);
 
-    return eToken;
+    return encrypt.encrypt(eTokenContent);
 }
 
 
@@ -290,7 +288,7 @@ function generateTimeStamp() {
     var timeStamp = Math.floor(Math.random()*10000);
     var timeStampBase64 = encrypt.encrypt(Bytes2HexString(intToBytes(timeStamp))); // The Base64 encoded encrypted timeStamp
 
-    localStorage.setItem("timeStamp", timeStamp);
+    sessionStorage.setItem("timeStamp", timeStamp);
     return timeStampBase64;
 }
 
@@ -305,11 +303,10 @@ function validateTimeStamp(T) {
 
     var encrypt = new JSEncrypt();
     encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');
-    var de = encrypt.decrypt(T);
-    var tim = HexString2Bytes(de);
-    var timeStamp = bytesToInt(tim);
+
+    var timeStamp = bytesToInt(HexString2Bytes(encrypt.decrypt(T)));
     var localTimeStamp = parseInt(localStorage.getItem("timeStamp")) + 1;
-    localStorage.removeItem("timeStamp");
+    sessionStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
 }
 
@@ -408,5 +405,17 @@ function encrypt() {
 
     localStorage.setItem("TPub", pub);
     localStorage.setItem("Kcpri", pri);
-    generateInitialPackage();
+
+    var pubKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwibfwzLDKKbGFBn1UtwQJDSw1unxEJbdci3EpMlKgS0ki5p5l0hJxoOgrZfEcNdEga1hgDPoF9Yk9FJvHhNX/+FiXRME3B98d2DjAzOYNXizMNPw9baSyaPl7vdF815b8yMIX1l2AYJcsljj/G6liqRSy0FZpOV3RiPMTOQGxPgsBfrfTq7CiudDN2X16sOoSI233jW9ulKwjcdH0lXMUTD1dIwy30KJC9vmnmmeKa7LzDThLL3ep22CDqdIMX3MHpgpi+c+Gd0hZq+nz8U7je+9JGA9HFu7n6Y85QXNUsgzVoi3TDIqvoIBPU5+8ogg3uG8ndSI7rmgmaUHXjGvtwIDAQAB";
+    var priKey = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCiVAt4YLKMoBjW+TD+EqMQsptKXjg/hQ3feqPgXVK552EWxbJ7yo/ZnxWuhfGa7iBmj+61bC0GUNCThBnQZF9ovU/EfKc6XtfQSfpfXj+Zzwl/iYfATh57St8edbcmK7QumzWkFgYNWY4AICZEgAFdxWwlQYuvLWoOi8T2yrCu47AqPcPumYoDJVaqbafGdcQPUYeQzECucHTU6R2SVg7gSMfxj/A2eKXPFrl9/tYAR/mzW0TE64+nuOo4dy2DPhI2c5UJOhtJWP57zcLvc7yBuDAiutLI+ZC2Jf8roM9g0C+hq+dkYCwr+MiEw4z1+4RUExY/msjIUXYCBU1AVwVpAgMBAAECggEAfXjbONv9hydEq/4HuYvsUT7NO+miLq8I7yHbw9Q+2oWXjUOY14jWMg9+cd0EyI2hq8U7bS5FiykyX6PvVB4RhWM3Yhg8JqkixdQ43Dh8jsXygItsy99WPlS8K84vmCiV6KR+DOwdF3qOgVhYXABZjgLIue91Kh2/aajtwRkhAryueicByg2F5gQovEO+MHx647glYOIGVQYxM2V7cVpYkYyK4w7N+lzcpi3F7+1KHpkkFZ28FW7cBROKVqaHvhOoLExXin8Bxr5wxd+jG73RRlOlxTwW4QCfolgKae4l39o80oTKPo8VpNq5620m9xBtB03IzO2I5cFyAWlYRt071QKBgQDVUTGfqknUvkOGzEXT0xEhqoQlKpe/sLJYzDoQyD4ffdIchCOzVx4b6Qw8Oi0MGc+k6AWBlUajk8jfny6GGavn8TmAqRabby1VIgaSk8mb40Uc3Gd2V0knJ/ApEefv3LA0smlaS9yOY6VRTntAKi+pYgZuyceRZs1Rth/q3ql2jwKBgQDCzwinrNk04Tb7QskQz19sFO4V8C0jwx+RJJn446Kr/tYeqA+tCo7DMOXTLCmW8LzVlh3TYc0r+dKpqi8Gcn5b20VE4XpF+YMJHBTrGLwwWuiZ6cejgylyocY/xXSmirgj/HeLWwXYsplIQNV+1zsJ+Hfr1jxh7kRm6Jx/dC6AhwKBgQCR0RnJ2f70JUdFmtdUsCAy0jvYqB/pUiDn4FsE48zLfBenlJBO5ItZatoJRX9LmU0+nbg910vdP4V9j3OfCWdgep3jHDKu97WWT1cM1WdoX1f8HZG/7HS+Bmf9uxa/+SyeKSMpLVhMIUN9q9dGik/gSni5PMdl1k8dvxBcXe6bcwKBgCXpSJPpDXQ/CAYp3xtIYBeWkybt0LsO9Au5BcXr9vJl66GXr0VLsrDFyVQpWgan3vfp+O/0LouKWLbwCarFiVWy/G4FO1h20EtrjZ6a97SpXG7nkhR+KAjI9t3ePW9Tu7Y1Icaa9i5Pw4jOJT5EAJdWJXBeBu5AAkvMpPgg0hPtAoGBAIxRnGtdqQue6HdXuXH2ogpS83YhU0LuhHJ7q5Ex1WtWiIAtWKnl8OC9soVN7nHvM+Om5fIqRcb4+JNuu5bzdtU4Pgdv6dfYicOZJUEvIm+1CzqeH3hPp70vGVHGu0h7ayrQOqyRYuWED/wxKNHlBzkHrAhDuAVCF0zoSj2RERb7";
+    var en = "P8rw+Bkzp6tvhWa8lqGORvdSpIDIA+ulIV5BCYajfStOOqPfNpfjGSmnQwaKSnsrMHXZtes0tdjSUeJYMIbwdn7q02wqqrPkttCQp1mttpJHudm5LcPQVwFZEGA7izLSQZkHluAkiRxUcLX3He9pKHNFuz1uVhnRmELcDs4OqsGHnA3LaTQhL+aDNtiVwIxCl9JWHqDvXHkXhemA/3+bDjG6uwi9BeFrLuyChI9qUBFkOEZfr2u6jSCwM3lhHu9/egU3W697lexwJqrk/sv3F5HKcgHqc+ZJyAt9LGBjCA3iZHk9I8TU5pN4q1EptW4ucdmSQ7LDTP77yiV/hmvwYA==";
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + pubKey + '-----END PUBLIC KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + priKey + '-----END RSA PRIVATE KEY-----');
+    var de = encrypt.decrypt(en);
+    console.log(de);
+
+    var str = de.substr(0, 8);
+    var bytes = HexString2Bytes(str);
+    console.log(bytesToInt(bytes));
 }
