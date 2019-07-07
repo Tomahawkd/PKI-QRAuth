@@ -154,9 +154,9 @@ function generateInitialPackage(data) {
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
 
     var kct = $.md5(RandomSeed);
-    var Kct = encrypt.encrypt(kct); // the Base64 encoded initial vector for encryption
+    var Kct = encrypt.encrypt(kct); // hex string of initial vector for encryption
     var iv = sha256(RandomSeed);
-    var IV = encrypt.encrypt(iv); // the Base64 encoded Kct
+    var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
     localStorage.setItem("kct", kct);
     localStorage.setItem("iv", iv);
@@ -337,36 +337,11 @@ function parseInteractionPackage(data) {
 }
 
 
-function encrypt() {
-    var pub = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN" +
-    "FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76" +
-    "xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4" +
-    "gwQco1KRMDSmXSMkDwIDAQAB";
-    var pri = "MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I" +
-        "5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJT" +
-        "eucF+S76xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKB" +
-        "USLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQABAoGAfY" +
-        "9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+" +
-        "57fI4fvxTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLo" +
-        "q06V+FyBfDSwL8KbLyeHm7KUZnLNQbk8yGLzB3iYKkRHlmUanQG" +
-        "aNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd8XJTSdcIX4a3gy3GGC" +
-        "JxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAFz/7+B" +
-        "SMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE" +
-        "0/mPwmP5rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8R" +
-        "v7QnD/YBvi52POIlRSSIMV7SwWvSK4WSMnGb1ZBbhgdg57DXasp" +
-        "cwHsFV7hByQ5BvMtIduHcT14ECfcECQATeaTgjFnqE/lQ22Rk0e" +
-        "GaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5AzilpsLB" +
-        "YuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRU" +
-        "nU8Jfm3Ozuku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876";
-
-    localStorage.setItem("SPub", pub);
-    localStorage.setItem("Kcpri", pri);
-    var timeStamp = generateTimeStamp();
-    console.log(timeStamp);
-    console.log(validateTimeStamp(timeStamp));
-}
-
-
+/**
+ * convert a hex string to a byte array
+ * @param str the target hex array
+ * @returns {*} a byte string
+ */
 function HexString2Bytes(str) {
     var pos = 0;
     var len = str.length;
@@ -384,7 +359,11 @@ function HexString2Bytes(str) {
     return arrBytes;
 }
 
-
+/**
+ * convert a byte array to a hex string
+ * @param arrBytes the target byte array
+ * @returns {string} a hex string
+ */
 function Bytes2HexString(arrBytes) {
     var str = "";
     for (var i = 0; i < arrBytes.length; i++) {
@@ -402,4 +381,32 @@ function Bytes2HexString(arrBytes) {
         str += tmp;
     }
     return str;
+}
+
+
+function encrypt() {
+    var pub = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN" +
+        "FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76" +
+        "xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4" +
+        "gwQco1KRMDSmXSMkDwIDAQAB";
+    var pri = "MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I" +
+        "5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJT" +
+        "eucF+S76xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKB" +
+        "USLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQABAoGAfY" +
+        "9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+" +
+        "57fI4fvxTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLo" +
+        "q06V+FyBfDSwL8KbLyeHm7KUZnLNQbk8yGLzB3iYKkRHlmUanQG" +
+        "aNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd8XJTSdcIX4a3gy3GGC" +
+        "JxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAFz/7+B" +
+        "SMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE" +
+        "0/mPwmP5rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8R" +
+        "v7QnD/YBvi52POIlRSSIMV7SwWvSK4WSMnGb1ZBbhgdg57DXasp" +
+        "cwHsFV7hByQ5BvMtIduHcT14ECfcECQATeaTgjFnqE/lQ22Rk0e" +
+        "GaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5AzilpsLB" +
+        "YuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRU" +
+        "nU8Jfm3Ozuku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876";
+
+    localStorage.setItem("TPub", pub);
+    localStorage.setItem("Kcpri", pri);
+    generateInitialPackage();
 }
