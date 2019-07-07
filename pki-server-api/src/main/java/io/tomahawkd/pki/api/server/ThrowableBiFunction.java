@@ -1,6 +1,5 @@
 package io.tomahawkd.pki.api.server;
 
-public interface ThrowableBiFunction<P,T,R> {
-    R apply(P user,T pass) throws Exception;
-
+public interface ThrowableBiFunction<P,R> {
+    R apply(P payload) throws Exception;
 }
