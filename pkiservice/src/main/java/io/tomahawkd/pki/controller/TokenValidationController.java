@@ -45,7 +45,7 @@ public class TokenValidationController {
 	 *             "iv": "Base64 encoded Kt public key encrypted iv",
 	 *             "id": "Base64 encoded Kt public key encrypted String(userTag;systemid)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "device information(device;ip)"
+	 *             "D": "device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Kc public",
@@ -69,8 +69,8 @@ public class TokenValidationController {
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		byte[] k =
@@ -158,7 +158,7 @@ public class TokenValidationController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",

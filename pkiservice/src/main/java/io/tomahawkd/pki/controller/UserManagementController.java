@@ -46,7 +46,7 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -76,7 +76,7 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -107,7 +107,7 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             "M": {
 	 *             "status": 0
 	 *             "message": "single token id to revoke"
@@ -164,7 +164,7 @@ public class UserManagementController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",

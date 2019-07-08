@@ -107,7 +107,7 @@ public class QRCodeAuthenticationController {
 	 *             }
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": ...
+	 *             "D": "ip;device"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Kc,t encrypted Kc public",
@@ -199,7 +199,7 @@ public class QRCodeAuthenticationController {
 	 *             "nonce2": "Base64 encoded Kt public key encrypted QrCode nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
 	 *             "system": "systemid",
-	 *             "D": "device"
+	 *             "D": "ip;device"
 	 *             }
 	 * @return {
 	 * "M": "result message
@@ -221,8 +221,8 @@ public class QRCodeAuthenticationController {
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		int nonce = ByteBuffer.wrap(
