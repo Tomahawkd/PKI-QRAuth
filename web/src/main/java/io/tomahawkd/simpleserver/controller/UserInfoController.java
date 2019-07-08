@@ -38,7 +38,7 @@ public class UserInfoController {
 
 
     @GetMapping("/data")
-    public String getInfoPageById(HttpServletRequest request)  {
+    public String getInfoPageById(HttpServletRequest request) {
 
         int userid = (int) request.getSession().getAttribute("userid");
 
@@ -98,7 +98,7 @@ public class UserInfoController {
 
             }
         } catch (Exception e) {
-            throw  new MalformedJsonException("Json parse error");
+            throw new MalformedJsonException("Json parse error");
         }
     }
 
@@ -132,7 +132,7 @@ public class UserInfoController {
 
             }
         } catch (Exception e) {
-            throw  new MalformedJsonException("Json parse error");
+            throw new MalformedJsonException("Json parse error");
         }
     }
 

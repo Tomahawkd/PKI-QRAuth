@@ -3,11 +3,11 @@
         <div class="card hovercard">
             <div class="tab" role="tabpanel">
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item col-md-6" onclick="showPasswordTab()">
+                    <li class="nav-item col-md-6" id="update_password" onclick="showPasswordTab()">
                         <a class="nav-link active" id="update-password-link" role="tab" data-toggle="tab"><span><i
                                 class="fa fa-user"></i></span>修改密码</a>
                     </li>
-                    <li class="nav-item col-md-6" onclick="showKeysTab()">
+                    <li class="nav-item col-md-6" id="update_keys" onclick="showKeysTab()">
                         <a class="nav-link" id="update-keys-link" role="tab" data-toggle="tab"><span><i
                                 class="fa fa-cog"></i></span>密钥管理</a>
                     </li>
@@ -17,6 +17,12 @@
                 <div class="tab-content tabs">
                     <div role="tabpanel" class="tab-pane fade show active" id="update-password-tab">
                         <div class="row mt-3">
+                            <div class="col-5"></div>
+                            <div class="error_box col-3"></div>
+                            <div class="col-4"></div>
+                        </div>
+                        <form id="update_password_form">
+                            <div class="row mt-3">
                             <div class="col-12">
                                 <div class="form-group row">
                                     <div class="col-4"></div>
@@ -25,7 +31,7 @@
                                     </div>
                                     <div class="col-3">
                                         <input class="form-control" type="text" placeholder="请输入旧密码"
-                                               id="old-password" name="email">
+                                               id="password" name="password">
                                     </div>
                                     <div class="col-4"></div>
                                 </div>
@@ -36,28 +42,29 @@
                                     </div>
                                     <div class="col-3">
                                         <input class="form-control" type="text" placeholder="请输入新密码"
-                                               id="new-password" name="email">
+                                               id="new_password" name="new_password">
                                     </div>
                                     <div class="col-4"></div>
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-4"></div>
                                     <div class="col-1">
-                                        <label for="email-input" style="width: 85px;"
+                                        <label for="repeat_new_password" style="width: 85px;"
                                                class=" col-form-label">重复密码</label>
                                     </div>
                                     <div class="col-3">
                                         <input class="form-control" type="text" placeholder="请重复新密码"
-                                               id="repeat-new-password" name="email">
+                                               id="repeat_new_password" name="repeat_new-_password">
                                     </div>
                                     <div class="col-4"></div>
                                 </div>
                             </div>
                         </div>
+                        </form>
                         <div class="row mx-2">
                             <div class="col-md-5"></div>
                             <div class="col-md-3">
-                                <button id="change-password-btn" type="button" class="btn btn-success">保存修改</button>
+                                <button id="update_password_btn" type="button" class="btn btn-success">保存修改</button>
                             </div>
                             <div class="col-md-4"></div>
                         </div>
@@ -102,19 +109,4 @@
         </div>
     </div>
 </div>
-<script>
-    function showPasswordTab() {
-        $('.nav-link.active').removeClass('active');
-        $('#update-password-link').addClass('active');
-        $('.tab-content .active').removeClass('show').removeClass('active');
-        $('#update-password-tab').addClass('show').addClass('active');
-    }
-
-    function showKeysTab() {
-        $('.nav-link.active').removeClass('active');
-        $('#update-keys-link').addClass('active');
-        $('.tab-content .active').removeClass('show').removeClass('active');
-        $('#update-keys-tab').addClass('show').addClass('active');
-    }
-
-</script>
+<script type="text/javascript" src="js/securityManagement.js"></script>
