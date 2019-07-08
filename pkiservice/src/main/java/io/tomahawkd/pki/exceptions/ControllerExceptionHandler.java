@@ -46,7 +46,7 @@ public class ControllerExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public Map<String, Object> others(Exception e) {
 		e.printStackTrace();
-		return handle(e);
+		return handle(new Exception("Internal Error"));
 	}
 
 	private Map<String, Object> handle(Exception e) {
