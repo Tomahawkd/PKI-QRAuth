@@ -160,7 +160,6 @@ public class UserInfoController {
             e.printStackTrace();
             systemLogService.insertLogRecord(UserInfoController.class.getName(), "getImagePath",
                     SystemLogModel.WARN, userid + " image store failed.");
-
         }
         return null;
     }
