@@ -1,16 +1,23 @@
 /**
- * Created by Administrator on 2019/6/24.
+ * add validator to the forms, add listener for login and register event
  */
 $(document).ready(function () {
+    initialize();
+    /**
+     * set the display location of error message.
+     */
     $.validator.setDefaults({
         debug: false,
         errorElement: 'div',
-        errorPlacement: function (error, element) {
+        errorPlacement: function (error) {
             $('.error_box').empty();
             $('.error_box').append(error);
         }
     });
 
+    /**
+     * the validation rules for login
+     */
     $('#login_form').validate({
         rules: {
             username: {
@@ -41,6 +48,9 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * implements the login event
+     */
     $("#login_btn").click(function () {
         if (!$("#login_form").valid()) {
             return;
@@ -50,18 +60,24 @@ $(document).ready(function () {
         $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
+
+        var data = generateInitialPackage(formObject);
         $.ajax({
             url: "/user/login",
             type: "post",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(data),
             dataType: "json",
             success: function (data) {
                 if (data.status == -1) {
                     $(".error_box").text("用户名不存在！");
                 } else if (data.status == 0) {
-                    $(".error_box").text("登录成功！");
-                    window.location.href = "home.html";
+                    if (validateInitialResponsePackage(data)) {
+                        $(".error_box").text("登录成功！");
+                        window.location.href = "home.html";
+                    } else {
+                        $(".error_box").text("数据验证失败！");
+                    }
                 } else if (data.status == 1) {
                     $(".error_box").text("密码错误！");
                 }
@@ -72,7 +88,9 @@ $(document).ready(function () {
         });
     });
 
-
+    /**
+     * the validation rules for register
+     */
     $('#register_form').validate({
         rules: {
             username: {
@@ -113,20 +131,25 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * implements the register event
+     */
     $("#register_btn").click(function () {
         if (!$("#register_form").valid()) {
             return;
         }
+
         var formObject = {};
         var formArray = $("#register_form").serializeArray();
         $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
+        var package = generateInitialPackage(formObject);
         $.ajax({
             url: "/user/register",
             type: "post",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(package),
             dataType: "json",
             success: function (data) {
                 if (data.status == -1) {

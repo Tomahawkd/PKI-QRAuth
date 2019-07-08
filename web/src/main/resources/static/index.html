@@ -15,7 +15,7 @@
     <script type="text/javascript" src="js/security/jquery.base64.js"></script>
     <script type="text/javascript" src="js/security/jquery.md5.js"></script>
     <script type="text/javascript" src="js/security/sha256.js"></script>
-    <script type="text/javascript" src="js/aes-js-3.1.2/index.js"></script>
+    <script type="text/javascript" src="js/security/aes.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var $tab_li = $('#login_tab ul li');
@@ -26,9 +26,10 @@
             });
 
             $('#login_with_qrcode').click(function () {
-                var element = $('#qrcode');
-                element.empty();
-                createQRCode("aaaaaaaaaaaaaaaa", element);
+                QRAuthentation(QRCodeUrl, pollingUrl, "index.html", $('#qrcode'));
+                $("#login_with_password").click(function () {
+                    if ($("#login_with_qrcode").hasClass("selected")) clearPolling();
+                });
             });
 
             $('#go_to_register').click(function () {
@@ -36,9 +37,6 @@
                 $('#register_tab').removeClass('hide');
             });
         });
-
-
-
     </script>
     <script type="text/javascript">
         $(function () {
@@ -46,16 +44,13 @@
             var width = $(window).width();
             $(".screenbg ul img").css("width", width + "px");
         });
-
-
-
     </script>
 </head>
 
 <body>
 <div class="tab login_tab" id="login_tab">
     <ul class="tab_menu">
-        <li class="selected">账号密码登录</li>
+        <li id="login_with_password" class="selected">账号密码登录</li>
         <li id="login_with_qrcode">二维码登录</li>
     </ul>
     <div class="tab_box">
