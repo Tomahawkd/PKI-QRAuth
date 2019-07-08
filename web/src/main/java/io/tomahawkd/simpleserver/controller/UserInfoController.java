@@ -41,7 +41,7 @@ public class UserInfoController {
 
     @GetMapping("/data")
     public String getInfoPageById(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return Token.getInstance().authentication(body, request, payload -> {
+        return Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload -> {
             int userid = (int) request.getSession().getAttribute("userid");
 
             systemLogService.insertLogRecord(UserInfoController.class.getName(),
@@ -64,7 +64,7 @@ public class UserInfoController {
     @PostMapping("/update/info")
     public String updateUserInfo(@RequestBody String body, HttpServletRequest request) throws Exception {
 
-        return  Token.getInstance().authentication(body,request,payload->{
+        return  Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload->{
             try {
                 Map<String, String> bodyData =
                         new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
@@ -115,7 +115,7 @@ public class UserInfoController {
 
     @PostMapping("/update/password")
     public String updateUserPassword(HttpServletRequest request, @RequestBody String body) throws Exception {
-    return Token.getInstance().authentication(body,request,payload->{
+    return Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload->{
 
         try {
             Map<String, String> bodyData =
