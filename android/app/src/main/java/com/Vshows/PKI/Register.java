@@ -106,15 +106,15 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 String ua = SystemUtil.getSystemModel();
 
                                 String Tpub = connecter.getAuthenticationServerPublicKey(ua);
-                                manager.restoreTpub(context,username,Tpub);
-
                                 String Spub = connecter.getServerPublicKey("1",ua);
-                                manager.restoreSpub(context,username,Spub);
+                                manager.restoreServerKey(context,username,Tpub,Spub);
 
                                 Gson gson = new Gson();
                                 Map<String,Object> result = new HashMap<>();
                                 PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
                                 PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
+//                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
+//                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
                                 String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey,ua);
                                 result = gson.fromJson(resultJson,result.getClass());
 
@@ -125,9 +125,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
 
-                                    manager.restoreNonce(context,username,nonce);
-                                    manager.restoreToken(context,username,token);
-                                    manager.restoreCkey(context,username,Cpub,Cpri);
+                                    manager.restoreClientInfo(context,username,Cpub,Cpri,token,nonce);
                                 } else {
                                     String message = (String) result.get("message");
                                     Looper.prepare();
@@ -136,6 +134,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 }
                             }catch (Exception e){
                                 e.printStackTrace();
+                                Log.d("initerror",e.getMessage());
                             }
 
                         }

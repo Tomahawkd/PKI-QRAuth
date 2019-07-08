@@ -8,11 +8,18 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+
+import com.Vshows.PKI.util.TokenList;
+import com.Vshows.PKI.util.TokenListAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class changeToken extends AppCompatActivity implements View.OnClickListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class changeToken extends AppCompatActivity {
 
     private String session;
 
@@ -21,38 +28,31 @@ public class changeToken extends AppCompatActivity implements View.OnClickListen
     Button confirm;
     EditText oldPsw,newPsw,againPsw;
 
+    private List<TokenList> lists = new ArrayList<>();
+
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.changetoken);
 
-        Intent intent = getIntent();
-        session = intent.getStringExtra("session");
-        // Log.d("changepswsession" ,session);
+        ListView listView = (ListView)findViewById(R.id.tokenListView);
+        init();
+        TokenListAdapter adapter = new TokenListAdapter(this,R.layout.token_list,lists);
+        listView.setAdapter(adapter);
 
-        handler = new Handler();
-        initView();
     }
 
-    private void initView() {
-//        confirm = (Button) findViewById(R.id.confirm_psw);
-//        confirm.setOnClickListener(this);
-//        oldPsw = (EditText) findViewById(R.id.oldpsw);
-//        newPsw = (EditText) findViewById(R.id.newpsw);
-//        againPsw = (EditText) findViewById(R.id.newpswagain);
-    }
-
-    @Override
-    public void onClick(View view) {
-        if(view.getId() == R.id.confirm_psw){
-            try {
-                JSONObject jsonObject =    new JSONObject()
-                        .put("password",oldPsw)
-                        .put("password1",newPsw);
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
-        }
+    public void init(){
+        TokenList list1 = new TokenList("ua1","token1");
+        lists.add(list1);
+        TokenList list2 = new TokenList("ua1","token1");
+        lists.add(list2);
+        TokenList list3 = new TokenList("ua1","token1");
+        lists.add(list3);
+        TokenList list4 = new TokenList("ua1","token1");
+        lists.add(list4);
+        TokenList list5 = new TokenList("ua1","token1");
+        lists.add(list5);
     }
 }

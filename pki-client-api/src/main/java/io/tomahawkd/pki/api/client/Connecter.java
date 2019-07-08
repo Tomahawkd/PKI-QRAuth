@@ -32,7 +32,7 @@ public class Connecter{
      */
     public String getAuthenticationServerPublicKey(String ua){
 
-        String uri = "http://192.168.43.192:8000/serverkey/";
+        String uri = "http://192.168.43.159/key/dist/tpub";
         return httpUtil.getJsonData(uri,ua);
 
 
@@ -95,7 +95,7 @@ public class Connecter{
         map.put("K",K);
         map.put("iv",IV);
         String json = gson.toJson(map);
-        String uri = "192.168.43.159...";
+        String uri = "http://192.168.43.192:8000/serverkey/";
         String res = httpUtil.getJsonData(json,uri,ua);
         Map<String, String> result =
                 new Gson().fromJson(res, new TypeToken<Map<String, String>>() {
@@ -186,7 +186,7 @@ public class Connecter{
 
 
 
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
+        String uri = "http://192.168.43.192:8000/serverkey/";
         String res = httpUtil.getJsonData(json,uri,ua);
 
         Map<String,String> result = new Gson().fromJson(res, new TypeToken<Map<String, String>>() {}.getType());
@@ -398,10 +398,15 @@ public class Connecter{
         if(t1 == t+1){
             if((int)M3.get("status")==0){
                 // *******************************************
-                List logList = (List) M3.get("message");
+                //List<UserLogModel>
+                List<Map<String,String>> logList = (List) M3.get("message");
+
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
                 map3.put("message","Success");
+                map3.put("loglist",logList);
+
+
                 return gson.toJson(map3);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
@@ -476,8 +481,51 @@ public class Connecter{
 
     }
 
-    public String revokeToken(){
-        return "";
+    public String revokeToken(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+
+        Gson gson = new Gson();
+        // generate the EToken
+        byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
+                .order(ByteOrder.LITTLE_ENDIAN).putInt(nonce+1).put(token).array();
+        String etokenReq = Utils.base64Encode(
+                SecurityFunctions.encryptAsymmetric(Tpub, tokenArr));
+        String EToken = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,etokenReq.getBytes()));
+        // generate T
+        int t = SecurityFunctions.generateRandom();
+        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        Map<String,Object> map = new HashMap<>();
+        map.put("EToken",EToken);
+        map.put("T",T);
+        String json = gson.toJson(map);
+
+        String uri = "39.106.80.38:22222/keys/auth/pubkey";
+        String res = httpUtil.getJsonData(json,uri,ua);
+        Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
+        String T1 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("T")),"UTF-8").getBytes()));
+        int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        String M2 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("M")),"UTF-8").getBytes()));
+        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());
+        if(t1 == t+1){
+            if((int)M3.get("status")==0){
+                // *******************************************
+
+                Map<String,Object> map3 = new HashMap<>();
+                map3.put("check",0);
+                map3.put("message","Success");
+                return gson.toJson(map3);
+            } else {
+                Map<String,Object> map3 = new HashMap<>();
+                map3.put("check",2);
+                map3.put("message","Token列表获取失败，请重试！");
+                return gson.toJson(map3);
+            }
+        } else {
+            Map<String,Object> map3 = new HashMap<>();
+            map3.put("check",1);
+            map3.put("message","time check error!");
+            return gson.toJson(map3);
+        }
     }
 
     public String regenerateKeys(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {

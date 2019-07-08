@@ -37,6 +37,8 @@ import java.util.List;
 import javax.net.ssl.KeyManager;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -97,7 +99,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 //                Intent intent1 = new Intent(this,index.class);
 //                intent1.putExtra("session",session);
 //                startActivity(intent1);
-
+                Context context = this;
+                keyManager manager = new keyManager();
+                manager.getAllServerKey(context);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -152,22 +156,42 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            Context context = getBaseContext();
-                            Connecter connecter = new Connecter();
-                            keyManager manager = new keyManager();
-                            String ua = SystemUtil.getSystemModel();
+                            try {
+                                //deleteDatabase("keys.db");
+                                Context context = getBaseContext();
+                                Connecter connecter = new Connecter();
+                                keyManager manager = new keyManager();
+                                String ua = SystemUtil.getSystemModel();
 
-                            String Tpub = manager.getTpub(context,name);
-                            String Spub = manager.getSpub(context,name);
-                            String Cpri = manager.getCpri(context,name);
-                            byte[] token = manager.getToken(context,name).getBytes();
-                            int nonce = manager.getNonce(context,name);
+//                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
+//                                Log.d("getTpub",Tpub);
+//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                                Log.d("TpublicKey",TPub.toString());
 
-                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
-                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-                            try{
-                                String result = connecter.interactAuthentication(null,TPub,SPub,token,nonce,CPri,ua);
+
+                                String testPu = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
+                                String testPr = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPrivate().getEncoded());
+
+                                manager.restoreServerKey(context,name,testPu,testPu);
+
+                                String Tpub = manager.getTpub(context,name);
+                                String Spub = manager.getSpub(context,name);
+//                                String Cpri = manager.getCpri(context,name);
+//                                byte[] token = manager.getToken(context,name).getBytes();
+//                                int nonce = manager.getNonce(context,name);
+//
+//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                                PublicKey SPub = StringToPKey.getPublicKey(Spub);
+//                                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+//                                PublicKey TPub = SecurityFunctions.generateKeyPair().getPublic();
+//                                PublicKey SPub = SecurityFunctions.generateKeyPair().getPublic();
+//                                PrivateKey CPri = SecurityFunctions.generateKeyPair().getPrivate();
+//                                byte[] token = "liucheng".getBytes();
+//                                int nonce = 12345;
+
+//                                String data = "liucheng";
+//                                String result = connecter.interactAuthentication(data,TPub,SPub,token,nonce,CPri,ua);
                             } catch (Exception e){
                                 e.printStackTrace();
                                 Log.d("resulterror",e.getMessage());
