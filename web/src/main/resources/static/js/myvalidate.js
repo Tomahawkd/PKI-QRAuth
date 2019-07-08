@@ -2,6 +2,7 @@
  * add validator to the forms, add listener for login and register event
  */
 $(document).ready(function () {
+    initialize();
     /**
      * set the display location of error message.
      */

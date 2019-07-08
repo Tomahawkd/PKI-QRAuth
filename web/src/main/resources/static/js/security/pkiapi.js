@@ -3,17 +3,30 @@
  * @param serverUrl the url of the server.
  */
 function initialize(serverUrl) {
-    if (localStorage.getItem("SPub") === null || localStorage.getItem("TPub") === null) {
+    if (localStorage.getItem("SPub") === null) {
         $.ajax({
-            url: serverUrl,
+            url: "key/dist/spub",
             type: "get",
             success: function (data) {
                 localStorage.setItem("SPub", data.SPub);
-                localStorage.setItem("TPub", data.TPub);
-                console.log("success to get public keys of server and Third party");
+                console.log("success to get public keys of server");
             },
             error: function () {
-                console.log("failed to get public keys of server and Third party");
+                console.log("failed to get public keys of server");
+            }
+        })
+    }
+
+    if (localStorage.getItem("TPub") === null) {
+        $.ajax({
+            url: "key/dist/Tpub",
+            type: "get",
+            success: function (data) {
+                localStorage.setItem("TPub", data.TPub);
+                console.log("success to get public keys of server");
+            },
+            error: function () {
+                console.log("failed to get public keys of server");
             }
         })
     }
@@ -54,6 +67,7 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
                 } else if (data.status === 2) {
                     sessionStorage.removeItem("QRCodeNonce");
                     sessionStorage.removeItem("currentStatus");
+                    validateQRInitialResponsePackage(data);
                     window.location.href = targetUrl;
                 } else {
                     clearInterval(poller);
@@ -85,6 +99,42 @@ function clearPolling() {
     if (poller) clearInterval(poller);
 }
 
+/**
+ * used to parse the response package from the server during the login process
+ * @param dataPackage {json} the payload of the response package
+ * @returns {boolean} return true when there is no fault
+ */
+function validateQRInitialResponsePackage(dataPackage) {
+    var eToken = $.base64.decode(dataPackage.EToken);
+    var Kp = $.base64.decode(dataPackage.Kp);
+
+    //decrypt KP to get the Kcpri and Kcpub;
+    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+    sessionStorage.removeItem("kct");
+    sessionStorage.removeItem("iv");
+    var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
+    var keyPair = aesCbc.decrypt(HexString2Bytes(b64tohex(Kp)));
+    var split = findSplit(keyPair);
+    var Kcpub = hex2b64(Bytes2HexString(keyPair.slice(0, split)));
+    var Kcpri = hex2b64(Bytes2HexString(keyPair.slice(split+1, keyPair.length)));
+
+    localStorage.setItem("Kcpub", Kcpub);
+    localStorage.setItem("Kcpri", Kcpri);
+
+    // parse token and nonce from eToken
+    var encrypt = new JSEncrypt();
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
+
+    var nonceToken = encrypt.decrypt(eToken);
+    var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
+    var token = nonceToken.substr(8);
+
+    localStorage.setItem("nonce", nonce);
+    localStorage.setItem("token", token);
+    return true;
+}
+
 
 /**
  * the function complete the whole procession during the login with QRCode
@@ -101,9 +151,13 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
     QRCodeElement.click(click_function ? click_function : function () {
         QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function);
     });
+
+    generateKctAndIv();
+    var data = {kct: sessionStorage.getItem("kct"), iv: sessionStorage.getItem("iv")};
     $.ajax({
         url: QRCodeUrl,
-        type: "get",
+        type: "post",
+        data: JSON.stringify(data),
         dataType: "json",
         success: function (data) {
             QRCodeElement.empty();
@@ -140,6 +194,16 @@ function randomPassword(size) {
 }
 
 
+function generateKctAndIv() {
+    var RandomSeed = randomPassword(10); // used to generate Kct and iv
+    var kct = $.md5(RandomSeed);
+    var iv = sha256(RandomSeed);
+
+    sessionStorage.setItem("kct", kct);
+    sessionStorage.setItem("iv", iv);
+}
+
+
 /**
  * generate a package(place as the payload) used to login with username and password
  * @param data the username and password of the user.
@@ -149,17 +213,15 @@ function generateInitialPackage(data) {
     var TPub = localStorage.getItem("TPub");
     var TimeStampBase64 = generateTimeStamp();
 
+    generateKctAndIv();
+
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
-    var RandomSeed = randomPassword(10); // used to generate Kct and iv
-
-    var kct = $.md5(RandomSeed);
+    var kct = sessionStorage.getItem("kct");
+    var iv = sessionStorage.getItem("iv");
     var Kct = encrypt.encrypt(kct); // hex string of initial vector for encryption
-    var iv = sha256(RandomSeed);
     var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
-    sessionStorage.setItem("kct", kct);
-    sessionStorage.setItem("iv", iv);
     return {message: data, T: TimeStampBase64, K: Kct, iv: IV};
 }
 
@@ -179,10 +241,13 @@ function validateInitialResponsePackage(dataPackage) {
     sessionStorage.removeItem("kct");
     sessionStorage.removeItem("iv");
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
-    var decryptedBytes = aesCbc.decrypt(Kp);
-    var keyPair = $.base64.decode(decryptedBytes).split(";");
-    localStorage.setItem("Kcpub", keyPair[0]);
-    localStorage.setItem("Kcpri", keyPair[1]);
+    var keyPair = aesCbc.decrypt(HexString2Bytes(b64tohex(Kp)));
+    var split = findSplit(keyPair);
+    var Kcpub = hex2b64(Bytes2HexString(keyPair.slice(0, split)));
+    var Kcpri = hex2b64(Bytes2HexString(keyPair.slice(split+1, keyPair.length)));
+
+    localStorage.setItem("Kcpub", Kcpub);
+    localStorage.setItem("Kcpri", Kcpri);
 
     // validate timeStamp
     if (!validateTimeStamp(dataPackage.T)) return false;
@@ -379,6 +444,88 @@ function Bytes2HexString(arrBytes) {
     }
     return str;
 }
+
+
+var b64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+var b64pad = "=";
+
+function hex2b64(h) {
+    var i;
+    var c;
+    var ret = "";
+    for (i = 0; i + 3 <= h.length; i += 3) {
+        c = parseInt(h.substring(i, i + 3), 16);
+        ret += b64map.charAt(c >> 6) + b64map.charAt(c & 63);
+    }
+    if (i + 1 == h.length) {
+        c = parseInt(h.substring(i, i + 1), 16);
+        ret += b64map.charAt(c << 2);
+    }
+    else if (i + 2 == h.length) {
+        c = parseInt(h.substring(i, i + 2), 16);
+        ret += b64map.charAt(c >> 2) + b64map.charAt((c & 3) << 4);
+    }
+    while ((ret.length & 3) > 0) {
+        ret += b64pad;
+    }
+    return ret;
+}
+
+
+function b64tohex(s) {
+    var ret = "";
+    var i;
+    var k = 0; // b64 state, 0-3
+    var slop = 0;
+    for (i = 0; i < s.length; ++i) {
+        if (s.charAt(i) == b64pad) {
+            break;
+        }
+        var v = b64map.indexOf(s.charAt(i));
+        if (v < 0) {
+            continue;
+        }
+        if (k == 0) {
+            ret += int2char(v >> 2);
+            slop = v & 3;
+            k = 1;
+        }
+        else if (k == 1) {
+            ret += int2char((slop << 2) | (v >> 4));
+            slop = v & 0xf;
+            k = 2;
+        }
+        else if (k == 2) {
+            ret += int2char(slop);
+            ret += int2char(v >> 2);
+            slop = v & 3;
+            k = 3;
+        }
+        else {
+            ret += int2char((slop << 2) | (v >> 4));
+            ret += int2char(v & 0xf);
+            k = 0;
+        }
+    }
+    if (k == 1) {
+        ret += int2char(slop << 2);
+    }
+    return ret;
+}
+
+var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
+function int2char(n) {
+    return BI_RM.charAt(n);
+}
+
+function findSplit(array) {
+    for (var i=0; i<array.length; i++) {
+        if (array[i] === 59)
+            return i
+    }
+    return 0;
+}
+
 
 
 function encrypt() {

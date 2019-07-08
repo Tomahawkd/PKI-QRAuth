@@ -17,7 +17,7 @@ function showKeysTab() {
 
 $.validator.setDefaults({
     debug: false,
-    errorElement: 'div',
+    errorElement: 'div.error_box',
     errorPlacement: function (error) {
         $('.error_box').empty();
         $('.error_box').append(error);
