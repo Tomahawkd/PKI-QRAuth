@@ -1,6 +1,6 @@
 package io.tomahawkd.pki.api.server;
 
-import io.tomahawkd.pki.api.common.exception.CipherErrorException;
+import io.tomahawkd.pki.api.server.util.CipherErrorException;
 import sun.misc.BASE64Decoder;
 
 import javax.crypto.*;
