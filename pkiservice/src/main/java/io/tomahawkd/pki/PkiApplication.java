@@ -17,7 +17,7 @@ public class PkiApplication {
 	public static void main(String[] args)
 			throws CipherErrorException, IOException {
 
-		Path path = Paths.get("./pkiservice/" + FileUtil.rootPath + "/resources");
+		Path path = Paths.get(FileUtil.rootPath + "/resources");
 		File f = path.toFile();
 
 		File[] list =
@@ -30,8 +30,7 @@ public class PkiApplication {
 					fileToDelete.delete();
 				}
 
-			SecurityFunctions.generateNewAuthenticateServerKeys(
-					"./pkiservice/" + FileUtil.rootPath + "/resources/");
+			SecurityFunctions.generateNewAuthenticateServerKeys(FileUtil.rootPath + "/resources/");
 		}
 
 		// Alright, launch the server
