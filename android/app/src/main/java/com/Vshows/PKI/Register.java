@@ -1,5 +1,6 @@
 package com.Vshows.PKI;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +19,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.keyManager;
+import com.google.gson.Gson;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +33,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
 import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
@@ -50,12 +57,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private ImageButton register_re;
     private TextView forget_re;
     private TextView login_re;
-//    private jwt jwt = new jwt();
-//    private String s = jwt.init();
-
-
-
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +84,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.registerBtn:
-                String username = username_r.getText().toString();
-                String password1 = password_r.getText().toString();
+                final String username = username_r.getText().toString();
+                final String password1 = password_r.getText().toString();
                 String password2 = re_password_r.getText().toString();
                 if(TextUtils.isEmpty(username))
                     Toast.makeText(this,"用户名不能为空！", Toast.LENGTH_LONG).show();
@@ -95,79 +96,53 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 else if (!TextUtils.equals(password1,password2))
                     Toast.makeText(this, "两次输入的密码不一致，请重新输入！", Toast.LENGTH_LONG).show();
                 else {
-                    try {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("username",username);
-                        jsonObject.put("password",password1);
-                        //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
-                        //base64解码
-                        //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
-                        String url ="http://192.168.43.159/user/register";
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Context context = getBaseContext();
+                                Connecter connecter = new Connecter();
+                                keyManager manager = new keyManager();
+                                String ua = SystemUtil.getSystemModel();
 
-                        OkHttpClient client = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
+                                manager.restoreTpub(context,username,Tpub);
 
-                        final Request request = new Request.Builder()
-                                .url(url)
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        call.enqueue(new Callback() {
-                            public void onFailure(Call call, IOException e) {
-                                Log.d("error","<<<<e="+e);
-                            }
+                                String Spub = connecter.getServerPublicKey("1",ua);
+                                manager.restoreSpub(context,username,Spub);
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                if(response.isSuccessful()) {
-                                    String jsonString = response.body().string();
-                                    handle_response(jsonString);
+                                Gson gson = new Gson();
+                                Map<String,Object> result = new HashMap<>();
+                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
+                                String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey,ua);
+                                result = gson.fromJson(resultJson,result.getClass());
 
-                                    Log.d("success","<<<<d="+jsonString);
-                                    //Log.d("success","<<<<status="+status);
+                                int check = (int) result.get("check");
+                                if(check == 0){
+                                    int nonce = (int) result.get("nonce");
+                                    String token = new String((byte[]) result.get("Token"));
+                                    String Cpub = (String) result.get("Cpub");
+                                    String Cpri = (String) result.get("Cpri");
+
+                                    manager.restoreNonce(context,username,nonce);
+                                    manager.restoreToken(context,username,token);
+                                    manager.restoreCkey(context,username,Cpub,Cpri);
+                                } else {
+                                    String message = (String) result.get("message");
+                                    Looper.prepare();
+                                    Toast.makeText(getBaseContext(),"message: " + message, Toast.LENGTH_LONG).show();
+                                    Looper.loop();
                                 }
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
-                        });
-                    } catch (JSONException e){
-                        e.printStackTrace();
-                    }
+
+                        }
+                    }).start();
                 }
                 break;
             case R.id.forget_re:
-//                /**
-//                 * 可以使用线程池进行优化
-//                 */
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Connecter connecter = new Connecter();
-//                        String mes = connecter.getServerPublicKey("2");
-//                        //String mes = a.a();
-//                        Log.d("conntest",mes);
-//                        //Toast.makeText(this,"test: " +mes, Toast.LENGTH_LONG).show();
-//                    }
-//                }).start();
-                try {
-                    SecurityFunctions securityFunctions = new SecurityFunctions();
-                    KeyPair keyPair = securityFunctions.generateKeyPair();
-                    PublicKey publicKey =keyPair.getPublic();
-                    PrivateKey privateKey =   keyPair.getPrivate();
-                    String pu = Utils.base64Encode(publicKey.getEncoded());
-                    String pr = Utils.base64Encode(privateKey.getEncoded());
-                    Log.d("pu","" + publicKey);
-                    Log.d("pr","" + privateKey);
-                    Log.d("pus",pu);
-                    Log.d("prs",pr);
-                    PublicKey a = getPublicKey(pu);
-                    PrivateKey b = getPrivateKey(pr);
-                    Log.d("pu1","" +a);
-                    Log.d("pr1","" + b);
-                    Log.d("pus1",a.toString());
-                    Log.d("prs1",b.toString());
-                } catch (CipherErrorException e){
-                    e.printStackTrace();
-                }
-
                 break;
             case R.id.login_re_:
                 Intent intent1 = new Intent(this,Login.class);
@@ -175,70 +150,5 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 break;
             default:
         }
-    }
-
-    public static PublicKey getPublicKey(String pu){
-        PublicKey a = null;
-        try {
-            //byte[] bytekey = Base64.decode(pu.getBytes(),Base64.DEFAULT);
-            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Utils.base64Decode(pu));
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            a = keyFactory.generatePublic(x509EncodedKeySpec);
-            //Base64.decode(pu);
-        } catch (Exception e){
-            e.printStackTrace();
-            Log.d("pubkeyerror",e.getMessage());
-        }
-        return a;
-    }
-    public static PrivateKey getPrivateKey(String pr){
-        PrivateKey a = null;
-        try {
-            //byte[] bytekey = Base64.decode(pr.getBytes(),Base64.DEFAULT);
-            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Utils.base64Decode(pr));
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            a =  keyFactory.generatePrivate(pkcs8EncodedKeySpec);
-            //Base64.decode(pu);
-        } catch (Exception e){
-            e.printStackTrace();
-            Log.d("prikeyerror",e.getMessage());
-        }
-        return a;
-    }
-
-
-    public void handle_response(String response){
-        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
-        JSONObject result = null;
-        try {
-            result = new JSONObject(response);
-            int status = (int) result.get("status");
-            if(status==-1){
-                Looper.prepare();
-                Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else if(status==0){
-                Looper.prepare();
-                Toast.makeText(this,"注册成功！", Toast.LENGTH_LONG).show();
-                Intent intent1 = new Intent(this,Login.class);
-                startActivity(intent1);
-                Looper.loop();
-            }
-            else if(status==1){
-                Looper.prepare();
-                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else {
-                Looper.prepare();
-                Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        //取数据
     }
 }
