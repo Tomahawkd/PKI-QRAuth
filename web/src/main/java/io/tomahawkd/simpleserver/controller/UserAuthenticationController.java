@@ -40,7 +40,7 @@ public class UserAuthenticationController {
     @PostMapping("/register")
     public String userRegister(@RequestBody String data,HttpServletRequest request) throws UnsupportedEncodingException, MalformedJsonException ,Exception{
 
-        return Token.getInstance().acceptInitializeAuthenticationMessage(data, request, payload -> {
+        return Token.getInstance().acceptInitializeAuthenticationMessage(data,request.getRemoteAddr(),request.getHeader("User-Agent"), payload -> {
             try {
                 Map<String, String> bodyData =
                         new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
@@ -87,7 +87,7 @@ public class UserAuthenticationController {
     @PostMapping(value = "/login")
     public String userLogin(@RequestBody String user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        return Token.getInstance().acceptInitializeAuthenticationMessage(user, request, payload -> {
+        return Token.getInstance().acceptInitializeAuthenticationMessage(user, request.getRemoteAddr(),request.getHeader("User-Agent"), payload -> {
 
             try {
                 Map<String, String> bodyData =

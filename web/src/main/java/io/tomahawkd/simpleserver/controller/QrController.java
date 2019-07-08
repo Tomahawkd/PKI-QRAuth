@@ -11,16 +11,16 @@ public class QrController {
 
     @PostMapping("/gener")
     public String qrGeneration(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return Token.getInstance().qrgenerate(body,request);
+        return Token.getInstance().qrgenerate(body);
     }
 
     @PostMapping("/opera")
     public String qrOperation(@RequestBody String body,HttpServletRequest request) throws Exception {
-        return Token.getInstance().qroperation(body,request);
+        return Token.getInstance().qroperation(body,request.getRemoteAddr(),request.getHeader("User-Agent"));
     }
 
     @PostMapping("/roll")
     public String qrRolling(@RequestBody String body,HttpServletRequest request) throws Exception {
-        return Token.getInstance().rolling(body,request);
+        return Token.getInstance().rolling(body,request.getRemoteAddr(),request.getHeader("User-Agent"));
     }
 }
