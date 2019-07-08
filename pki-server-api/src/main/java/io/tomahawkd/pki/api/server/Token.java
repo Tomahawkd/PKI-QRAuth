@@ -20,7 +20,6 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Map;
 
-@RestController
 @RequestMapping("/api/token")
 public class Token {
     private PublicKey publicKey;
@@ -254,16 +253,18 @@ public class Token {
         return "{\"M\":{\"status\":1,\"message\":time authentiaction failed\"}";
     }
     /**
-     * @param
-     * @return
-     *
+     * @param{
+     * K:"Base64 encoded Kt public key encrypted Kc,t",
+     * iv
+     * }
+     * @return{
+     *noce2
+     * }
      */
     public String qrgenerate(String body, HttpServletRequest request) throws Exception {
         Map<String, String> map = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
         String Kct = map.get("K");
-        String time = new String(SecurityFunctions.decryptAsymmetric(privateKey, Base64.getDecoder().decode(map.get("T"))), StandardCharsets.UTF_8);
-        int time1 = ByteBuffer.wrap(time.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
         String iv = map.get("iv");
         int time2 = SecurityFunctions.generateRandom();
         String systemid = "";       //写死的
@@ -391,7 +392,7 @@ public class Token {
      *
      * @return M:{type: -1 not exists 0 not scanned 1 scanned 2 confimed} if type==2  EToken :  KP:
      * if type==2  EToken  KP
-     * @Param noce2
+     * @Param nonce2
      */
     @PostMapping("/rolling")
     public String rolling(@RequestBody String body, HttpServletRequest request) throws Exception {
