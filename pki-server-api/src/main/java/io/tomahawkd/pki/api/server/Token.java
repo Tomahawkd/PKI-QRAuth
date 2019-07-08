@@ -83,7 +83,7 @@ public class Token {
      * * "K": "Base64 encoded Kt public key encrypted Kc,t",
      * * "iv": "Base64 encoded Kt public key encrypted iv"}
      */
-    public String acceptInitializeAuthenticationMessage(String body, String ip,String device, ThrowableFunction<String, Message<String>> callback) throws Exception {
+    public String acceptInitializeAuthenticationMessage(String body, String ip,String device, PreInitFunction<String, Message<String>> precallback,PostInitFunction<String, Message<String>> postcallback) throws Exception {
         Map<String, String> bodyData =
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -91,8 +91,8 @@ public class Token {
         String payload = bodyData.get("payload");
 
 
-        Message<String> userMessage = callback.apply(payload);
-        //todo  == or !=   拆分为两个回调
+        Message<String> userMessage = precallback.apply(payload);
+        //todo   拆分为两个回调
         if (userMessage.getStatus() == -1)  //用户已存在
             return userMessage.toJson();
 
@@ -109,7 +109,7 @@ public class Token {
         //加密payload userid和systemid
         String idc = userid + ";" + systemid;
         String eidc = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, idc.getBytes()));
-        String D = device + ";" + ip;
+        String D = ip+ ";" + device;
         //encode K,idc,time2
         Base64.Encoder encoder = Base64.getEncoder();
         String enciv = encoder.encodeToString(iv.getBytes());
@@ -199,7 +199,7 @@ public class Token {
         String time2 = new String((SecurityFunctions.encryptAsymmetric(TpublicKey,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())), StandardCharsets.UTF_8);
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
 
         String target_url = IP + "/token/validate";
         StringBuilder target = new StringBuilder(target_url);
@@ -331,8 +331,7 @@ public class Token {
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
         String sysid = Base64.getEncoder().encodeToString(systemid.getBytes());
 
-
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
 
         Map<String, Object> result = null;
         if ((int) M.get("status") == 1) {      //scan
@@ -408,7 +407,7 @@ public class Token {
         }.getType());
         String nonce2 = bodydata.get("nonce2");
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
         String sysid = Base64.getEncoder().encodeToString(systemid.getBytes());
@@ -493,7 +492,7 @@ public class Token {
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
         TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
@@ -571,7 +570,7 @@ public class Token {
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
         TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
@@ -658,7 +657,7 @@ public class Token {
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
         TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
@@ -738,7 +737,7 @@ public class Token {
         int time2 = SecurityFunctions.generateRandom();
         String time = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time2).array()), StandardCharsets.UTF_8);
 
-        String d = device + ";" + ip;
+        String d = ip+ ";" + device;
         TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
