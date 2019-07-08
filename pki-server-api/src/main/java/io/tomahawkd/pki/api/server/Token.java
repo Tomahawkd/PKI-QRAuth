@@ -20,7 +20,6 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Map;
 
-@RequestMapping("/api/token")
 public class Token {
     private PublicKey publicKey;
     private PrivateKey privateKey;
@@ -69,8 +68,7 @@ public class Token {
      * "K": "Base64 encoded Kt public key encrypted Kc,t",
      * "iv": "Base64 encoded Kt public key encrypted iv"}
      */
-    @PostMapping("/init")
-    public String acceptInitializeAuthenticationMessage(@RequestParam String body, HttpServletRequest request, ThrowableBiFunction<String, Integer> callback) throws Exception {
+    public String acceptInitializeAuthenticationMessage( String body, HttpServletRequest request, ThrowableBiFunction<String, Integer> callback) throws Exception {
         Map<String, String> bodyData =
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -177,8 +175,7 @@ public class Token {
      * payload
      * "T": "Base64 encoded Ks public key encrypted time1"}
      */
-    @PostMapping("/validate")
-    public String authentication(@RequestParam String body, HttpServletRequest request, ReturnDataFunction<String, String, String> callback) throws Exception {
+    public String authentication( String body, HttpServletRequest request, ReturnDataFunction<String, String, String> callback) throws Exception {
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
         Base64.Decoder decoder = Base64.getDecoder();
@@ -306,8 +303,7 @@ public class Token {
      * "T": "Base64 encoded Kc public key encrypted challenge number + 1",
      * }
      */
-    @PostMapping()
-    public String qroperation(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String qroperation( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Base64.Encoder encoder = Base64.getEncoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
@@ -394,8 +390,7 @@ public class Token {
      * if type==2  EToken  KP
      * @Param nonce2
      */
-    @PostMapping("/rolling")
-    public String rolling(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String rolling( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
@@ -477,8 +472,7 @@ public class Token {
      * <p>
      * }
      */
-    @PostMapping("/")
-    public String userLogManagement(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String userLogManagement( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
@@ -556,8 +550,7 @@ public class Token {
      * "T": "Base64 encoded Kc public key encrypted challenge number + 1",
      * }
      */
-    @PostMapping("/")
-    public String tokenListManagement(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String tokenListManagement( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
@@ -641,8 +634,7 @@ public class Token {
      * "
      * }
      */
-    @PostMapping("/")
-    public String revokeToken(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String revokeToken( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
@@ -725,8 +717,7 @@ public class Token {
      * "T": "Base64 encoded Kc public key encrypted challenge number + 1",
      * }
      */
-    @PostMapping("/")
-    public String regenerateKeys(@RequestBody String body, HttpServletRequest request) throws Exception {
+    public String regenerateKeys( String body, HttpServletRequest request) throws Exception {
         Base64.Decoder decoder = Base64.getDecoder();
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
