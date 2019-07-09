@@ -14,36 +14,40 @@ import java.util.Map;
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Malformed Json")
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MalformedJsonException.class)
 	@ResponseBody
 	public Map<String, Object> malformedJson(Exception e) {
 		return handle(e);
 	}
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Not found")
+	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler({NullPointerException.class, NotFoundException.class})
+	@ResponseBody
 	public Map<String, Object> notFound(Exception e) {
 		return handle(e);
 
 	}
 
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Cipher error")
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(CipherErrorException.class)
+	@ResponseBody
 	public Map<String, Object> cipherIssue(Exception e) {
 		return handle(e);
 
 	}
 
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Malformed Base64 value")
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(Base64EncodeException.class)
+	@ResponseBody
 	public Map<String, Object> base64Issue(Exception e) {
 		return handle(e);
 
 	}
 
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Other error")
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
+	@ResponseBody
 	public Map<String, Object> others(Exception e) {
 		e.printStackTrace();
 		return handle(new Exception("Internal Error"));
