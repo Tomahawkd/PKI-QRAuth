@@ -33,11 +33,10 @@ public class keyManager {
         return dbhelper.getReadableDatabase();
     }
 
-    public void restoreServerKey(Context context,String id,String Tpub,String Spub){
+    public void restoreServerKey(Context context,String Tpub,String Spub){
         SQLiteDatabase sqLiteDatabase = getWritableDB(context);
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ID ,id);
         contentValues.put(KSpub,Spub);
         contentValues.put(KTpub,Tpub);
 
@@ -59,10 +58,10 @@ public class keyManager {
         sqLiteDatabase.close();
     }
 
-    public String getSpub(Context context,String id){
+    public String getSpub(Context context){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { ID,KSpub }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { KSpub }, null,null, null, null, null);
         String kspub = "";
         if(cursor.moveToFirst()) {
             kspub = cursor.getString(cursor.getColumnIndex(KSpub));
@@ -75,10 +74,10 @@ public class keyManager {
         return kspub;
     }
 
-    public String getTpub(Context context,String id){
+    public String getTpub(Context context){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { ID,KTpub }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { KTpub }, null, null, null, null, null);
         String ktpub = "";
         if(cursor.moveToFirst()) {
             ktpub = cursor.getString(cursor.getColumnIndex(KTpub));
@@ -161,11 +160,10 @@ public class keyManager {
         Cursor cursor = sqLiteDatabase.query(SERVER_TABLE,null,null,null,null,null,null);
         if(cursor.moveToFirst()) {
             do{
-                String id = cursor.getString(cursor.getColumnIndex(ID));
                 String Tpub = cursor.getString(cursor.getColumnIndex(KTpub));
                 String Spub = cursor.getString(cursor.getColumnIndex(KSpub));
 
-                Log.d("alldata", "id:" + id +"\ntpub:" + Tpub + "\nSpub:" + Spub);
+                Log.d("alldata", "\ntpub:" + Tpub + "\nSpub:" + Spub);
             } while (cursor.moveToNext());
         } else {
             Log.d("getAllServerKeyerror","0" );

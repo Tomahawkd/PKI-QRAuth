@@ -1,10 +1,8 @@
 package com.Vshows.PKI;
 
 import android.app.AppComponentFactory;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,6 +13,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
+import com.Vshows.PKI.util.keyManager;
+
+import io.tomahawkd.pki.api.client.Connecter;
+
 public class welcome extends AppCompatActivity {
     private ImageView welcome;
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,23 +28,30 @@ public class welcome extends AppCompatActivity {
         /**标题是属于View的，所以窗口所有的修饰部分被隐藏后标题依然有效,需要去掉标题**/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.welcome);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Context context = getBaseContext();
+                    Connecter connecter = new Connecter();
+                    keyManager manager = new keyManager();
+                    String ua = SystemUtil.getSystemModel();
+                    String TpubURL = URLUtil.getTpubURL(context);
+                    String SpubURL = URLUtil.getSpubURL(context);
+
+                    String Tpub = connecter.getAuthenticationServerPublicKey(TpubURL,ua);
+                    String Spub = connecter.getServerPublicKey(SpubURL,ua);
+
+                    manager.restoreServerKey(context,Tpub,Spub);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
         handler.sendEmptyMessageDelayed(0,3000);
         setContentView(R.layout.welcome);
-    }
-
-    public  int getSign(){
-        // 通过包管理器获得指定包名包含签名的包信息
-        PackageInfo packageInfo  = null;
-        try {
-            packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-// 通过返回的包信息获得签名数组
-        Signature[] signatures = packageInfo.signatures;
-//获得应用签名的哈希值
-        return signatures[0].hashCode();
-
     }
 
 

@@ -89,17 +89,19 @@ public class httpUtil {
             connection.setRequestProperty("User-agent",ua);
             connection.connect();
             InputStream inputStream = connection.getInputStream();
-            byte[] data = new byte[1024];
-            StringBuffer sb = new StringBuffer();
-            boolean var6 = false;
-
-            String message;
-            while(inputStream.read(data) != -1) {
-                message = new String(data, Charset.forName("utf-8"));
-                sb.append(message);
-            }
-
-            message = sb.toString();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String message = bufferedReader.readLine();
+//            byte[] data = new byte[1024];
+//            StringBuffer sb = new StringBuffer();
+//            boolean var6 = false;
+//
+//            String message;
+//            while(inputStream.read(data) != -1) {
+//                message = new String(data, Charset.forName("utf-8"));
+//                sb.append(message);
+//            }
+//
+//            message = sb.toString();
             inputStream.close();
             connection.disconnect();
             return message;

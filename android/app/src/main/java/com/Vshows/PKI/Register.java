@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 
 import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
 import com.google.gson.Gson;
 
@@ -27,10 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -50,9 +49,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import com.Vshows.PKI.util.JniUtils;
-
-import javax.crypto.NoSuchPaddingException;
 
 public class Register extends AppCompatActivity implements View.OnClickListener {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -68,16 +64,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.register);
-        try {
-            initView();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
+        initView();
 
     }
-    private void initView() throws NoSuchAlgorithmException, NoSuchPaddingException {
+    private void initView() {
         username_r = (EditText) findViewById(R.id.username_re);
         password_r = (EditText) findViewById(R.id.password_re);
         re_password_r = (EditText) findViewById(R.id.re_password_re) ;
@@ -87,20 +77,6 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         forget_re.setOnClickListener(this);
         login_re = (TextView) findViewById(R.id.login_re_);
         login_re.setOnClickListener(this);
-
-        String olds = null;
-        try {
-            olds = JniUtils.encode("123");
-
-            String news = JniUtils.decode(olds);
-
-        } catch (CipherErrorException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-
     }
 
 
@@ -129,20 +105,17 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
                                 String ua = SystemUtil.getSystemModel();
+                                String registerURL = URLUtil.getRegisterURL(context);
 
-                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
-                                //manager.restoreTpub(context,username,Tpub);
+                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
+//                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
+//                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
 
-                                String Spub = connecter.getServerPublicKey("1",ua);
-                                //manager.restoreSpub(context,username,Spub);
+                                String resultJson = connecter.initalizeAuthentication(registerURL,username,password1,TpublicKey,SpublicKey,ua);
 
                                 Gson gson = new Gson();
                                 Map<String,Object> result = new HashMap<>();
-                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
-                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
-//                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-//                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-                                String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey,ua);
                                 result = gson.fromJson(resultJson,result.getClass());
 
                                 int check = (int) result.get("check");
@@ -152,9 +125,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
 
-                                    //manager.restoreNonce(context,username,nonce);
-                                   // manager.restoreToken(context,username,token);
-                                    //manager.restoreCkey(context,username,Cpub,Cpri);
+                                    manager.restoreClientInfo(context,username,Cpub,Cpri,token,nonce);
                                 } else {
                                     String message = (String) result.get("message");
                                     Looper.prepare();
