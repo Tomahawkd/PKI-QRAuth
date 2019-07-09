@@ -2855,7 +2855,8 @@ function pkcs1pad2(s, n) {
 	var ba = [];
 	var i = s.length - 1;
 	while (i >= 0 && n > 0) {
-		ba[--n] = parseInt(s[i--], 16);
+		ba[--n] = parseInt(s.substring(i-1, i+1), 16);
+		i -= 2;
 	}
 	ba[--n] = 0;
 	var rng = new SecureRandom();
