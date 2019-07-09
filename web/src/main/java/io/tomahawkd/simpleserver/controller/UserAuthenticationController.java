@@ -3,6 +3,7 @@ package io.tomahawkd.simpleserver.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import io.tomahawkd.pki.api.server.ThrowableFunction;
 import io.tomahawkd.pki.api.server.Token;
 import io.tomahawkd.pki.api.server.util.Message;
 import io.tomahawkd.simpleserver.exceptions.MalformedJsonException;
@@ -39,7 +40,8 @@ public class UserAuthenticationController {
     @PostMapping("/register")
     public String userRegister(@RequestBody String data, HttpServletRequest request) throws UnsupportedEncodingException, MalformedJsonException, Exception {
 
-        return Token.getInstance().acceptInitializeAuthenticationMessage(data, request.getRemoteAddr(), request.getHeader("User-Agent"), payload -> {
+        return Token.getInstance().acceptInitializeAuthenticationMessage(data, request.getRemoteAddr(), request.getHeader("User-Agent")
+                , payload -> {
                     try {
                         Map<String, String> bodyData =
                                 new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
@@ -59,22 +61,9 @@ public class UserAuthenticationController {
 
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                 "registerUser", SystemLogModel.OK, "user is allowed to register");
-                        return new Message<String>(0, "user is allowed to register");
 
-                    } catch (JsonSyntaxException e) {
-                        throw new MalformedJsonException("Json parse error");
-                    }
-                }
-                , payload -> {
-                    try {
-                        Map<String, String> bodyData =
-                                new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
-                                }.getType());
-                        String username = bodyData.get("username");
-                        String password = bodyData.get("password");
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                 "registerUser", SystemLogModel.DEBUG, "Registering user: " + username);
-
                         int index = userPasswordService.addUser(new UserPasswordModel(username, password));
 
                         if (index != -1) {
@@ -85,22 +74,30 @@ public class UserAuthenticationController {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "Registering failed: " + username);
                             return new Message<>(-1, "registering failed");
+
                         }
                     } catch (JsonSyntaxException e) {
+
                         throw new MalformedJsonException("Json parse error");
                     }
-                });
+                }
+                , index -> {
+                    systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
+                            "deleteUser", SystemLogModel.OK, "Registering failed,delete it");
+                    userPasswordService.deleteUser(index);
+                }
+        );
     }
 
     @PostMapping(value = "/login")
     public String userLogin(@RequestBody String user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        return Token.getInstance().acceptInitializeAuthenticationMessage(user, request.getRemoteAddr(), request.getHeader("User-Agent"), payload -> {
+        return Token.getInstance().acceptInitializeAuthenticationMessage(user, request.getRemoteAddr(), request.getHeader("User-Agent"),
+                payload -> {
                     try {
                         Map<String, String> bodyData =
                                 new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
                                 }.getType());
-
                         String username = bodyData.get("username");
                         String password = bodyData.get("password");
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
@@ -112,18 +109,7 @@ public class UserAuthenticationController {
                         }
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
                                 SystemLogModel.OK, "User " + username + " existing,allowed to login");
-                        return new Message<>(0, "User allowed to login");
-                    } catch (JsonSyntaxException e) {
-                        throw new MalformedJsonException("Json parse error");
-                    }
-                }
-                , payload -> {
-                    try {
-                        Map<String, String> bodyData =
-                                new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
-                                }.getType());
-                        String username = bodyData.get("username");
-                        String password = bodyData.get("password");
+
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "checkPassword",
                                 SystemLogModel.DEBUG, "User " + username + "    password:" + password);
                         int index = userPasswordService.checkPassword(username, password);
@@ -146,6 +132,11 @@ public class UserAuthenticationController {
                     } catch (JsonSyntaxException e) {
                         throw new MalformedJsonException("Json parse error");
                     }
-                });
+                }
+                , index -> {
+
+                }
+        );
     }
+
 }

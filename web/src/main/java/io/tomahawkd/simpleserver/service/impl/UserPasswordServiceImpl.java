@@ -40,4 +40,9 @@ public class UserPasswordServiceImpl implements UserPasswordService {
 		int result = dao.updateUserPassword(model, new_password);
 		return result == 1;
 	}
+
+	@Override
+	public  void deleteUser(int index){
+		dao.deleteUser(index);
+	}
 }
