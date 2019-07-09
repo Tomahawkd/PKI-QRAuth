@@ -196,7 +196,7 @@ public class QRCodeAuthenticationController {
 
 	/**
 	 * @param data {
-	 *             "nonce2": "Base64 encoded Kt public key encrypted QrCode nonce",
+	 *             "nonce2": "Base64 encoded QrCode nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
 	 *             "system": "systemid",
 	 *             "D": "ip;device"
@@ -226,8 +226,7 @@ public class QRCodeAuthenticationController {
 		}
 
 		int nonce = ByteBuffer.wrap(
-				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-						Utils.base64Decode(requestMap.get("nonce2")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+						Utils.base64Decode(requestMap.get("nonce2"))).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(requestMap.get("system"));
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
