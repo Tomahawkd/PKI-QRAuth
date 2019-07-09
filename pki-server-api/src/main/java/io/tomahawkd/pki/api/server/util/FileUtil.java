@@ -8,7 +8,7 @@ import java.nio.file.*;
 
 public class FileUtil {
 
-	public static final String rootPath = "./src/main";
+	public static final String rootPath = "./web/src/main";
 
 
 	public static String readFile(String path) throws IOException {

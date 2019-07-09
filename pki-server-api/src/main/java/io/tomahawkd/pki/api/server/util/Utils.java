@@ -3,10 +3,9 @@ package io.tomahawkd.pki.api.server.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-//import io.tomahawkd.pki.exceptions.Base64EncodeException;
-//import io.tomahawkd.pki.exceptions.CipherErrorException;
-//import io.tomahawkd.pki.exceptions.MalformedJsonException;
-//import io.tomahawkd.pki.exceptions.ParamNotFoundException;
+import io.tomahawkd.pki.api.server.Exceptions.Base64EncodeException;
+import io.tomahawkd.pki.api.server.Exceptions.ParamNotFoundException;
+
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -14,11 +13,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
 
 public class Utils {
 
@@ -30,12 +36,12 @@ public class Utils {
 		try {
 			return Base64.getDecoder().decode(data);
 		} catch (Exception e) {
-			throw e;//new Base64EncodeException("Illegal Base64 Encode");
+			throw new Base64EncodeException("Illegal Base64 Encode");
 		}
 	}
-/*
+
 	public static Map<String, String> wrapMapFromJson(String json, String... params)
-			throws Exception {
+			throws ParamNotFoundException, MalformedJsonException {
 
 		try {
 			Map<String, String> map = new Gson().fromJson(json, new TypeToken<Map<String, String>>() {
@@ -58,11 +64,11 @@ public class Utils {
 				SecurityFunctions.encryptAsymmetric(key,
 						ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(
 										ByteBuffer.wrap(
-												SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
+												SecurityFunctions.decryptUsingServerPrivateKey(
 														Utils.base64Decode(t)))
 												.order(ByteOrder.LITTLE_ENDIAN).getInt() + 1).array()));
 	}
-*/
+
 	public static byte[] gzipEncode(byte[] source) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		GZIPOutputStream gzip = new GZIPOutputStream(out);
