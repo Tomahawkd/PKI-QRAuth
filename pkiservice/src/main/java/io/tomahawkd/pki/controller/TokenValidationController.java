@@ -207,15 +207,12 @@ public class TokenValidationController {
 				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
-					int tokenId = tokenModel.getTokenId();
-
-					tokenService.deleteUserTokenById(tokenId, tokenModel.getUserId());
-					systemLogService.insertLogRecord(UserManagementController.class.getName(),
-							"revokeToken", SystemLogModel.INFO,
-							"User " + tokenModel.getUserId() +
-									" try to delete token " + tokenId + " with success");
+					tokenService.deleteUserTokenById(tokenModel.getTokenId(), tokenModel.getUserId());
+					systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+							"tokenRevoke", SystemLogModel.INFO,
+							"User " + tokenModel.getUserId() + " logout");
 					userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
-							device, ip, "Token revoked");
+							device, ip, "User logout");
 					return new Message<String>().setOK().setMessage("Revoke Complete");
 				});
 	}
