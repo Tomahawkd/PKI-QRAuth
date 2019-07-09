@@ -10,8 +10,9 @@ $(document).ready(function () {
 
     $.ajax({
         url: "/user/info/data",
-        type: "get",
+        type: "post",
         contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(generateInteractionPackage({})),
         dataType: "json",
         success: function (data) {
             alert("成功！");

@@ -45,7 +45,7 @@ public class TokenValidationController {
 	 *             "iv": "Base64 encoded Kt public key encrypted iv",
 	 *             "id": "Base64 encoded Kt public key encrypted String(userTag;systemid)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "device information(device;ip)"
+	 *             "D": "device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Kc public",
@@ -64,24 +64,37 @@ public class TokenValidationController {
 
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
+		Map<String, String> responseMap = new HashMap<>();
 
 		String[] d = requestMap.get("D").split(";", 2);
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
+		if (k.length != 32) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenInitialization", SystemLogModel.FATAL,
+					"Symmetric key lenth invalid: " + k.length);
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
+		if (iv.length != 16) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenInitialization", SystemLogModel.FATAL,
+					"IV length invalid: " + iv.length);
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -144,7 +157,6 @@ public class TokenValidationController {
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
 
-		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
 		responseMap.put("M", mResponse);
 		responseMap.put("T", tResponse);
@@ -158,7 +170,7 @@ public class TokenValidationController {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)"
+	 *             "D": "Device information(ip;device)"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Ks public key encrypted Kc public",
@@ -179,5 +191,41 @@ public class TokenValidationController {
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> null);
+	}
+
+	/**
+	 * @param data {
+	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "Device information(ip;device)"
+	 *             }
+	 * @return {
+	 * "K": "Base64 encoded Ks public key encrypted Kc public",
+	 * "M": "
+	 * {
+	 * "status": number(0:valid, 1:invalid),
+	 * "message": "service message"
+	 * }",
+	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
+	 * "U": "Base64 encoded Ks public key encrypted user tag"
+	 * }
+	 */
+	@PostMapping("/deinit")
+	public String tokenRevoke(@RequestBody String data)
+			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
+
+		return TokenUtils.tokenValidate(data,
+				systemLogService, tokenService, userLogService,
+				userKeyService, systemKeyService, userIndexService, String.class,
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
+
+					tokenService.deleteUserTokenById(tokenModel.getTokenId(), tokenModel.getUserId());
+					systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+							"tokenRevoke", SystemLogModel.INFO,
+							"User " + tokenModel.getUserId() + " logout");
+					userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+							device, ip, "User logout");
+					return new Message<String>().setOK().setMessage("Revoke Complete");
+				});
 	}
 }

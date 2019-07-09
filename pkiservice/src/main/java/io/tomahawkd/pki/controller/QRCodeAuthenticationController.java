@@ -62,16 +62,29 @@ public class QRCodeAuthenticationController {
 			throws MalformedJsonException, CipherErrorException, IOException {
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "T", "system");
+		Map<String, String> responseMap = new HashMap<>();
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
+		if (k.length != 32) {
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"qrNonceGenerate", SystemLogModel.FATAL,
+					"Symmetric key lenth invalid: " + k.length);
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 				"qrNonceGenerate", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
+		if (iv.length != 16) {
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"qrNonceGenerate", SystemLogModel.FATAL,
+					"IV length invalid: " + iv.length);
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 				"qrNonceGenerate", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -92,7 +105,6 @@ public class QRCodeAuthenticationController {
 
 		String mResponse = new Gson().toJson(new Message<>(0, "Generate Complete"));
 
-		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("T", tResponse);
 		responseMap.put("nonce2", nonce2Response);
 		responseMap.put("M", mResponse);
@@ -107,7 +119,7 @@ public class QRCodeAuthenticationController {
 	 *             }
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": ...
+	 *             "D": "ip;device"
 	 *             }
 	 * @return {
 	 * "K": "Base64 encoded Kc,t encrypted Kc public",
@@ -196,15 +208,15 @@ public class QRCodeAuthenticationController {
 
 	/**
 	 * @param data {
-	 *             "nonce2": "Base64 encoded Kt public key encrypted QrCode nonce",
+	 *             "nonce2": "Base64 encoded QrCode nonce",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
 	 *             "system": "systemid",
-	 *             "D": "device"
+	 *             "D": "ip;device"
 	 *             }
 	 * @return {
 	 * "M": "result message
 	 * {
-	 * "type": "number(0:not exist, 1:scanned, 2:confirmed)",
+	 * "type": "number(-1:not exist, 0:not scanned, 1:scanned, 2:confirmed)",
 	 * "message": "message"
 	 * }"
 	 * "T": "Base64 encoded Kc,t encrypted challenge number+1"
@@ -221,13 +233,15 @@ public class QRCodeAuthenticationController {
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		int nonce = ByteBuffer.wrap(
-				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-						Utils.base64Decode(requestMap.get("nonce2")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+						Utils.base64Decode(requestMap.get("nonce2"))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+
+		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+				"queryQRStatus", SystemLogModel.DEBUG, "nonce decryption complete.");
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(requestMap.get("system"));
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
@@ -240,8 +254,8 @@ public class QRCodeAuthenticationController {
 
 		Map<String, String> message = new HashMap<>();
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);
-		if (model == null || model.getStatus() != 1 && model.getStatus() != 2) {
-			message.put("type", "0");
+		if (model == null) {
+			message.put("type", "-1");
 			message.put("message", "qrcode invalid");
 
 			Map<String, String> responseMap = new HashMap<>();
@@ -250,6 +264,15 @@ public class QRCodeAuthenticationController {
 
 			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 					"queryQRStatus", SystemLogModel.DEBUG, "Invalid query nonce to qrcode.");
+
+			return new Gson().toJson(responseMap);
+		} else if (model.getStatus() != 1 && model.getStatus() != 2) {
+			message.put("type", "0");
+			message.put("message", "qrcode not scanned");
+
+			Map<String, String> responseMap = new HashMap<>();
+			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("T", tResponse);
 
 			return new Gson().toJson(responseMap);
 		} else if (model.getStatus() == 1) {

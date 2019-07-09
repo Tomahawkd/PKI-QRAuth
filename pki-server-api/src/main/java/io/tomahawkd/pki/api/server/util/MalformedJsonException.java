@@ -1,6 +1,4 @@
-package io.tomahawkd.simpleserver.exceptions;
-
-import java.sql.SQLOutput;
+package io.tomahawkd.pki.api.server.util;
 
 public class MalformedJsonException extends Exception {
 
