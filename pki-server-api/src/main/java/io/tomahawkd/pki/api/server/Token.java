@@ -66,14 +66,15 @@ public class Token {
     }
 
     /**
+     * @Param data {"payload": "Base64 encoded Ks public key encrypted (username,password)",
+     *      * * "S": "Base64 encoded Ks public key encrypted (Kc,s,time1)",
+     *      * * "K": "Base64 encoded Kt public key encrypted Kc,t",
+     *      * * "iv": "Base64 encoded Kt public key encrypted iv"}
      * @return {"EToken": "Base64 encoded Kc public key encrypted token",
      * "M": {"status": (number 0,1,2),"message": "status description"},
      * "KP": "Base64 encoded Kc,t encrypted (Kc public key,Kc private key)",
      * "T": "Base64 encoded Kc public key encrypted (time1+1)"}
-     * @Param data {"payload": "Base64 encoded Ks public key encrypted (username,password)",
-     * * "S": "Base64 encoded Ks public key encrypted (Kc,s,time1)",
-     * * "K": "Base64 encoded Kt public key encrypted Kc,t",
-     * * "iv": "Base64 encoded Kt public key encrypted iv"}
+     *
      */
     public String acceptInitializeAuthenticationMessage(String body, String ip, String device, ThrowableFunction<String, Message<String>> callback, OnError onerror) throws Exception {
         Map<String, String> bodyData =
@@ -108,16 +109,17 @@ public class Token {
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
 
             if ((boolean) ereceive.get("status")) {
+                System.out.println("error");
                 responseMap.put("M", new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
                 return new Gson().toJson(responseMap);
             }
-            Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"), new TypeToken<Map<String, Integer>>() {
+            Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"), new TypeToken<Map<String, String>>() {
             }.getType());
 
             Message<String> message = new Gson().fromJson(receive.get("M"),
                     new TypeToken<Message<String>>() {
                     }.getType());
-
+            System.out.println(message.toJson());
             int t1 = ByteBuffer.wrap(
                     SecurityFunctions.decryptAsymmetric(privateKey,
                             decoder.decode(receive.get("T"))))
@@ -133,13 +135,14 @@ public class Token {
                 responseMap.put("KP", receive.get("KP"));
                 responseMap.put("T", time);
                 responseMap.put("M", new Message<String>().setOK().setMessage("success").toJson());
+                System.out.println("success");
                 return new Gson().toJson(responseMap);
             } else
                 throw new Exception();
         } catch (Exception e) {
             onerror.delete(userid);
             Map<String, String> responseMap = new HashMap<>();
-            responseMap.put("M", new Message<String>().setStatus(2).setMessage("failed").toJson());
+            responseMap.put("M", new Message<String>().setStatus(1).setMessage("failed").toJson());
             e.printStackTrace();
             return new Gson().toJson(responseMap);
         }
@@ -742,10 +745,11 @@ public class Token {
         URL url = new URL(target.toString());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type","application/json");
         connection.setDoOutput(true);
         OutputStream os = connection.getOutputStream();
         byte[] input = content.getBytes(StandardCharsets.UTF_8);
-        os.write(input, 0, input.length);
+        os.write(input);
         connection.setConnectTimeout(2000);
         connection.setReadTimeout(2000);
         connection.connect();
@@ -767,7 +771,6 @@ public class Token {
             text.append(line);
             line = buff.readLine();
         }
-        text.delete(text.length() - 2, text.length() - 1);
         Map<String, Object> map = new HashMap<>();
         map.put("status", error);
         map.put("message", text.toString());
