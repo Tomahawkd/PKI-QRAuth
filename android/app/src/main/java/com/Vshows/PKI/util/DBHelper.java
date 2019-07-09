@@ -30,7 +30,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         String SERVER_TABLE_CMD = "CREATE TABLE " + SERVER_TABLE
                 + "("
-                + ID + " TEXT PRIMARY KEY ,"
                 + KTpub +" TEXT,"
                 + KSpub +" TEXT"
                 + ");" ;

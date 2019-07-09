@@ -105,17 +105,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
                                 String ua = SystemUtil.getSystemModel();
-                                String TpubURL = URLUtil.getTpubURL(context);
-                                String SpubURL = URLUtil.getSpubURL(context);
                                 String registerURL = URLUtil.getRegisterURL(context);
 
-                                String Tpub = connecter.getAuthenticationServerPublicKey(TpubURL,ua);
-                                String Spub = connecter.getServerPublicKey(SpubURL,ua);
-
-                                manager.restoreServerKey(context,username,Tpub,Spub);
-
-                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
-                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
+                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
 //                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
 //                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
 

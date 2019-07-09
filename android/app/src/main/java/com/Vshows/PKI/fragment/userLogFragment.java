@@ -83,8 +83,8 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                     String ua = SystemUtil.getSystemModel();
                     String url = URLUtil.getGetLogURL(context);
 
-                    String Tpub = manager.getTpub(context,name);
-                    String Spub = manager.getSpub(context,name);
+                    String Tpub = manager.getTpub(context);
+                    String Spub = manager.getSpub(context);
                     String Cpri = manager.getCpri(context,name);
                     byte[] token = manager.getToken(context,name).getBytes();
                     int nonce = manager.getNonce(context,name);
@@ -168,8 +168,8 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                             String ua = SystemUtil.getSystemModel();
                             String url = URLUtil.getScanQRCodeURL(context);
 
-                            String Tpub = manager.getTpub(context,name);
-                            String Spub = manager.getSpub(context,name);
+                            String Tpub = manager.getTpub(context);
+                            String Spub = manager.getSpub(context);
                             String Cpri = manager.getCpri(context,name);
                             byte[] token = manager.getToken(context,name).getBytes();
                             int nonce1 = manager.getNonce(context,name);

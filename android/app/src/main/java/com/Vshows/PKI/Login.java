@@ -139,8 +139,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 //
 //                                manager.restoreServerKey(context,name,testPu,testPu);
 //
-//                                String Tpub = manager.getTpub(context,name);
-//                                String Spub = manager.getSpub(context,name);
+//                                String Tpub = manager.getTpub(context);
+//                                String Spub = manager.getSpub(context);
 //                                String Cpri = manager.getCpri(context,name);
 //                                byte[] token = manager.getToken(context,name).getBytes();
 //                                int nonce = manager.getNonce(context,name);
