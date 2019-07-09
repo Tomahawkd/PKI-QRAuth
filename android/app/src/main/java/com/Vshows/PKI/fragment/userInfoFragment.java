@@ -52,7 +52,7 @@ import okhttp3.Response;
 import static android.app.Activity.RESULT_OK;
 
 
-public class fragment3 extends Fragment implements View.OnClickListener {
+public class userInfoFragment extends Fragment implements View.OnClickListener {
     @Nullable
     ImageButton scanBtn ;
     private int REQUEST_CODE_SCAN = 111;

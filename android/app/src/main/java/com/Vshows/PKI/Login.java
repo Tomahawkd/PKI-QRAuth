@@ -1,4 +1,5 @@
 package com.Vshows.PKI;
+import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
 import com.Vshows.PKI.util.keyManager;
 
@@ -28,10 +30,15 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 
 import javax.net.ssl.KeyManager;
 
+import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -61,10 +68,13 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
+
+
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.login);
         initView();
 
@@ -79,6 +89,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
         login.setOnClickListener(this);
         register.setOnClickListener(this);
         Toast.makeText(this, SystemUtil.getSystemModel(), Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -89,18 +100,12 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
-//                deleteDatabase("keys.db");
-//                name = username.getText().toString();
-//                keyManager km = new keyManager();
-//                km.restoreNonce(this,name,2333333);
-//               int n  = km.getNonce(this,name);
-//                Toast.makeText(this,"nonce: " + n, Toast.LENGTH_LONG).show();
-
-                Intent intent1 = new Intent(this,index.class);
-
-                intent1.putExtra("session",session);
-
-                startActivity(intent1);
+//                Intent intent1 = new Intent(this,index.class);
+//                intent1.putExtra("session",session);
+//                startActivity(intent1);
+                Context context = this;
+                keyManager manager = new keyManager();
+                manager.getAllServerKey(context);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -111,47 +116,94 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 else if (TextUtils.isEmpty(psw))
                     Toast.makeText(this,"请输入密码！", Toast.LENGTH_LONG).show();
                 else {
-                    try {
-                        JSONObject jsonObject = new JSONObject();
+//                    try {
+//                        JSONObject jsonObject = new JSONObject();
+//
+//                        jsonObject.put("username",name);
+//                        jsonObject.put("password",psw);
+//
+//                        String url ="http://192.168.43.159/user/login";
+//
+//
+//                        OkHttpClient client = new OkHttpClient();
+//                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+//
+//                        final Request request = new Request.Builder()
+//                                .url(url)
+//                                .post(body)
+//                                .build();
+//                        Call call = client.newCall(request);
+//                        call.enqueue(new Callback() {
+//                            public void onFailure(Call call, IOException e) {
+//                                Log.d("error","<<<<e="+e);
+//                            }
+//
+//                            @Override
+//                            public void onResponse(Call call, Response response) throws IOException {
+//                                if(response.isSuccessful()) {
+//                                    Headers headers=response.headers();
+//                                    List<String> cookies=headers.values("Set-Cookie");
+//                                    if(cookies.size()>0) {
+//                                        session = cookies.get(0);
+//                                        Log.d("session","<<<<d="+session);
+////                                        session = result.substring(0, result.indexOf(";"));
+//                                    }
+//                                    String jsonString = response.body().string();
+//                                    Log.d("success","<<<<d="+jsonString);
+//                                    handle_response(jsonString);
+//                                }
+//                            }
+//                        });
+//                    } catch (JSONException e){
+//                        e.printStackTrace();
+//                    }
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                //deleteDatabase("keys.db");
+                                Context context = getBaseContext();
+                                Connecter connecter = new Connecter();
+                                keyManager manager = new keyManager();
+                                String ua = SystemUtil.getSystemModel();
 
-                        jsonObject.put("username",name);
-                        jsonObject.put("password",psw);
+//                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
+//                                Log.d("getTpub",Tpub);
+//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                                Log.d("TpublicKey",TPub.toString());
 
-                        String url ="http://192.168.43.159/user/login";
 
+                                String testPu = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
+                                String testPr = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPrivate().getEncoded());
 
-                        OkHttpClient client = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+                                manager.restoreServerKey(context,name,testPu,testPu);
 
-                        final Request request = new Request.Builder()
-                                .url(url)
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        call.enqueue(new Callback() {
-                            public void onFailure(Call call, IOException e) {
-                                Log.d("error","<<<<e="+e);
+                                String Tpub = manager.getTpub(context,name);
+                                String Spub = manager.getSpub(context,name);
+//                                String Cpri = manager.getCpri(context,name);
+//                                byte[] token = manager.getToken(context,name).getBytes();
+//                                int nonce = manager.getNonce(context,name);
+//
+//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                                PublicKey SPub = StringToPKey.getPublicKey(Spub);
+//                                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+//                                PublicKey TPub = SecurityFunctions.generateKeyPair().getPublic();
+//                                PublicKey SPub = SecurityFunctions.generateKeyPair().getPublic();
+//                                PrivateKey CPri = SecurityFunctions.generateKeyPair().getPrivate();
+//                                byte[] token = "liucheng".getBytes();
+//                                int nonce = 12345;
+
+//                                String data = "liucheng";
+//                                String result = connecter.interactAuthentication(data,TPub,SPub,token,nonce,CPri,ua);
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                Log.d("resulterror",e.getMessage());
                             }
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                if(response.isSuccessful()) {
-                                    Headers headers=response.headers();
-                                    List<String> cookies=headers.values("Set-Cookie");
-                                    if(cookies.size()>0) {
-                                        session = cookies.get(0);
-                                        Log.d("session","<<<<d="+session);
-//                                        session = result.substring(0, result.indexOf(";"));
-                                    }
-                                    String jsonString = response.body().string();
-                                    Log.d("success","<<<<d="+jsonString);
-                                    handle_response(jsonString);
-                                }
-                            }
-                        });
-                    } catch (JSONException e){
-                        e.printStackTrace();
-                    }
+
+                        }
+                    }).start();
                 }
                 break;
             default:
