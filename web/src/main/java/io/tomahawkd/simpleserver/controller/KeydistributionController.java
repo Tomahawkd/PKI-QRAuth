@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/key/dist")
+@ResponseBody
 public class KeydistributionController {
 
 

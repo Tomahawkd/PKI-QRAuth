@@ -13,7 +13,7 @@ import java.util.Base64;
 @SpringBootApplication
 public class ServerApplication {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		Token.setApiKey("cab4af0fc499491eb9bb16120e3ae195");
 
@@ -24,6 +24,11 @@ public class ServerApplication {
 		byte[] priBytes = Utils.base64Decode(
 				FileUtil.readFile("./web/src/main/resources/private.pri"));
 		Token.readPrivateKey(priBytes);
+
+
+
+		Token.readTPublicKey();
+
 
 
 
