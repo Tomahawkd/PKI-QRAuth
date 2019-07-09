@@ -30,20 +30,17 @@ public class Connecter{
      * return Tpub
      *
      */
-    public String getAuthenticationServerPublicKey(String ua){
+    public String getAuthenticationServerPublicKey(String url,String ua){
 
-        String uri = "http://192.168.43.159/key/dist/tpub";
-        return httpUtil.getJsonData(uri,ua);
+        //String uri = "http://192.168.43.159/key/dist/tpub";
+        return httpUtil.getJsonData(url,ua);
 
 
     }
 
-    public String getServerPublicKey(String id,String ua){
-        String uri = "http://192.168.43.192:8000/serverkey/";
-        String a = httpUtil.getJsonData(id,uri,ua);
-        return a;
-
-
+    public String getServerPublicKey(String url,String ua){
+        //String uri = "http://192.168.43.192:8000/serverkey/";
+        return  httpUtil.getJsonData(url,ua);
     }
 
 
@@ -66,7 +63,7 @@ public class Connecter{
      */
 
 
-    public String initalizeAuthentication(String user, String pass, PublicKey Tpub,PublicKey Spub,String ua) throws Exception{
+    public String initalizeAuthentication(String url,String user, String pass, PublicKey Tpub,PublicKey Spub,String ua) throws Exception{
 
 
         String username = user;
@@ -95,8 +92,8 @@ public class Connecter{
         map.put("K",K);
         map.put("iv",IV);
         String json = gson.toJson(map);
-        String uri = "http://192.168.43.192:8000/serverkey/";
-        String res = httpUtil.getJsonData(json,uri,ua);
+
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String, String> result =
                 new Gson().fromJson(res, new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -165,7 +162,7 @@ public class Connecter{
      *  }
      */
 
-    public String interactAuthentication(String data,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri,String ua) throws Exception{
+    public String interactAuthentication(String url,String data,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri,String ua) throws Exception{
         Gson gson = new Gson();
 
         String payload = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,data.getBytes()));
@@ -184,10 +181,7 @@ public class Connecter{
         reqMap.put("T", tStringReq);
         String json = new Gson().toJson(reqMap);
 
-
-
-        String uri = "http://192.168.43.192:8000/serverkey/";
-        String res = httpUtil.getJsonData(json,uri,ua);
+        String res = httpUtil.getJsonData(json,url,ua);
 
         Map<String,String> result = new Gson().fromJson(res, new TypeToken<Map<String, String>>() {}.getType());
         String m = new String(Utils.base64Decode(result.get("M")),"UTF-8");
@@ -233,7 +227,7 @@ public class Connecter{
      *             "message" : "succuess/timestamp error/Authentication failed"
      *          }
      */
-    public String updateQRStatus(byte[] token, int nonce, String nonce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,String ua) throws Exception{
+    public String updateQRStatus(String url,byte[] token, int nonce, String nonce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,String ua) throws Exception{
         Gson gson = new Gson();
         // generate the EToken
         byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
@@ -259,8 +253,8 @@ public class Connecter{
         map.put("T",T);
         map.put("M",M1);
         String json = gson.toJson(map);
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         String m = result.get("M");
@@ -303,7 +297,7 @@ public class Connecter{
      *          }
      */
 
-    public String updateQRStatusConfirm(byte[] token, int nonce, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,int confirm,String ua) throws Exception{
+    public String updateQRStatusConfirm(String url,byte[] token, int nonce, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,int confirm,String ua) throws Exception{
         Gson gson = new Gson();
         // generate the EToken
         byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
@@ -327,8 +321,8 @@ public class Connecter{
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());        //assertThat(result.get("M")).contains("\"status\":0");
         //if(result.get("M").getStatu())
 
@@ -370,7 +364,7 @@ public class Connecter{
      * }
      */
 
-    public String getLog(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String getLog(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
         Gson gson = new Gson();
         // generate the EToken
         byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
@@ -387,8 +381,7 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
 
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         String T1 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("T")),"UTF-8").getBytes()));
@@ -434,7 +427,7 @@ public class Connecter{
      * }
      */
 
-    public String initTokenList(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String initTokenList(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
         Gson gson = new Gson();
         // generate the EToken
         byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
@@ -451,8 +444,7 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
 
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
         String T1 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("T")),"UTF-8").getBytes()));
         int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
@@ -481,7 +473,7 @@ public class Connecter{
 
     }
 
-    public String revokeToken(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String revokeToken(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
 
         Gson gson = new Gson();
         // generate the EToken
@@ -499,8 +491,7 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
 
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
         String T1 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("T")),"UTF-8").getBytes()));
         int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
@@ -528,7 +519,7 @@ public class Connecter{
         }
     }
 
-    public String regenerateKeys(byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String regenerateKeys(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
         Gson gson = new Gson();
         // generate the EToken
         byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
@@ -545,8 +536,7 @@ public class Connecter{
         map.put("T",T);
         String json = gson.toJson(map);
 
-        String uri = "39.106.80.38:22222/keys/auth/pubkey";
-        String res = httpUtil.getJsonData(json,uri,ua);
+        String res = httpUtil.getJsonData(json,url,ua);
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
         String T1 = new String(SecurityFunctions.decryptAsymmetric(Cpri,new String(Utils.base64Decode(result.get("T")),"UTF-8").getBytes()));
         int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();

@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 
 import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
 import com.google.gson.Gson;
 
@@ -104,18 +105,24 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
                                 String ua = SystemUtil.getSystemModel();
+                                String TpubURL = URLUtil.getTpubURL(context);
+                                String SpubURL = URLUtil.getSpubURL(context);
+                                String registerURL = URLUtil.getRegisterURL(context);
 
-                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
-                                String Spub = connecter.getServerPublicKey("1",ua);
+                                String Tpub = connecter.getAuthenticationServerPublicKey(TpubURL,ua);
+                                String Spub = connecter.getServerPublicKey(SpubURL,ua);
+
                                 manager.restoreServerKey(context,username,Tpub,Spub);
 
-                                Gson gson = new Gson();
-                                Map<String,Object> result = new HashMap<>();
                                 PublicKey TpublicKey = SecurityFunctions.readPublicKey(Tpub);
                                 PublicKey SpublicKey = SecurityFunctions.readPublicKey(Spub);
 //                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
 //                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-                                String resultJson = connecter.initalizeAuthentication(username,password1,TpublicKey,SpublicKey,ua);
+
+                                String resultJson = connecter.initalizeAuthentication(registerURL,username,password1,TpublicKey,SpublicKey,ua);
+
+                                Gson gson = new Gson();
+                                Map<String,Object> result = new HashMap<>();
                                 result = gson.fromJson(resultJson,result.getClass());
 
                                 int check = (int) result.get("check");

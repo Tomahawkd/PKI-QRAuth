@@ -18,7 +18,10 @@ import android.widget.Toast;
 
 import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,7 +35,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.KeyManager;
 
@@ -112,47 +117,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 else if (TextUtils.isEmpty(psw))
                     Toast.makeText(this,"请输入密码！", Toast.LENGTH_LONG).show();
                 else {
-//                    try {
-//                        JSONObject jsonObject = new JSONObject();
-//
-//                        jsonObject.put("username",name);
-//                        jsonObject.put("password",psw);
-//
-//                        String url ="http://192.168.43.159/user/login";
-//
-//
-//                        OkHttpClient client = new OkHttpClient();
-//                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-//
-//                        final Request request = new Request.Builder()
-//                                .url(url)
-//                                .post(body)
-//                                .build();
-//                        Call call = client.newCall(request);
-//                        call.enqueue(new Callback() {
-//                            public void onFailure(Call call, IOException e) {
-//                                Log.d("error","<<<<e="+e);
-//                            }
-//
-//                            @Override
-//                            public void onResponse(Call call, Response response) throws IOException {
-//                                if(response.isSuccessful()) {
-//                                    Headers headers=response.headers();
-//                                    List<String> cookies=headers.values("Set-Cookie");
-//                                    if(cookies.size()>0) {
-//                                        session = cookies.get(0);
-//                                        Log.d("session","<<<<d="+session);
-////                                        session = result.substring(0, result.indexOf(";"));
-//                                    }
-//                                    String jsonString = response.body().string();
-//                                    Log.d("success","<<<<d="+jsonString);
-//                                    handle_response(jsonString);
-//                                }
-//                            }
-//                        });
-//                    } catch (JSONException e){
-//                        e.printStackTrace();
-//                    }
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -162,20 +126,21 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
                                 String ua = SystemUtil.getSystemModel();
+                                String getTpubURL = URLUtil.getTpubURL(context);
 
-//                                String Tpub = connecter.getAuthenticationServerPublicKey(ua);
-//                                Log.d("getTpub",Tpub);
-//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-//                                Log.d("TpublicKey",TPub.toString());
+                                String Tpub = connecter.getAuthenticationServerPublicKey(getTpubURL,ua);
+                                Log.d("getTpub",Tpub);
+                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                                Log.d("TpublicKey",TPub.toString());
 
 
-                                String testPu = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
-                                String testPr = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPrivate().getEncoded());
-
-                                manager.restoreServerKey(context,name,testPu,testPu);
-
-                                String Tpub = manager.getTpub(context,name);
-                                String Spub = manager.getSpub(context,name);
+//                                String testPu = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
+//                                String testPr = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPrivate().getEncoded());
+//
+//                                manager.restoreServerKey(context,name,testPu,testPu);
+//
+//                                String Tpub = manager.getTpub(context,name);
+//                                String Spub = manager.getSpub(context,name);
 //                                String Cpri = manager.getCpri(context,name);
 //                                byte[] token = manager.getToken(context,name).getBytes();
 //                                int nonce = manager.getNonce(context,name);
@@ -183,21 +148,40 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 //                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
 //                                PublicKey SPub = StringToPKey.getPublicKey(Spub);
 //                                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-
-//                                PublicKey TPub = SecurityFunctions.generateKeyPair().getPublic();
-//                                PublicKey SPub = SecurityFunctions.generateKeyPair().getPublic();
-//                                PrivateKey CPri = SecurityFunctions.generateKeyPair().getPrivate();
-//                                byte[] token = "liucheng".getBytes();
-//                                int nonce = 12345;
-
-//                                String data = "liucheng";
-//                                String result = connecter.interactAuthentication(data,TPub,SPub,token,nonce,CPri,ua);
+//
+////                                PublicKey TPub = SecurityFunctions.generateKeyPair().getPublic();
+////                                PublicKey SPub = SecurityFunctions.generateKeyPair().getPublic();
+////                                PrivateKey CPri = SecurityFunctions.generateKeyPair().getPrivate();
+////                                byte[] token = "liucheng".getBytes();
+////                                int nonce = 12345;
+//
+//                                String data = "Login";
+//
+//                                String resultJson = connecter.interactAuthentication(data,TPub,SPub,token,nonce,CPri,ua);
+//
+//                                Gson gson = new Gson();
+//                                Map<String,Object> result = new HashMap<>();
+//                                result = gson.fromJson(resultJson,result.getClass());
+//
+//                                int check = (int) result.get("check");
+//                                if(check == 0){
+//                                    Looper.prepare();
+//                                    Toast.makeText(getBaseContext(),"login success", Toast.LENGTH_LONG).show();
+//                                    Intent intent1 = new Intent(getBaseContext(),index.class);
+//                                    intent1.putExtra("session",session);
+//                                    intent1.putExtra("username",name);
+//                                    startActivity(intent1);
+//                                    Looper.loop();
+//                                } else {
+//                                    String message = (String) result.get("message");
+//                                    Looper.prepare();
+//                                    Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+//                                    Looper.loop();
+//                                }
                             } catch (Exception e){
                                 e.printStackTrace();
                                 Log.d("resulterror",e.getMessage());
                             }
-
-
                         }
                     }).start();
                 }
