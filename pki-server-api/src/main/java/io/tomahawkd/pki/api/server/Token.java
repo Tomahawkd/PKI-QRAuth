@@ -797,6 +797,33 @@ public class Token {
         } else
             return "\"M\":{\"status\":1,\"message\":\"time authentiaction failed\"}";
     }
+    public String deinit(String body,String ip,String device) throws Exception {
+        Map<String,String> data = new Gson().fromJson(body,new TypeToken<Map<String,String>>(){}.getType());
+        String EToken = data.get("EToken");
+        int time = SecurityFunctions.generateRandom();
+        String t = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time).array()), StandardCharsets.UTF_8);
+        String D = ip + ";" + device;
+
+        String content = "{\"EToken\":\"" + EToken + "\",\"T\":\""
+                + Base64.getEncoder().encodeToString(t.getBytes()) +
+                "\",\"D\":\"" + D + "\"}";
+        Map<String,Object> result = request(content,"/token/deinit");
+        if ((boolean) result.get("status"))
+            return "{\"M\":{\"status\":2,\"message\":\"" + result.get("message") + "\"}}";
+
+        Map<String, String> receive = new Gson().fromJson((String) result.get("message"), new TypeToken<Map<String, String>>() {
+        }.getType());
+        String T1 = new String(SecurityFunctions.decryptAsymmetric(privateKey, Base64.getDecoder().decode(receive.get("T"))), StandardCharsets.UTF_8);
+        int authtime = ByteBuffer.wrap(T1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        if(authtime == time + 1){
+            String M =  receive.get("M");
+            Map<String,String> m = new Gson().fromJson(M,new TypeToken<Map<String,String>>(){}.getType());
+            if(Integer.valueOf(m.get("status")) == 1)
+                return "{\"M\":{\"status\":2,\"message\":\"" + m.get("message") + "\"}}";
+            return "{\"M\":{\"status\":0,\"message\":\"" + m.get("message") + "\"}}";
+        }
+        return "{\"M\":{\"status\":1,\"message\":\"time authentiaction failed\"}}";
+    }
 
 
     private String getTPublicKey() throws Exception {

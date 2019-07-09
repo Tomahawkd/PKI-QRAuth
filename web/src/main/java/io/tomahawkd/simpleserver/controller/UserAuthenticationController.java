@@ -138,5 +138,17 @@ public class UserAuthenticationController {
                 }
         );
     }
+    @PostMapping("/logout")
+    public void logout(@RequestBody String body,HttpServletRequest request) throws Exception {
+        String ip = request.getRemoteAddr();
+        String device = request.getHeader("User-Agent");
+        String result = Token.getInstance().deinit(body, ip, device);
+        Map<String, String> map = new Gson().fromJson(result, new TypeToken<Map<String, String>>() {
+        }.getType());
+        Map<String, String> M = new Gson().fromJson(map.get("M"), new TypeToken<Map<String, String>>() {
+        }.getType());
 
-}
+        request.getSession().invalidate();
+    }
+
+    }
