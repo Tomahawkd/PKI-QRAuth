@@ -62,16 +62,23 @@ public class QRCodeAuthenticationController {
 			throws MalformedJsonException, CipherErrorException, IOException {
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "T", "system");
+		Map<String, String> responseMap = new HashMap<>();
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
+		if (k.length != 32) {
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 				"qrNonceGenerate", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
+		if (iv.length != 16) {
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 				"qrNonceGenerate", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -92,7 +99,6 @@ public class QRCodeAuthenticationController {
 
 		String mResponse = new Gson().toJson(new Message<>(0, "Generate Complete"));
 
-		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("T", tResponse);
 		responseMap.put("nonce2", nonce2Response);
 		responseMap.put("M", mResponse);

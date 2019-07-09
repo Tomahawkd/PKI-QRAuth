@@ -64,6 +64,7 @@ public class TokenValidationController {
 
 
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
+		Map<String, String> responseMap = new HashMap<>();
 
 		String[] d = requestMap.get("D").split(";", 2);
 		String device = "";
@@ -75,13 +76,19 @@ public class TokenValidationController {
 
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
-		if (k.length != 32) return new Gson().toJson(new Message<>(1, "invalid key"));
+		if (k.length != 32) {
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Symmetric key decryption complete.");
 
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
-		if (iv.length != 16) return new Gson().toJson(new Message<>(1, "invalid iv"));
+		if (iv.length != 16) {
+			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
+			return new Gson().toJson(responseMap);
+		}
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "IV decryption complete.");
 
@@ -144,7 +151,6 @@ public class TokenValidationController {
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
 				"tokenInitialization", SystemLogModel.DEBUG, "Response data process complete.");
 
-		Map<String, String> responseMap = new HashMap<>();
 		responseMap.put("K", kResponse);
 		responseMap.put("M", mResponse);
 		responseMap.put("T", tResponse);
