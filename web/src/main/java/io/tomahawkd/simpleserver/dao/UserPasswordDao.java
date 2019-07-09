@@ -22,4 +22,9 @@ public interface UserPasswordDao {
     //用户修改密码
     @Update("update user_info set password=#{new_password} where username=#{model.username} and password=#{model.password}")
     int updateUserPassword(@Param("model") UserPasswordModel model,String new_password);
+
+    //删除用户
+    @Delete("delete from user_info where index=#{index}")
+    void deleteUser(int userid);
+
 }
