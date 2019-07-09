@@ -47,7 +47,7 @@ public class TokenUtils {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)",
+	 *             "D": "Device information(ip;device)",
 	 *             "M": "service message" (optional)
 	 *             }
 	 * @return {
@@ -87,8 +87,8 @@ public class TokenUtils {
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMessage.getToken());
