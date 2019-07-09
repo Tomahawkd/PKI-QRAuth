@@ -24,7 +24,9 @@ public interface UserPasswordDao {
     int updateUserPassword(@Param("model") UserPasswordModel model,String new_password);
 
     //删除用户
-    @Delete("delete from user_info where index=#{index}")
+    @Delete("delete from user_info where `index`=#{userid}")
     void deleteUser(int userid);
+
+
 
 }

@@ -25,7 +25,7 @@ public class Token {
     private String Kcs;
     private static String systemid;
 
-    private static final String IP = "HTTP://192.168.43.69";
+    private static final String IP = "http://39.106.80.38";
     private static Token instance;
 
     public static Token getInstance() {
@@ -37,20 +37,20 @@ public class Token {
         systemid = api;
     }
 
-    private Token() {
+   /* private Token() {
         try {
             TpublicKey = SecurityFunctions.readPublicKey(this.getTPublicKey());
         } catch (Exception e) {
         }
 
-    }
+    }*/
 
     public static void readPublicKey(byte[] pub) throws IOException {
         publicKey = SecurityFunctions.readPublicKey(pub);
     }
 
-    public static void readTPublicKey(byte[] pub) throws IOException {
-        TpublicKey = SecurityFunctions.readPublicKey(pub);
+    public static void readTPublicKey() throws Exception {
+        TpublicKey = SecurityFunctions.readPublicKey(Base64.getDecoder().decode(getTPublicKey()));
     }
 
     public static void readPrivateKey(byte[] pri) throws IOException {
@@ -60,10 +60,6 @@ public class Token {
 
     public String TPublicKeyDistribute() throws Exception {
         Base64.Encoder encoder = Base64.getEncoder();
-        if (TpublicKey == null)
-            TpublicKey = SecurityFunctions.readPublicKey(this.getTPublicKey());
-
-        //todo
         return encoder.encodeToString(TpublicKey.getEncoded());
 
     }
@@ -85,8 +81,6 @@ public class Token {
      * * "K": "Base64 encoded Kt public key encrypted Kc,t",
      * * "iv": "Base64 encoded Kt public key encrypted iv"}
      */
-    //todo：注册失败删掉用户  1.dao.  2. service 加一个方法
-    // connect至结尾try-catch  catch中回调删除，两个值（status=0,auth_t=t+1）不全对就throw 错误跳到catch中
     public String acceptInitializeAuthenticationMessage(String body, String ip, String device, ThrowableFunction<String, Message<String>> callback, OnError onerror) throws Exception {
         Map<String, String> bodyData =
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
@@ -102,70 +96,105 @@ public class Token {
                 SecurityFunctions.decryptAsymmetric(privateKey, Utils.base64Decode(bodyData.get("T"))))
                 .order(ByteOrder.LITTLE_ENDIAN).getInt() + 1;
 
-        String K = bodyData.get("K");
-        String iv = new String(decoder.decode(bodyData.get("iv")), StandardCharsets.UTF_8);  /*********/
         int t = SecurityFunctions.generateRandom();
-        String time2 = new String((SecurityFunctions.encryptAsymmetric(TpublicKey,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())), StandardCharsets.UTF_8);
+        String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
         int userid = userMessage.getStatus();     //userid获得
+        System.out.println(userid + "");
         //加密payload userid和systemid
         String idc = userid + ";" + systemid;
-        String eidc = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, idc.getBytes()));
+        String eidc = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey, idc.getBytes()));
         String D = ip + ";" + device;
+        Map<String, String> requestMap = new HashMap<>();
+        requestMap.put("K", bodyData.get("K"));
+        requestMap.put("iv", bodyData.get("iv"));
+        requestMap.put("id", eidc);
+        requestMap.put("D", D);
+        requestMap.put("T", time2);
         //encode K,idc,time2
-        Base64.Encoder encoder = Base64.getEncoder();
-        String enciv = encoder.encodeToString(iv.getBytes());
-        String encidc = encoder.encodeToString(eidc.getBytes());
-        String enctime2 = encoder.encodeToString(time2.getBytes());
 
         try {
             String target_url = IP + "/token/init";
             URL url = new URL(target_url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            System.out.println("1");
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
-            String content = "{\"K\":\"" + K + "\",\"iv\":\"" + enciv + "\",\"id\":\"" + encidc + "\",\"D\":\"" + D + "\",\"T\":\"" + enctime2 + "\"}";
+            connection.setRequestProperty("Content-Type", "application/json");
+            System.out.println("2");
+
+            String content = new Gson().toJson(requestMap);
             OutputStream os = connection.getOutputStream();
+            System.out.println(content);
+
             byte[] input = content.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
+
+
+            os.write(input);
+            System.out.println("4");
+
             connection.setConnectTimeout(2000);
             connection.setReadTimeout(2000);
             connection.connect();
-            StringBuilder text = new StringBuilder();
+            System.out.println("5");
+            boolean error = false;
             int responseCode = connection.getResponseCode();
-            InputStreamReader in;
-            in = new InputStreamReader(connection.getInputStream());
 
+            StringBuilder text = new StringBuilder();
+            InputStreamReader in;
+            System.out.println("6");
+
+            //todo:failed
+            if (responseCode == HttpURLConnection.HTTP_OK ||
+                    responseCode == HttpURLConnection.HTTP_ACCEPTED ||
+                    responseCode == HttpURLConnection.HTTP_CREATED) {
+                in = new InputStreamReader(connection.getInputStream());
+            } else {
+                in = new InputStreamReader(connection.getErrorStream());
+                error = true;
+            }
             BufferedReader buff = new BufferedReader(in);
             String line = buff.readLine();
             while (line != null) {
                 text.append(line);
                 line = buff.readLine();
             }
-            text.delete(text.length() - 2, text.length() - 1);//todo
+            if (error) {
+                System.out.println(text.toString());
+                throw new Exception(text.toString());
+            }
 
-            String eresult = text.toString();
             Map<String, String> result =
-                    new Gson().fromJson(eresult, new TypeToken<Map<String, String>>() {
+                    new Gson().fromJson(text.toString(), new TypeToken<Map<String, String>>() {
                     }.getType());
-            String m = result.get("M");
-            Map<String, Object> message = new Gson().fromJson(m, new TypeToken<Map<String, Integer>>() {
+
+            Message<String> message = new Gson().fromJson(result.get("M"),
+                    new TypeToken<Message<String>>() {
             }.getType());
-            String T = new String(SecurityFunctions.decryptAsymmetric(privateKey, new String(decoder.decode(result.get("T")), StandardCharsets.UTF_8).getBytes()));
-            int t1 = ByteBuffer.wrap(T.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
-            if (t1 == t + 1 && (int) message.get("status") == 0) {
-                String etoken = result.get("EToken");
-                String KP = result.get("KP");
-                String k = new String(decoder.decode(result.get("K")), StandardCharsets.UTF_8);
+            int t1 = ByteBuffer.wrap(
+                    SecurityFunctions.decryptAsymmetric(privateKey,
+                            decoder.decode(result.get("T"))))
+                    .order(ByteOrder.LITTLE_ENDIAN).getInt();
+
+            if (t1 == t + 1 && message.isOk()) {
+                byte[] k = Utils.base64Decode(result.get("K"));
                 PublicKey Kcpub = SecurityFunctions.readPublicKey(k);
                 //todo time
                 String time = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Kcpub,
-                        ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time1).array()));
-                return "{\"EToken\":\"" + etoken + "\",\"KP\":\"" + KP + "\",\"T\":\"" + Base64.getEncoder().encodeToString(time.getBytes()) + "\",\"M\":{\"status\":" + 0 + ",\"message\":\"success\"}}";
-            }
-            else
+                        ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).
+                                putInt(time1).array()));
+
+                Map<String, String> responseMap = new HashMap<>();
+                responseMap.put("EToken", result.get("EToken"));
+                responseMap.put("KP", result.get("KP"));
+                responseMap.put("T", time);
+                responseMap.put("M", new Message<String>().setOK().setMessage("success").toJson());
+                System.out.println("success");
+                return new Gson().toJson(responseMap);
+            } else
                 throw new Exception();
         } catch (IOException e) {
+            System.out.println("delete");
             onerror.delete(userid);
             e.printStackTrace();
             return "{\"M\":{\"status\":2,\"message\":\"failed\"}}";
@@ -797,8 +826,10 @@ public class Token {
         } else
             return "\"M\":{\"status\":1,\"message\":\"time authentiaction failed\"}";
     }
-    public String deinit(String body,String ip,String device) throws Exception {
-        Map<String,String> data = new Gson().fromJson(body,new TypeToken<Map<String,String>>(){}.getType());
+
+    public String deinit(String body, String ip, String device) throws Exception {
+        Map<String, String> data = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+        }.getType());
         String EToken = data.get("EToken");
         int time = SecurityFunctions.generateRandom();
         String t = new String(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(time).array()), StandardCharsets.UTF_8);
@@ -807,7 +838,7 @@ public class Token {
         String content = "{\"EToken\":\"" + EToken + "\",\"T\":\""
                 + Base64.getEncoder().encodeToString(t.getBytes()) +
                 "\",\"D\":\"" + D + "\"}";
-        Map<String,Object> result = request(content,"/token/deinit");
+        Map<String, Object> result = request(content, "/token/deinit");
         if ((boolean) result.get("status"))
             return "{\"M\":{\"status\":2,\"message\":\"" + result.get("message") + "\"}}";
 
@@ -815,10 +846,11 @@ public class Token {
         }.getType());
         String T1 = new String(SecurityFunctions.decryptAsymmetric(privateKey, Base64.getDecoder().decode(receive.get("T"))), StandardCharsets.UTF_8);
         int authtime = ByteBuffer.wrap(T1.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        if(authtime == time + 1){
-            String M =  receive.get("M");
-            Map<String,String> m = new Gson().fromJson(M,new TypeToken<Map<String,String>>(){}.getType());
-            if(Integer.valueOf(m.get("status")) == 1)
+        if (authtime == time + 1) {
+            String M = receive.get("M");
+            Map<String, String> m = new Gson().fromJson(M, new TypeToken<Map<String, String>>() {
+            }.getType());
+            if (Integer.valueOf(m.get("status")) == 1)
                 return "{\"M\":{\"status\":2,\"message\":\"" + m.get("message") + "\"}}";
             return "{\"M\":{\"status\":0,\"message\":\"" + m.get("message") + "\"}}";
         }
@@ -826,7 +858,7 @@ public class Token {
     }
 
 
-    private String getTPublicKey() throws Exception {
+    private static String getTPublicKey() throws Exception {
         //todo files not file
         File file = new File("./web/src/main/resources/tpublic.pub");
         if (!file.exists()) {       // 向服务器获取   并写入文件
@@ -855,13 +887,13 @@ public class Token {
                 text.append(line);
                 line = buff.readLine();
             }
-            text.delete(text.length() - 2, text.length() - 1);
             if (error)
                 return "{\"M\":{\"status\":2,\"message\":\"public key accept failed\"}}";
 
             try {
                 file.createNewFile();
                 FileWriter writer = new FileWriter(file);
+                System.out.println("    55  ");
                 writer.write("");//清空原文件内容
                 writer.write(text.toString());
                 writer.flush();
@@ -872,21 +904,8 @@ public class Token {
             }
             return text.toString();
         } else {  //从文件中读取出来并返回
-            FileReader reader = new FileReader(file);//定义一个fileReader对象，用来初始化BufferedReader
-            BufferedReader bReader = new BufferedReader(reader);//new一个BufferedReader对象，将文件内容读取到缓存
-            StringBuilder ss = new StringBuilder();//定义一个字符串缓存，将字符串存放缓存中
-            String s = "";
-            while ((s = bReader.readLine()) != null) {//逐行读取文件内容，不读取换行符和末尾的空格
-                ss.append(s);//将读取的字符串添加换行符后累加存放在缓存中
-            }
-            bReader.close();
+            return FileUtil.readFile("./web/src/main/resources/tpublic.pub");
 
-           /* byte[] tpubBytes = Utils.base64Decode(
-                    FileUtil.readFile("E:\\idea workspace\\PKI-QRAuth\\web\\src\\main\\resources/tpublic.pub"));
-
-            Token.readTPublicKey(tpubBytes);*/
-
-            return ss.toString();
         }
     }
 
