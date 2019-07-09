@@ -199,7 +199,7 @@ function randomPassword(size) {
 function generateKctAndIv() {
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
     var kct = $.md5(RandomSeed);
-    var iv = sha256(RandomSeed);
+    var iv = sha256(RandomSeed).substr(0, 16);
 
     sessionStorage.setItem("kct", kct);
     sessionStorage.setItem("iv", iv);
