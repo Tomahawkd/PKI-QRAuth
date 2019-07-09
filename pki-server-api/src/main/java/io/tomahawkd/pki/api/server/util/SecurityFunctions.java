@@ -101,25 +101,20 @@ public class SecurityFunctions {
         }
     }
 
-    public static PublicKey readAuthenticateServerPublicKey() throws IOException, CipherErrorException {
-        byte[] pubBytes = Base64.getDecoder().decode(
-                FileUtil.readFile(FileUtil.rootPath + "/resources/auth.pub"));
-        try {
-            return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pubBytes));
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
-            throw new CipherErrorException(e);
-        }
-    }
-
-    private static PrivateKey readAuthenticateServerPrivateKey() throws IOException, CipherErrorException {
+    private static PrivateKey readServerPrivateKey() throws IOException, CipherErrorException {
         byte[] priBytes = Utils.base64Decode(
-                FileUtil.readFile(FileUtil.rootPath + "/resources/auth.pri"));
+                FileUtil.readFile(FileUtil.rootPath + "/resources/private.pri"));
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(priBytes));
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
             throw new CipherErrorException(e);
         }
 
+    }
+    public static byte[] decryptUsingServerPrivateKey(byte[] data)
+            throws IOException, CipherErrorException {
+        PrivateKey k = readServerPrivateKey();
+        return decryptAsymmetric(k, data);
     }
 
     public static Pair<byte[], byte[]> readAuthenticateServerKey() throws IOException {
@@ -132,57 +127,9 @@ public class SecurityFunctions {
         return new Pair<>(iv, key);
     }
 
-    public static byte[] encryptUsingAuthenticateServerPublicKey(byte[] data)
-            throws IOException, CipherErrorException {
-        PublicKey k = readAuthenticateServerPublicKey();
-        return encryptAsymmetric(k, data);
-    }
-
-    public static byte[] decryptUsingAuthenticateServerPrivateKey(byte[] data)
-            throws IOException, CipherErrorException {
-        PrivateKey k = readAuthenticateServerPrivateKey();
-        return decryptAsymmetric(k, data);
-    }
-
-    public static byte[] encryptUsingAuthenticateServerKey(byte[] data)
-            throws IOException, CipherErrorException {
-        Pair<byte[], byte[]> keyData = readAuthenticateServerKey();
-        return encryptSymmetric(keyData.getValue(), keyData.getKey(), data);
-    }
-
-    public static byte[] decryptUsingAuthenticateServerKey(byte[] data)
-            throws IOException, CipherErrorException {
-        Pair<byte[], byte[]> keyData = readAuthenticateServerKey();
-        return decryptSymmetric(keyData.getValue(), keyData.getKey(), data);
-    }
-
-    public static KeyPair readAuthenticateServerKeyPair() throws IOException, CipherErrorException {
-        return new KeyPair(readAuthenticateServerPublicKey(), readAuthenticateServerPrivateKey());
-    }
-
-    public static void generateNewAuthenticateServerKeys() throws CipherErrorException, IOException {
-        generateNewAuthenticateServerKeys(FileUtil.rootPath + "resources/");
-    }
-
-    public static void generateNewAuthenticateServerKeys(String path) throws CipherErrorException, IOException {
-        KeyPair pair = SecurityFunctions.generateKeyPair();
-        String pubBase64 = Utils.base64Encode(pair.getPublic().getEncoded());
-        String priBase64 = Utils.base64Encode(pair.getPrivate().getEncoded());
-
-        FileUtil.writeFile(path +  "auth.pub", pubBase64, true);
-        FileUtil.writeFile(path + "auth.pri", priBase64, true);
-
-        byte[] iv = generateRandom(16);
-        byte[] key = generateRandom(32);
-
-        byte[] data = ByteBuffer.allocate(16+32).order(ByteOrder.LITTLE_ENDIAN).put(iv).put(key).array();
-        String dataString = Utils.base64Encode(data);
-        FileUtil.writeFile(path + "auth.key", dataString, true);
-    }
 
     public static KeyPair readKeysFromString(String pri, String pub) throws CipherErrorException {
         return readKeys(Utils.base64Decode(pri), Utils.base64Decode(pub));
-
     }
 
     public static KeyPair readKeys(byte[] pri, byte[] pub) throws CipherErrorException {

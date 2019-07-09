@@ -28,10 +28,16 @@ public class Message<T> {
         return this;
     }
 
+    public Message<T> setStatus(int status) {
+        this.status=status;
+        return this;
+    }
+
     public Message<T> setMessage(T message) {
         this.message = message;
         return this;
     }
+
 
     public boolean isOk() {
         return status == 0;

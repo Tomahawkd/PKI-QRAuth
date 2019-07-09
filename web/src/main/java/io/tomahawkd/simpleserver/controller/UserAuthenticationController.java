@@ -39,7 +39,7 @@ public class UserAuthenticationController {
 
     @PostMapping("/register")
     public String userRegister(@RequestBody String data, HttpServletRequest request) throws UnsupportedEncodingException, MalformedJsonException, Exception {
-
+        System.out.println(data);
         return Token.getInstance().acceptInitializeAuthenticationMessage(data, request.getRemoteAddr(), request.getHeader("User-Agent")
                 , payload -> {
                     try {
