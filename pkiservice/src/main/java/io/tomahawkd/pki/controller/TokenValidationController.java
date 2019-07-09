@@ -180,4 +180,43 @@ public class TokenValidationController {
 				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> null);
 	}
+
+	/**
+	 * @param data {
+	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
+	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
+	 *             "D": "Device information(ip;device)"
+	 *             }
+	 * @return {
+	 * "K": "Base64 encoded Ks public key encrypted Kc public",
+	 * "M": "
+	 * {
+	 * "status": number(0:valid, 1:invalid),
+	 * "message": "service message"
+	 * }",
+	 * "T": "Base64 encoded Ks public key encrypted challenge number + 1",
+	 * "U": "Base64 encoded Ks public key encrypted user tag"
+	 * }
+	 */
+	@PostMapping("/deinit")
+	public String tokenRevoke(@RequestBody String data)
+			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
+
+		return TokenUtils.tokenValidate(data,
+				systemLogService, tokenService, userLogService,
+				userKeyService, systemKeyService, userIndexService, String.class,
+				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
+
+					int tokenId = tokenModel.getTokenId();
+
+					tokenService.deleteUserTokenById(tokenId, tokenModel.getUserId());
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"revokeToken", SystemLogModel.INFO,
+							"User " + tokenModel.getUserId() +
+									" try to delete token " + tokenId + " with success");
+					userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
+							device, ip, "Token revoked");
+					return new Message<String>().setOK().setMessage("Revoke Complete");
+				});
+	}
 }
