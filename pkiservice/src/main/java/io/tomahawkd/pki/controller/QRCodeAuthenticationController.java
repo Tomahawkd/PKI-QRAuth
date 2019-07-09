@@ -67,6 +67,9 @@ public class QRCodeAuthenticationController {
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
 		if (k.length != 32) {
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"qrNonceGenerate", SystemLogModel.FATAL,
+					"Symmetric key lenth invalid: " + k.length);
 			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
 			return new Gson().toJson(responseMap);
 		}
@@ -76,6 +79,9 @@ public class QRCodeAuthenticationController {
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
 		if (iv.length != 16) {
+			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+					"qrNonceGenerate", SystemLogModel.FATAL,
+					"IV length invalid: " + iv.length);
 			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
 			return new Gson().toJson(responseMap);
 		}
@@ -233,6 +239,9 @@ public class QRCodeAuthenticationController {
 
 		int nonce = ByteBuffer.wrap(
 						Utils.base64Decode(requestMap.get("nonce2"))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+
+		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+				"queryQRStatus", SystemLogModel.DEBUG, "nonce decryption complete.");
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(requestMap.get("system"));
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());

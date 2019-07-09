@@ -77,6 +77,9 @@ public class TokenValidationController {
 		byte[] k =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("K")));
 		if (k.length != 32) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenInitialization", SystemLogModel.FATAL,
+					"Symmetric key lenth invalid: " + k.length);
 			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid key")));
 			return new Gson().toJson(responseMap);
 		}
@@ -86,6 +89,9 @@ public class TokenValidationController {
 		byte[] iv =
 				SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(Utils.base64Decode(requestMap.get("iv")));
 		if (iv.length != 16) {
+			systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+					"tokenInitialization", SystemLogModel.FATAL,
+					"IV length invalid: " + iv.length);
 			responseMap.put("M", new Gson().toJson(new Message<>(1, "invalid iv")));
 			return new Gson().toJson(responseMap);
 		}
