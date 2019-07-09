@@ -3,12 +3,14 @@
  * @param serverUrl the url of the server.
  */
 function initialize(serverUrl) {
-    if (localStorage.getItem("SPub") === null) {
+    // localStorage.removeItem("SPub");
+    // localStorage.removeItem("TPub");
+    if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
         $.ajax({
             url: "key/dist/spub",
             type: "get",
             success: function (data) {
-                localStorage.setItem("SPub", data.SPub);
+                localStorage.setItem("SPub", data);
                 console.log("success to get public keys of server");
             },
             error: function () {
@@ -17,12 +19,12 @@ function initialize(serverUrl) {
         })
     }
 
-    if (localStorage.getItem("TPub") === null) {
+    if (localStorage.getItem("TPub") === null || localStorage.getItem("TPub") === "undefined") {
         $.ajax({
-            url: "key/dist/Tpub",
+            url: "key/dist/tpub",
             type: "get",
             success: function (data) {
-                localStorage.setItem("TPub", data.TPub);
+                localStorage.setItem("TPub", data);
                 console.log("success to get public keys of server");
             },
             error: function () {
@@ -197,7 +199,7 @@ function randomPassword(size) {
 function generateKctAndIv() {
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
     var kct = $.md5(RandomSeed);
-    var iv = sha256(RandomSeed);
+    var iv = sha256(RandomSeed).substr(0, 16);
 
     sessionStorage.setItem("kct", kct);
     sessionStorage.setItem("iv", iv);
@@ -222,7 +224,7 @@ function generateInitialPackage(data) {
     var Kct = encrypt.encrypt(kct); // hex string of initial vector for encryption
     var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
-    return {message: data, T: TimeStampBase64, K: Kct, iv: IV};
+    return {payload: JSON.stringify(data), T: TimeStampBase64, K: Kct, iv: IV};
 }
 
 
