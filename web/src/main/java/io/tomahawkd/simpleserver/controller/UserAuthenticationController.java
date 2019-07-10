@@ -39,7 +39,7 @@ public class UserAuthenticationController {
 
     @PostMapping("/register")
     public String userRegister(@RequestBody String data, HttpServletRequest request) throws UnsupportedEncodingException, MalformedJsonException, Exception {
-        System.out.println(data);
+
         return Token.getInstance().acceptInitializeAuthenticationMessage(data, request.getRemoteAddr(), request.getHeader("User-Agent")
                 , payload -> {
                     try {
@@ -73,7 +73,7 @@ public class UserAuthenticationController {
                         } else {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "Registering failed: " + username);
-                            return new Message<String>().setStatus(-1).setMessage("registering failed");
+                            return new Message<String>().setStatus(-2).setMessage("registering failed");
 
                         }
                     } catch (JsonSyntaxException e) {
@@ -128,7 +128,7 @@ public class UserAuthenticationController {
                         } else {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
                                     SystemLogModel.WARN, "User " + username + " login failed");
-                            return new Message<>(-1, "password incorrect");
+                            return new Message<>(-2, "password incorrect");
                         }
                     } catch (JsonSyntaxException e) {
                         throw new MalformedJsonException("Json parse error");
