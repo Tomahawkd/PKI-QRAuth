@@ -56,7 +56,7 @@ public class UserAuthenticationController {
                         if (userPasswordService.checkUserExistence(username)) {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "user\"" + username + "\"+ existing");
-                            return new Message<String>(-1, "user already existing");
+                            return new Message<String>().setStatus(-1).setMessage( "user already existing");
                         }
 
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
@@ -69,11 +69,11 @@ public class UserAuthenticationController {
                         if (index != -1) {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.OK, "Registering successful: " + username);
-                            return new Message<>(index, "success");
+                            return new Message<String>().setStatus(index).setMessage( "success");
                         } else {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "Registering failed: " + username);
-                            return new Message<>(-1, "registering failed");
+                            return new Message<String>().setStatus(-1).setMessage( "registering failed");
 
                         }
                     } catch (JsonSyntaxException e) {
@@ -90,7 +90,7 @@ public class UserAuthenticationController {
     }
 
     @PostMapping(value = "/login")
-    public String userLogin(@RequestBody String user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public String userLogin(@RequestBody String user, HttpServletRequest request) throws Exception {
 
         return Token.getInstance().acceptInitializeAuthenticationMessage(user, request.getRemoteAddr(), request.getHeader("User-Agent"),
                 payload -> {
@@ -120,6 +120,7 @@ public class UserAuthenticationController {
                             session.setAttribute("userid", index);//用户名存入该用户的session 中
                             session.setAttribute("username", username);//用户名存入该用户的session 中
                             redisTemplate.opsForValue().set("loginUser:" + index, session.getId());
+
                             //Cookie cookie = new Cookie("SESSIONID",session.getId());
                             //cookie.setPath(request.getContextPath());
                             //response.addCookie(cookie);

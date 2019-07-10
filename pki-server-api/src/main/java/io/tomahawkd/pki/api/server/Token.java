@@ -81,11 +81,12 @@ public class Token {
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
                 }.getType());
         Base64.Decoder decoder = Base64.getDecoder();
-        String payload = bodyData.get("payload");
+      //  String payload = new String(SecurityFunctions.decryptAsymmetric(privateKey, decoder.decode(bodyData.get("payload"))));
+       String payload = bodyData.get("payload");
         System.out.println(payload);
         Message<String> userMessage = callback.apply(payload);
         if (userMessage.getStatus() == -1)  //用户已存在
-            return userMessage.toJson();
+            return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(-1).setMessage(" failed").toJson()));
 
         int t = SecurityFunctions.generateRandom();
         String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey,
@@ -101,15 +102,16 @@ public class Token {
         requestMap.put("D", D);
         requestMap.put("T", time2);
 
+        Map<String, String> responseMap = new HashMap<>();
+
         try {
             String target_url = IP + "/token/init";
 
-            Map<String, String> responseMap = new HashMap<>();
-
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
-
+            System.out.println("requestMap:"+new Gson().toJson(requestMap));
             if ((boolean) ereceive.get("status")) {
                 System.out.println("error");
+                System.out.println(ereceive.get("message"));
                 responseMap.put("M", new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
                 return new Gson().toJson(responseMap);
             }
@@ -131,17 +133,17 @@ public class Token {
 
                 String time = Utils.responseChallenge(bodyData.get("T"), Kcpub);
 
+                responseMap.put("M", new Message<String>().setOK().setMessage("success").toJson());
                 responseMap.put("EToken", receive.get("EToken"));
                 responseMap.put("KP", receive.get("KP"));
                 responseMap.put("T", time);
-                responseMap.put("M", new Message<String>().setOK().setMessage("success").toJson());
+                System.out.println("return:"+new Gson().toJson(responseMap));
                 System.out.println("success");
                 return new Gson().toJson(responseMap);
             } else
                 throw new Exception();
         } catch (Exception e) {
             onerror.delete(userid);
-            Map<String, String> responseMap = new HashMap<>();
             responseMap.put("M", new Message<String>().setStatus(1).setMessage("failed").toJson());
             e.printStackTrace();
             return new Gson().toJson(responseMap);
@@ -281,7 +283,7 @@ public class Token {
         String EToken = bodydata.get("EToken");
         Message<String> M = new Gson().fromJson(bodydata.get("M"), new TypeToken<Message<String>>() {
         }.getType());
-
+   System.out.println(body);
         int t = SecurityFunctions.generateRandom();
         String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey, ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
 
@@ -305,9 +307,9 @@ public class Token {
             result = request(tokenRequestMessage.toJson(), IP + "/qr/update");
         }
 
-        if ((boolean) result.get("status"))
+        if ((boolean) result.get("status")){System.out.println(result.get("message"));
             return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson()));
-
+        }
         Map<String, String> receive = new Gson().fromJson((String) result.get("message"), new TypeToken<Map<String, String>>() {
         }.getType());
 
@@ -317,6 +319,7 @@ public class Token {
             String m = receive.get("M");
             Message<String> mes = new Gson().fromJson(m, new TypeToken<Message<String>>() {
             }.getType());
+       System.out.println(mes.toJson());
             if (!mes.isOk())
                 return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(2).setMessage(mes.getMessage()).toJson()));
 
@@ -326,6 +329,7 @@ public class Token {
                 Map<String, String> responseMap = new HashMap<>();
                 responseMap.put("T", time);
                 responseMap.put("M", new Message<String>().setOK().setMessage(mes.getMessage()).toJson());
+            System.out.print("success");
                 return new Gson().toJson(responseMap);
             }
             return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(1).setMessage("Time authentication failed").toJson()));
@@ -336,6 +340,7 @@ public class Token {
             String m = receive.get("M");
             Message<String> jm = new Gson().fromJson(m, new TypeToken<Message<String>>() {
             }.getType());
+       System.out.println(jm.toJson());
             if (!jm.isOk())
                 return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(2).setMessage(jm.getMessage()).toJson()));
             String message = jm.getMessage();
@@ -344,6 +349,7 @@ public class Token {
             Map<String, String> responseMap = new HashMap<>();
             responseMap.put("T", time);
             responseMap.put("M", new Message<String>().setOK().setMessage(message).toJson());
+       System.out.println("success");
             return new Gson().toJson(responseMap);
         }
     }
@@ -373,7 +379,7 @@ public class Token {
         String target_url = IP + "/qr/query";
         Map<String, String> responseMap = new HashMap<>();
 
-        Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
+        Map<String, Object> ereceive = request(content, target_url);
 
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M", new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
@@ -381,9 +387,9 @@ public class Token {
         }
         Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"), new TypeToken<Map<String, Integer>>() {
         }.getType());
-        Base64.Decoder decoder = Base64.getDecoder();
+        //Base64.Decoder decoder = Base64.getDecoder();
         int t1 = ByteBuffer.wrap(
-                SecurityFunctions.decryptAsymmetric(privateKey, decoder.decode(receive.get("T"))))
+                SecurityFunctions.decryptAsymmetric(privateKey,Utils.base64Decode(receive.get("T"))))
                 .order(ByteOrder.LITTLE_ENDIAN).getInt();
 
 
@@ -467,7 +473,7 @@ public class Token {
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
 
         String d = ip + ";" + device;
-        TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
+        TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
         tokenRequestMessage.setTime(time2);
@@ -525,7 +531,7 @@ public class Token {
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
         String d = ip + ";" + device;
 
-        TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<String>();
+        TokenRequestMessage<String> tokenRequestMessage = new TokenRequestMessage<>();
         tokenRequestMessage.setToken(etoken);
         tokenRequestMessage.setDevice(d);
         tokenRequestMessage.setTime(time2);
