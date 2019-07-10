@@ -83,11 +83,11 @@ $.ajax({
                         sessionStorage.setItem("sex", sex[payload.sex]);
 
                         //display the infomation
-                        $("#name-display").text(payload.name);
+                        $("#name-display").append(payload.name);
                         $("#bio-display").text(payload.bio);
-                        $("#phone-display").text(payload.phone);
-                        $("#email-display").text(payload.email);
-                        $("#sex-display").text(sex[payload.sex]);
+                        $("#phone-display").append(payload.phone);
+                        $("#email-display").append(payload.email);
+                        $("#sex-display").append(sex[payload.sex]);
 
                         $("#name-input").val(payload.name);
                         $("#bio-input").val(payload.bio);
@@ -95,7 +95,7 @@ $.ajax({
                         $("#email-input").val(payload.email);
                         $("#sex-input").val(sex[payload.sex]);
 
-                        console.log(data.image);
+                        window.location.href = "home.html";
                     }
                 } else if (msg.status === 1) {
                     $(".error_box").text("注册失败！");

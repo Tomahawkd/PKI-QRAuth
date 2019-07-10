@@ -9,7 +9,7 @@ $(document).ready(function () {
             var msg = JSON.parse(data.M);
             if (msg) {
                 if (msg.status === 0) {
-                    var payload = parseInteractionPackage(data);
+                    var list =
                     if (payload) {
                         for (var log in data) {
                             $("tbody").append("<tr>" + "<td>" + log.time + "</td>" +
