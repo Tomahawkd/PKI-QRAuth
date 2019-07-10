@@ -2,7 +2,7 @@
  * get the SPub and TPub from server, store it in localStorage
  * @param serverUrl the url of the server.
  */
-function initialize(serverUrl) {
+function initialize() {
     localStorage.removeItem("SPub");
     localStorage.removeItem("TPub");
     if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
@@ -271,7 +271,7 @@ function validateInitialResponsePackage(dataPackage) {
     console.log("timeStamp success");
     // parse token and nonce from eToken
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + Kcpri + '-----END RSA PRIVATE KEY-----');
 
     var nonceToken = encrypt.decrypt(eToken);
     var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
@@ -315,25 +315,6 @@ function intToBytes(int) {
     var bytes = [];
     for (i = 0; i < 4; i++) {
         bytes.push(byteArray[i]);
-    }
-    return bytes;
-}
-
-
-function bytesToSring(bytes) {
-    var chars = [];
-    for(var i = 0, n = bytes.length; i < n;) {
-        chars.push(bytes[i++] & 0xff);
-    }
-    return String.fromCharCode.apply(null, chars);
-}
-
-// https://codereview.stackexchange.com/a/3589/75693
-function stringToBytes(str) {
-    var bytes = [];
-    for(var i = 0, n = str.length; i < n; i++) {
-        var char = str.charCodeAt(i);
-        bytes.push(char >>> 8, char & 0xFF);
     }
     return bytes;
 }
@@ -407,12 +388,18 @@ function validateTimeStamp(T) {
     var key = localStorage.getItem("Kcpri");
 
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + key + '-----END RSA PRIVATE KEY-----');
 
+    console.log("timeStamp");
+    console.log(encrypt.decrypt(T));
+    console.log(HexString2Bytes(encrypt.decrypt(T)));
+    console.log(bytesToInt(HexString2Bytes(encrypt.decrypt(T))));
     var timeStamp = bytesToInt(HexString2Bytes(encrypt.decrypt(T)));
     var localTimeStamp = parseInt(sessionStorage.getItem("timeStamp")) + 1;
     console.log(timeStamp);
     console.log(localTimeStamp);
+    console.log(intToBytes(localTimeStamp));
+    console.log(Bytes2HexString(intToBytes(localTimeStamp)));
     // sessionStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
 }
@@ -591,23 +578,4 @@ function findSplit(array) {
             return i
     }
     return 0;
-}
-
-
-function encrypt() {
-    var pub = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgxbjrn9iILcGjCMpIuehXtVNxSe4JEMv2C7oIEa+IiCK62hOr92jeZW7paL/88xpT7zvtbS9jsTdldfUX77SziFj3UtiW+9g9+Pxu/j/ZYOIxY0dKrDlhjnoHilrUAMaTdGq6104+Dd6Tj50UNooef1103Qh9GfD/A2QfpDTyqFs1f+pdkv9jqlIPQsVz1ICi1HbyEYnpMoOD80h5dLkBdiqbxRGHBYxWeEeI90wfWyh06lj6bgeKPIclVNmtkdk9tr+8su8jTvok7G1nPOfOVDR+FeWwn6o0n4vXTARQsT2f//TRphvi1IBywaKQP8ESzwUdmGkWcYvGvicFBFjXwIDAQAB";
-    var pri = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCDFuOuf2IgtwaMIyki56Fe1U3FJ7gkQy/YLuggRr4iIIrraE6v3aN5lbulov/zzGlPvO+1tL2OxN2V19RfvtLOIWPdS2Jb72D34/G7+P9lg4jFjR0qsOWGOegeKWtQAxpN0arrXTj4N3pOPnRQ2ih5/XXTdCH0Z8P8DZB+kNPKoWzV/6l2S/2OqUg9CxXPUgKLUdvIRiekyg4PzSHl0uQF2KpvFEYcFjFZ4R4j3TB9bKHTqWPpuB4o8hyVU2a2R2T22v7yy7yNO+iTsbWc8585UNH4V5bCfqjSfi9dMBFCxPZ//9NGmG+LUgHLBopA/wRLPBR2YaRZxi8a+JwUEWNfAgMBAAECggEAGz2/dLyt9KR0LN0FqGZAJ4fmEGlvn8GCiMc+n65zxn3CwKa9a1iApzyRcRtNWymIXPSjT7xOhAOvFHt0e60Y+5L+wLbwqrA1E26ABpL45+yMmJj5jayTFfCkptfuoAL1DWTbwuttck99EBN0cnTTYn5kZNvGTpbdqFxdQZ/xEzNpKukwV2e8vzT3upnP3wndaerk2GbYz372SJSq8Sj0wunoz2GM2J68cfpjKtjbDWUUjctxrIQgiMG8f125Tsa05Q1jfIVzhy7U1eH4wbSy/XSeML8y9XcM9wQcMXdVLs6VTOgWMFFi6ALBpJOw5uTaC0zOJ5eTXBrV6FfhqmvMKQKBgQDafk7Ms+F6pl0DPXvYASJKhMe7quWH/uHx9iCmesjMVvz60CZq+MphDsR4bqGM01Enuu/DKweM9pm2lmLW5mb40oJuAt73FBZ3/MUXRVtZUpKvIgYezcC/6G0mwPSYlozvR3FGmQP45Yd4xK2+oXSMVc1Ct0hhN495jm/3hKaxGwKBgQCZl50aBwF89/FPjTlxGyDqudJ2ODApB+avcR6b+m1JhF0cQ3lAlWJ2j4Sv/FLkt5UdcntrP6SJNcLmIomdgX3ksYIURoGbcwyW51yGg2cWGNN1do7A0g+JzIQM2P52SGjmKobcEfJQY0FSWydjHkIGa504oqA6P6C07N+sixp/DQKBgQCYYrd6tYpxDE6az+rr//52kpzrGonzi6TyKIMlGUWqnpDaLQpeWR5tCuukQySRH2DeoNZP/FbLzcHvQnu0/gSbTdaB+6aeFHiHPtgHHuxTI/ACDWzPVxkzv1tBSBpPwdCRofYzEs1ebldJt4KmDd1HcyAxg7sLcsCyOtGEhBPuOQKBgFpjRykSBmYs4+4VBkDx3iVExf6cgnsjEzccMw9ICRjCtKj1bF39i7yKKWQH8iB3iWGTBd7PzVySLuiQWrw+gIAdlpeoBo4c3sPP1Du1CO2QHqF56/i9pjdKDEwjR10Er/cD/+lzBk8YmlCFJGDIZcKxggzaZ8DfwQu4esln82fhAoGBAJpCkoqrb+UV6YFZlF+gJm9YqVUC4Pi7eug/7CjZPIqbaHwm0oNEHQ+YOweu5JHtg2tGRZFfGCZucGxBBTQSkOnsW7c/58Sbz66SV9XPWJgjK9vK74Eh0y6VOcYm8X84pY7nUEwfkS6Lk+bFXFhwjcgmnPtxdFxzKdzeJMskqWH4";
-
-    var encrypt = new JSEncrypt();
-    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + pub + '-----END PUBLIC KEY-----');
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + pri + '-----END RSA PRIVATE KEY-----');
-    var en = encrypt.encrypt("aaaa");
-    console.log(en);
-    console.log(HexString2Bytes("aaaa"));
-    var de = encrypt.decrypt(encrypt.encrypt("aaaa"));
-    console.log(de);
-
-    var str = de.substr(0, 8);
-    var bytes = HexString2Bytes(str);
-    console.log(bytesToInt(bytes));
 }

@@ -2826,12 +2826,12 @@ var SecureRandom = /** @class */ (function () {
 //   }
 //   return ret + s.substring(i,s.length);
 // }
-// function byte2Hex(b) {
-// 	if(b < 0x10)
-// 		return "0" + b.toString(16);
-//     else
-//     	return b.toString(16);
-// }
+ function byte2Hex(b) {
+ 	if(b < 0x10)
+ 		return "0" + b.toString(16);
+     else
+     	return b.toString(16);
+ }
 
 function pkcs1pad1(s, n) {
 	if (n < s.length + 22) {
@@ -3127,7 +3127,7 @@ function pkcs1unpad2(d, n) {
 	var ret = "";
 	while (++i < b.length) {
 		var c = b[i] & 255;
-		ret += c.toString(16);
+		ret += byte2Hex(c);
 	}
 	return ret;
 }

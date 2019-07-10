@@ -69,13 +69,15 @@ $(document).ready(function () {
             data: JSON.stringify(data),
             dataType: "json",
             success: function (data) {
-                var msg = validateInitialResponsePackage(data);
+                var msg = JSON.parse(data.M);
                 if(msg) {
                 if (msg.status == -1) {
                     $(".error_box").text("用户名不存在！");
                 } else if (msg.status == 0) {
+                    if(validateInitialResponsePackage(data)) {
                     $(".error_box").text("登录成功！");
                     window.location.href = "home.html";
+                    }
                 } else if (data.status == 1) {
                     $(".error_box").text("密码错误！");
                 }

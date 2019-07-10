@@ -81,7 +81,7 @@ public class Token {
                 new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
                 }.getType());
         Base64.Decoder decoder = Base64.getDecoder();
-        String payload = new String(SecurityFunctions.decryptAsymmetric(privateKey, decoder.decode(bodyData.get("payload"))));
+        String payload = bodyData.get("payload");
         System.out.println(payload);
         Message<String> userMessage = callback.apply(payload);
         if (userMessage.getStatus() == -1)  //用户已存在
