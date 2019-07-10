@@ -72,11 +72,11 @@ public class UserInfoController {
                         Map<String, String> bodyData =
                                 new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
                                 }.getType());
-                        String name = URLEncoder.encode(bodyData.get("name"), "UTF-8");
+                        String name = bodyData.get("name");
                         int sex = Integer.parseInt(bodyData.get("sex"));
-                        String email = URLEncoder.encode(bodyData.get("email"), "UTF-8");
-                        String phone = URLEncoder.encode(bodyData.get("phone"),"UTF-8");
-                        String bio = URLEncoder.encode(bodyData.get("bio"),"UTF-8");
+                        String email = bodyData.get("email");
+                        String phone = bodyData.get("phone");
+                        String bio = bodyData.get("bio");
 
                         /*Map<String, MultipartFile> imageData =
                                 new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
@@ -85,6 +85,7 @@ public class UserInfoController {
                         String image_path = this.getImagePath(Integer.parseInt(userid), imageData.get("image"));
 */
                         UserInfoModel model = new UserInfoModel(Integer.parseInt(userid) , name, sex, email, phone, bio, "");
+
                         systemLogService.insertLogRecord(UserInfoController.class.getName(),
                                 "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
                         boolean result = userInfoService.updateUserInfo(model);
