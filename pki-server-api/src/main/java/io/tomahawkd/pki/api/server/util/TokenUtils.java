@@ -40,19 +40,19 @@ public class TokenUtils {
                             .setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
-        Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
-                new TypeToken<Map<String, String>>() {
+        TokenResponseMessage<Object> receive = new Gson().fromJson((String) ereceive.get("message"),
+                new TypeToken<TokenResponseMessage<Object>>() {
                 }.getType());
 
         int t1 = ByteBuffer.wrap(
-                SecurityFunctions.decryptAsymmetric(key, Utils.base64Decode(receive.get("T"))))
+                SecurityFunctions.decryptAsymmetric(key, Utils.base64Decode(receive.getTime())))
                 .order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         if (t1 == t + 1) {
-            byte[] K = Utils.base64Decode(receive.get("K"));
+            byte[] K = Utils.base64Decode(receive.getClientKey());
             PublicKey Kcpub = SecurityFunctions.readPublicKey(K);
             String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
-            responseMap.put("M", receive.get("M"));
+            responseMap.put("M", receive.getRawMessage());
             responseMap.put("T", time);
 
         } else {
