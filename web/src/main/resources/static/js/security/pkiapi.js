@@ -453,12 +453,12 @@ function generateInteractionPackage(data) {
 
 /**
  * parse the interaction package with server, validate timeStamp
- * @param data the package containing the business data and timeStamp
- * @returns {{}} after passing validation, return the business data
+ * @param data data the package containing the business data and timeStamp
+ * @returns {null} after passing validation, return the business data
  */
 function parseInteractionPackage(data) {
-    if (!validateTimeStamp(data.T)) return {};
-    return data.data;
+    if (!validateTimeStamp(data.T)) return null;
+    return JSON.parse(data.payload);
 }
 
 

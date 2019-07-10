@@ -1,39 +1,5 @@
 $(document).ready(function () {
-    $.ajax({
-        url: "/user/info/data",
-        type: "post",
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify(generateInteractionPackage({})),
-        dataType: "json",
-        success: function (data) {
-            alert("成功！");
-            $("#name-display").append(data.name);
-            $("#name-input").val(data.name);
-            $("#bio-display").text(data.bio);
-            $("#bio-input").val(data.bio);
-            $("#phone-display").append(data.phone);
-            $("#phone-input").val(data.phone);
-            $("#email-display").append(data.email);
-            $("#email-input").val(data.email);
-            switch (data.sex) {
-                case 1:
-                    $("#sex-display").append("女");
-                    $("#sex-input").val("女");
-                    break;
-                case 2:
-                    $("#sex-display").append("男");
-                    $("#sex-input").val("男");
-                    break;
-                default:
-                    $("#sex-display").append("未知");
-                    $("#sex-input").val("未知");
-            }
-            console.log(data.image);
-        },
-        error: function (e) {
-            alert("错误！");
-        }
-    });
+    update();
 
     $("#image-file").change(function (e) {
         console.log("change image");
@@ -52,17 +18,25 @@ $(document).ready(function () {
     $("#save-profile-btn").click(function () {
         var formArray = $("#update-info-form").serializeArray();
         var formObject = {};
+        var sex = {"未知": 0, "男": 1, "女": 2};
         $.each(formArray, function (i, item) {
-            formObject[item.name] = item.value;
-        });
+            if (item.name === "sex")
+                formObject[item.name] = sex[item.value];
+            else
+                formObject[item.name] = item.value;
 
+        });
+        console.log(formObject);
+
+        alert("222");
         $.ajax({
             url: "/user/info/update/info",
             type: "post",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(generateInteractionPackage(formObject)),
             contentType: "application/json; charset=utf-8",
             processData: false,
             success: function (data) {
+                update();
                 console.log(data);
             },
             error: function (data) {
@@ -72,9 +46,6 @@ $(document).ready(function () {
     });
 });
 
-function update() {
-
-}
 
 function showProfileTab() {
     $('.nav-link.active').removeClass('active');
@@ -88,4 +59,54 @@ function showReferencesTab() {
     $('#references-link').addClass('active');
     $('.tab-content .active').removeClass('show').removeClass('active');
     $('#references-tab').addClass('show').addClass('active');
+}
+
+function update() {
+$.ajax({
+        url: "/user/info/data",
+        type: "post",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(generateInteractionPackage({})),
+        dataType: "json",
+        success: function (data) {
+            var msg = JSON.parse(data.M);
+            if (msg) {
+                if (msg.status === 0) {
+                    var payload = parseInteractionPackage(data);
+                    if (payload !== {}) {
+                        alert("成功！");
+                        var sex = ["未知", "男", "女"]; //the mapping of number and sex.
+
+                        // store the information to storage
+                        sessionStorage.setItem("username", payload.name);
+                        sessionStorage.setItem("bio", payload.bio);
+                        sessionStorage.setItem("phone", payload.phone);
+                        sessionStorage.setItem("email", payload.email);
+                        sessionStorage.setItem("sex", sex[payload.sex]);
+
+                        //display the infomation
+                        $("#name-display").append(payload.name);
+                        $("#bio-display").text(payload.bio);
+                        $("#phone-display").append(payload.phone);
+                        $("#email-display").append(payload.email);
+                        $("#sex-display").append(sex[payload.sex]);
+
+                        $("#name-input").val(payload.name);
+                        $("#bio-input").val(payload.bio);
+                        $("#phone-input").val(payload.phone);
+                        $("#email-input").val(payload.email);
+                        $("#sex-input").val(sex[payload.sex]);
+
+                        console.log(data.image);
+                    }
+                } else if (msg.status === 1) {
+                    $(".error_box").text("注册失败！");
+                }
+            }
+
+        },
+        error: function (e) {
+            alert("错误！");
+        }
+    });
 }
