@@ -65,9 +65,9 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
             var msg = JSON.parse(data.M);
             if (msg.status >= currentStatus) {
                 if (msg.status === 0) {
-                } else if (data.status === 1) {
+                } else if (msg.status === 1) {
                     sessionStorage.setItem("currentStatus", 1);
-                    QRCodeElement.innerHTML("<p>已扫描，等待确认</p>");
+                    QRCodeElement.innerHTML = "<p>已扫描，等待确认</p>";
                 } else if (msg.status === 2) {
                     if(validateQRInitialResponsePackage(data)) {
                         sessionStorage.removeItem("QRCodeNonce");
@@ -75,7 +75,7 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
                         window.location.href = targetUrl;
                     } else {
                         sessionStorage.removeItem("currentStatus");
-                        QRCodeElement.innerHTML("<p>验证失败，点击刷新</p>");
+                        QRCodeElement.innerHTML = "<p>验证失败，点击刷新</p>";
                     }
                 } else {
                     clearInterval(poller);
@@ -191,7 +191,7 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
             generateQRCode(sessionStorage.getItem("QRCodeNonce"), QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
-            }, 5000);
+            }, 1000);
         },
         error: function () {
             QRCodeElement.innerHTML = "<p>获取二维码失败，点击刷新</p>";
