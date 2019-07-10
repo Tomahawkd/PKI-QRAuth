@@ -40,6 +40,10 @@ public class TokenResponseMessage<T> {
 		this.message = new Gson().toJson(message);
 	}
 
+	public String getRawMessage() {
+		 return message;
+	}
+
 	public void setTime(String time) {
 		this.time = time;
 	}

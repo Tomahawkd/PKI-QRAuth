@@ -180,25 +180,24 @@ public class Token {
                     new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
-        Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
-                new TypeToken<Map<String,String>>() {
+        TokenResponseMessage<String> receive = new Gson().fromJson((String) ereceive.get("message"),
+                new TypeToken<TokenResponseMessage<String>>() {
                 }.getType());
 
-        Message<String> message = new Gson().fromJson(receive.get("M"), new TypeToken<Message<String>>() {
-        }.getType());
+        Message<String> message = receive.getMessage();
 
         if (message.isOk()) {
             int t1 = ByteBuffer.wrap(
-                    SecurityFunctions.decryptAsymmetric(privateKey, Utils.base64Decode(receive.get("T"))))
+                    SecurityFunctions.decryptAsymmetric(privateKey, Utils.base64Decode(receive.getTime())))
                     .order(ByteOrder.LITTLE_ENDIAN).getInt();
 
             if (t1 == t + 1) {
 
-                byte[] K = Utils.base64Decode(receive.get("K"));
+                byte[] K = Utils.base64Decode(receive.getClientKey());
                 PublicKey Kcpub = SecurityFunctions.readPublicKey(K);
 
                 String userid = new String(SecurityFunctions.decryptAsymmetric(privateKey,
-                        Utils.base64Decode(bodydata.get("U"))));
+                        Utils.base64Decode(receive.getUserTag())));
 
                 String data = callback.apply(bodydata.get("payload"), userid);
                 String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
@@ -315,21 +314,20 @@ public class Token {
                     new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
-        Map<String, String> receive = new Gson().fromJson((String) result.get("message"),
-                new TypeToken<Map<String, String>>() {
+        TokenResponseMessage<String> receive = new Gson().fromJson((String) result.get("message"),
+                new TypeToken<TokenResponseMessage<String>>() {
                 }.getType());
 
-        Message<String> message = new Gson().fromJson(receive.get("M"), new TypeToken<Message<String>>() {
-        }.getType());
+        Message<String> message = receive.getMessage();
 
         if (message.isOk()) {
 
             int t1 = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(privateKey,
-                    Utils.base64Decode(receive.get("T")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+                    Utils.base64Decode(receive.getTime()))).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
             if (t1 == t + 1) {
 
-                byte[] K = Utils.base64Decode(receive.get("K"));
+                byte[] K = Utils.base64Decode(receive.getClientKey());
                 PublicKey Kcpub = SecurityFunctions.readPublicKey(K);
 
                 String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
@@ -442,27 +440,25 @@ public class Token {
             return new Gson().toJson(responseMap);
         }
 
-        Map<String, String> receive = new Gson().fromJson((String) result.get("message"),
-                new TypeToken<Map<String, String>>() {
+        TokenResponseMessage<String> receive = new Gson().fromJson((String) result.get("message"),
+                new TypeToken<TokenResponseMessage<String>>() {
                 }.getType());
 
-        Message<String> message = new Gson().fromJson(receive.get("M"),
-                new TypeToken<Message<String>>() {
-                }.getType());
+        Message<String> message = receive.getMessage();
 
         if (message.isOk()) {
 
             int t1 = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(privateKey,
-                    Utils.base64Decode(receive.get("T")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+                    Utils.base64Decode(receive.getTime()))).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
             if (t1 == t + 1) {
-                byte[] K = Utils.base64Decode(receive.get("K"));
+                byte[] K = Utils.base64Decode(receive.getClientKey());
                 PublicKey Kcpub = SecurityFunctions.readPublicKey(K);
 
                 responseMap.put("T", Utils.responseChallenge(data.get("T"), Kcpub));
 
                 String userid = new String(SecurityFunctions.decryptAsymmetric(privateKey,
-                        Utils.base64Decode(receive.get("U"))));
+                        Utils.base64Decode(receive.getUserTag())));
 
                 if (callback.apply(userid)) {
                     responseMap.put("M", new Message<String>().setOK().setMessage(message.getMessage()).toJson());
