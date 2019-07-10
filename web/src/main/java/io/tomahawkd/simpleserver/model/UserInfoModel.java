@@ -6,12 +6,12 @@ public class UserInfoModel {
 
 	private transient int userid;
 	private String username;
-	private String name;
-	private Integer sex;
-	private String email;
-	private String phone;
-	private String bio;
-	private String image_path;
+	private String name="";
+	private Integer sex=0;
+	private String email="";
+	private String phone="";
+	private String bio="";
+	private String image_path="";
 
 	public UserInfoModel(int userid,
 	                     String name, Integer sex, String email, String phone, String bio, String image_path) {

@@ -132,6 +132,8 @@ public class Token {
                     new TypeToken<Message<String>>() {
                     }.getType());
 
+
+
             if (message.isOk()) {
 
                 int t1 = ByteBuffer.wrap(
@@ -149,8 +151,6 @@ public class Token {
                     responseMap.put("EToken", receive.get("EToken"));
                     responseMap.put("KP", receive.get("KP"));
                     responseMap.put("T", time);
-
-                    System.out.println("initialize success");
 
                     return new Gson().toJson(responseMap);
                 } else throw new Exception("Time authentication error");
@@ -198,7 +198,6 @@ public class Token {
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
                     new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
-            System.out.println((String)ereceive.get("message"));
             return new Gson().toJson(responseMap);
         }
         TokenResponseMessage<String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -206,7 +205,6 @@ public class Token {
                 }.getType());
 
         Message<String> message = receive.getMessage();
-        System.out.println(message.toJson());
         if (message.isOk()) {
             int t1 = ByteBuffer.wrap(
                     SecurityFunctions.decryptAsymmetric(privateKey, Utils.base64Decode(receive.getTime())))
@@ -226,7 +224,6 @@ public class Token {
                 responseMap.put("M", new Message<String>().setOK().setMessage("authentication success").toJson());
                 responseMap.put("T", time);
                 responseMap.put("payload", data);
-                System.out.println("authentication scaaess");
             } else {
                 responseMap.put("M", new Message<String>().setStatus(2).setMessage("time auth failed").toJson());
             }
@@ -294,7 +291,6 @@ public class Token {
 
         responseMap.put("nonce2", eresult.get("nonce2"));
         responseMap.put("M", new Message<String>().setOK().setMessage(message.getMessage()).toJson());
-        System.out.println("QRGenerate success");
         return new Gson().toJson(responseMap);
     }
 
@@ -356,7 +352,6 @@ public class Token {
                 String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
                 responseMap.put("T", time);
                 responseMap.put("M", new Message<String>().setOK().setMessage(message.getMessage()).toJson());
-                System.out.println("QRUpgrade success");
                 return new Gson().toJson(responseMap);
             }
             responseMap.put("M",
@@ -405,7 +400,6 @@ public class Token {
                 new TypeToken<Map<String, String>>() {
                 }.getType());
 
-
         String timeString = receive.get("T");
         if (timeString == null || timeString.isEmpty()) {
             responseMap.put("M",
@@ -418,7 +412,6 @@ public class Token {
                 .order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         if (t1 == t + 1) {
-
             Message<String> statusMessage = new Gson().fromJson(receive.get("M"),
                     new TypeToken<Message<String>>() {
                     }.getType());
@@ -427,9 +420,7 @@ public class Token {
             if (statusMessage.getStatus() == 2) { // confirmed
                 responseMap.put("KP", receive.get("KP"));
                 responseMap.put("EToken", receive.get("EToken"));
-                System.out.println("confirmed");
             }
-
             return new Gson().toJson(responseMap);
         } else {
             responseMap.put("M",
