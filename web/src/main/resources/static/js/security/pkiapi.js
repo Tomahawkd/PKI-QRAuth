@@ -62,16 +62,21 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
         dataType: "json",
         data: JSON.stringify({nonce2: nonce2}),
         success: function (data) {
-            if (data.status >= currentStatus + 1) {
-                if (data.status === 0) {
+            var msg = JSON.parse(data.M);
+            if (msg.status >= currentStatus) {
+                if (msg.status === 0) {
                 } else if (data.status === 1) {
                     sessionStorage.setItem("currentStatus", 1);
                     QRCodeElement.innerHTML("<p>已扫描，等待确认</p>");
-                } else if (data.status === 2) {
-                    sessionStorage.removeItem("QRCodeNonce");
-                    sessionStorage.removeItem("currentStatus");
-                    validateQRInitialResponsePackage(data);
-                    window.location.href = targetUrl;
+                } else if (msg.status === 2) {
+                    if(validateQRInitialResponsePackage(data)) {
+                        sessionStorage.removeItem("QRCodeNonce");
+                        sessionStorage.removeItem("currentStatus");
+                        window.location.href = targetUrl;
+                    } else {
+                        sessionStorage.removeItem("currentStatus");
+                        QRCodeElement.innerHTML("<p>验证失败，点击刷新</p>");
+                    }
                 } else {
                     clearInterval(poller);
                     console.log("incorrect status code.");
@@ -108,34 +113,47 @@ function clearPolling() {
  * @returns {boolean} return true when there is no fault
  */
 function validateQRInitialResponsePackage(dataPackage) {
-    var eToken = $.base64.decode(dataPackage.EToken);
-    var Kp = $.base64.decode(dataPackage.Kp);
+        var eToken = dataPackage.EToken;
+        var Kp = dataPackage.KP;
 
-    //decrypt KP to get the Kcpri and Kcpub;
-    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
-    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
-    sessionStorage.removeItem("kct");
-    sessionStorage.removeItem("iv");
-    var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
-    var keyPair = aesCbc.decrypt(HexString2Bytes(b64tohex(Kp)));
-    var split = findSplit(keyPair);
-    var Kcpub = hex2b64(Bytes2HexString(keyPair.slice(0, split)));
-    var Kcpri = hex2b64(Bytes2HexString(keyPair.slice(split+1, keyPair.length)));
+        //decrypt KP to get the Kcpri and Kcpub;
+        console.log(sessionStorage.getItem("iv"));
+        var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+        var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+        sessionStorage.removeItem("kct");
+        sessionStorage.removeItem("iv");
+        console.log(kct);
+        console.log(iv);
+        var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
+        var keyPair = cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(Kp))));
+        var split = findSplit(keyPair);
+        console.log("length" + keyPair.length);
+        console.log(keyPair);
+        var Kcpub = String.fromCharCode.apply(null, keyPair.slice(0, split));
+        var Kcpri = String.fromCharCode.apply(null, keyPair.slice(split+1));
+        console.log("key");
+        console.log(keyPair.slice(0, split).length);
+        console.log(keyPair.slice(split+1).length);
 
-    localStorage.setItem("Kcpub", Kcpub);
-    localStorage.setItem("Kcpri", Kcpri);
+        console.log(Kcpub);
+        console.log(Kcpri);
+        localStorage.setItem("Kcpub", Kcpub);
+        localStorage.setItem("Kcpri", Kcpri);
 
-    // parse token and nonce from eToken
-    var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
 
-    var nonceToken = encrypt.decrypt(eToken);
-    var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
-    var token = nonceToken.substring(8);
+        // parse token and nonce from eToken
+        var encrypt = new JSEncrypt();
+        encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + Kcpri + '-----END RSA PRIVATE KEY-----');
 
-    localStorage.setItem("nonce", nonce);
-    localStorage.setItem("token", token);
-    return true;
+        var nonceToken = encrypt.decrypt(eToken);
+        var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
+        var token = nonceToken.substr(8);
+
+        console.log(nonce);
+        console.log(token);
+        localStorage.setItem("nonce", nonce);
+        localStorage.setItem("token", token);
+        return true;
 }
 
 
