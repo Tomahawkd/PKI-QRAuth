@@ -24,11 +24,10 @@ public class Token {
     private static String systemid;
 
 
-
     // private static final String IP = "http://39.106.80.38";
- private static final String IP = "http://192.168.43.69";
+    private static final String IP = "http://192.168.43.69";
 
-  private static Token instance;
+    private static Token instance;
 
     public static Token getInstance() {
         if (instance == null) instance = new Token();
@@ -128,7 +127,6 @@ public class Token {
                     }.getType());
 
 
-
             if (message.isOk()) {
 
                 int t1 = ByteBuffer.wrap(
@@ -214,11 +212,25 @@ public class Token {
                         Utils.base64Decode(receive.getUserTag())));
 
                 String data = callback.apply(bodydata.get("payload"), userid);
-                String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
+                Map<String, String> payload = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
+                }.getType());
 
-                responseMap.put("M", new Message<String>().setOK().setMessage("authentication success").toJson());
-                responseMap.put("T", time);
-                responseMap.put("payload", data);
+                String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
+                if (payload.containsKey("status")) {
+                    if (Integer.parseInt(payload.get("status")) == 0) {
+                        responseMap.put("M", new Message<String>().setOK().setMessage("authentication success").toJson());
+                        responseMap.put("T", time);
+                        responseMap.put("payload", data);
+                    } else {
+                        responseMap.put("M", new Message<String>().setOK().setMessage("authentication failed").toJson());
+                        responseMap.put("T", time);
+                        responseMap.put("payload", data);
+                    }
+                } else {
+                    responseMap.put("M", new Message<String>().setOK().setMessage("authentication success").toJson());
+                    responseMap.put("T", time);
+                    responseMap.put("payload", data);
+                }
             } else {
                 responseMap.put("M", new Message<String>().setStatus(2).setMessage("time auth failed").toJson());
             }
