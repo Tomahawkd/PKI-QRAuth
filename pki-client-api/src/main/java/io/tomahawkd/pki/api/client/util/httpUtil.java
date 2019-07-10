@@ -25,70 +25,7 @@ public class httpUtil {
     public httpUtil() {
     }
 
-    public static String[] getJsonData(String jsonObject, String urls, String ua) {
-        String session = null;
-        String[] res = new String[2];
-        StringBuffer sb = new StringBuffer();
-
-        try {
-            URL url = new URL(urls);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setUseCaches(false);
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Connection", "Keep-Alive");
-            conn.setRequestProperty("Charset", "UTF-8");
-            conn.setRequestProperty("User-agent",ua);
-            byte[] data = jsonObject.getBytes();
-            conn.setRequestProperty("Content-Length", String.valueOf(data.length));
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            conn.setRequestProperty("accept", "application/json");
-            conn.connect();
-
-            OutputStream out = new DataOutputStream(conn.getOutputStream());
-            out.write(jsonObject.getBytes());
-            out.flush();
-            out.close();
-
-            if (200 == conn.getResponseCode()) {
-                conn.setInstanceFollowRedirects(false);
-                InputStream in1 = conn.getInputStream();
-
-                session=conn.getHeaderField("Set-Cookie");
-                System.out.println("session:++++++++++++++" + session);
-                try {
-                    new String();
-                    BufferedReader responseReader = new BufferedReader(new InputStreamReader(in1, "UTF-8"));
-
-                    String readLine;
-                    while((readLine = responseReader.readLine()) != null) {
-                        sb.append(readLine).append("\n");
-                    }
-
-                    responseReader.close();
-                } catch (Exception var10) {
-                    sb.append(var10.getMessage());
-                }
-            } else {
-                sb.append("connect error");
-            }
-        } catch (Exception var11) {
-            StringWriter stringWriter = new StringWriter();
-            PrintWriter writer = new PrintWriter(stringWriter);
-            var11.printStackTrace(writer);
-            StringBuffer buffer = stringWriter.getBuffer();
-            sb.append(buffer.toString());
-        }
-
-        res[0] = session;
-        res[1] = sb.toString();
-        return res;
-    }
-
-    public static String getJsonDataWithSession(String jsonObject, String urls, String ua,String cookie) {
+    public static String getJsonData(String jsonObject, String urls, String ua) {
 //        String session = null;
 //        String[] res = new String[2];
         StringBuffer sb = new StringBuffer();
@@ -104,7 +41,6 @@ public class httpUtil {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Charset", "UTF-8");
-            conn.setRequestProperty("cookie",cookie);
             conn.setRequestProperty("User-agent",ua);
             byte[] data = jsonObject.getBytes();
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
@@ -116,9 +52,13 @@ public class httpUtil {
             out.write(jsonObject.getBytes());
             out.flush();
             out.close();
+
             if (200 == conn.getResponseCode()) {
+//                conn.setInstanceFollowRedirects(false);
                 InputStream in1 = conn.getInputStream();
 
+//                session=conn.getHeaderField("Set-Cookie");
+//                System.out.println("session:++++++++++++++" + session);
                 try {
                     new String();
                     BufferedReader responseReader = new BufferedReader(new InputStreamReader(in1, "UTF-8"));
@@ -147,6 +87,8 @@ public class httpUtil {
 //        res[1] = sb.toString();
         return sb.toString();
     }
+
+
     public static String getJsonData(String urls,String ua) {
         try {
             URL url = new URL(urls);

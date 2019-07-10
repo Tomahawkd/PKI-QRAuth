@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -41,7 +42,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickListener {
-    private String session;
     private String ID;
 
     private Button conformButton;
@@ -49,7 +49,7 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
 
     private Handler handler = null;
 
-    private String nameInfo,phoneInfo,mailInfo,sigInfo,imagePath;
+    private String nameInfo,phoneInfo,mailInfo,sigInfo,imagePath = "";
     private int sexInfo;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -61,9 +61,8 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.changeinfo);
 
         Intent intent = getIntent();
-        session = intent.getStringExtra("session");
         ID = intent.getStringExtra("username");
-        Log.d("changeinfosession" ,session);
+
 
         handler = new Handler();
         initView();
@@ -77,58 +76,12 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
         mail = findViewById(R.id.mail_info);
         sig = findViewById(R.id.information_info);
 
-        //getCurrentInfo();
+        getCurrentInfo();
     }
 
     public void onClick(View view){
         switch (view.getId()){
             case R.id.confirm_info:
-//                try{
-//                    JSONObject jsonObject = new JSONObject()
-//                            .put("name",name.getText().toString())
-//                            .put("phone",phone.getText().toString())
-//                            .put("email",mail.getText().toString())
-//                            .put("bio",sig.getText().toString())
-//                            .put("image_path",imagePath);
-//                    if(sex.getText().toString().equals("男"))
-//                        jsonObject.put("sex",1);
-//                    else if (sex.getText().toString().equals("女"))
-//                        jsonObject.put("sex",2);
-//                    else
-//                        jsonObject.put("sex",0);
-//                    //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
-//                    //base64解码
-//                    //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
-//
-//                    String url ="http://192.168.43.159/user/info/update/info/";
-//                    OkHttpClient client = new OkHttpClient();
-//                    RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-//                    Log.d("changeinfo","<<<<e="+jsonObject.toString());
-//                    final Request request = new Request.Builder()
-//                            .addHeader("cookie",session)
-//                            .url(url)
-//                            .post(body)
-//                            .build();
-//
-//                    Call call = client.newCall(request);
-//                    call.enqueue(new Callback() {
-//                        public void onFailure(Call call, IOException e) {
-//                            Log.d("changeinfoerror","<<<<e="+e);
-//                        }
-//
-//                        @Override
-//                        public void onResponse(Call call, Response response) throws IOException {
-//                            if(response.isSuccessful()) {
-//                                String jsonString = response.body().string();
-//                                Log.d("changesuccess","<<<<d="+jsonString);
-//                                handle_response(jsonString);
-//                            }
-//                        }
-//                    });
-//                }catch (JSONException e){
-//                    e.printStackTrace();
-//                }
-//                //showConfirmDialog();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -142,8 +95,9 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
                             String Tpub = manager.getTpub(context);
                             String Spub = manager.getSpub(context);
                             String Cpri = manager.getCpri(context,ID);
-                            byte[] token = manager.getToken(context,ID).getBytes();
+                            byte[] token = Utils.base64Decode(manager.getToken(context,ID));
                             int nonce = manager.getNonce(context,ID);
+                            manager.updateNonce(context,ID,nonce+1);
 
                             Gson gson = new Gson();
                             Map<String,Object> info = new HashMap<>();
@@ -164,18 +118,26 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
                             PublicKey SPub = StringToPKey.getPublicKey(Spub);
                             PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
 
-                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua,session);
+                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
 
-                            Map<String,Object> result = new HashMap<>();
+                            Map<String,String> result = new HashMap<>();
                             result = gson.fromJson(resultJson,result.getClass());
 
-                            int check = (int) result.get("check");
-                            if(check == 0){
+                            String check = result.get("check");
+                            if(check.equals("0")){
+                                Looper.prepare();
+                                Toast.makeText(getBaseContext(),"修改成功！", Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(context,index.class);
+                                intent.putExtra("username",ID);
+                                startActivity(intent);
+                                Looper.loop();
 
                             } else {
                                 String message = (String) result.get("message");
                                 Looper.prepare();
                                 Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(context,Login.class);
+                                startActivity(intent);
                                 Looper.loop();
                             }
                         }catch (Exception e){
@@ -199,54 +161,73 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
     }
 
     public void getCurrentInfo() {
-        String url ="http://192.168.43.159/user/info/data/";
-
-        OkHttpClient client = new OkHttpClient();
-
-        final Request request = new Request.Builder()
-                .addHeader("cookie",session)
-                .url(url)
-                .get()
-                .build();
-
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            public void onFailure(Call call, IOException e) {
-                Log.d("getInfoError","<<<<e="+e);
-            }
-
+        new Thread(new Runnable() {
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.isSuccessful()) {
-                    String jsonString = response.body().string();;
+            public void run() {
+                try {
+                    Context context = getBaseContext();
+                    Connecter connecter = new Connecter();
+                    keyManager manager = new keyManager();
+                    String ua = SystemUtil.getSystemModel();
+                    String url = URLUtil.getSelfInfoURL(context);
 
-                    try {
-                        JSONObject mesJson = new JSONObject(jsonString);
-                        String json = mesJson.getString("message");
-                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
-                        nameInfo = resultJson.getString("name");
-                        sexInfo = resultJson.getInt("sex");
-                        mailInfo = resultJson.getString("email");
-                        phoneInfo = resultJson.getString("phone");
-                        sigInfo = resultJson.getString("bio");
-                        imagePath = resultJson.getString("image_path");
+                    String Tpub = manager.getTpub(context);
+                    String Spub = manager.getSpub(context);
+                    String Cpri = manager.getCpri(context,ID);
+                    byte[] token = Utils.base64Decode(manager.getToken(context,ID));
+                    Log.d("Token:" ,Utils.base64Encode(token));
+                    int nonce = manager.getNonce(context,ID);
+                    manager.updateNonce(context,ID,nonce+1);
+                    String payload = null;
 
+
+                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                    PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                    String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+
+                    Gson gson = new Gson();
+                    Map<String,String> result = new HashMap<>();
+                    result = gson.fromJson(resultJson,result.getClass());
+
+                    String check = result.get("check");
+                    if(check.equals("0")){
+                        String data = result.get("data");
+                        /**
+                         * change UI
+                         */
+                        Log.d("selfinfo:",data);
+                        Map<String,Object> info = new HashMap<>();
+                        info = gson.fromJson(data,info.getClass());
+
+                        sexInfo = (int)Math.round(Double.parseDouble(info.get("sex").toString()));
+                        nameInfo = (String)info.get("name");
+                        mailInfo = (String)info.get("email");
+                        phoneInfo = (String)info.get("phone");
+                        sigInfo = (String)info.get("bio");
+                        imagePath = (String)info.get("image_path");
 
                         new Thread() {
                             @Override
                             public void run() {
-                                super.run();
                                 handler.post(changeInfoUI);
                             }
                         }.start();
-                    } catch (JSONException e){
-                        e.printStackTrace();
+                    } else {
+                        String message = result.get("message");
+                        Looper.prepare();
+                        Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(context,Login.class);
+                        startActivity(intent);
+                        Looper.loop();
                     }
-
-                    Log.d("getInfoSuccess","<<<<d="+jsonString);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Log.d("getselfinfo",e.getMessage());
                 }
             }
-        });
+        }).start();
     }
 
     Runnable changeInfoUI = new Runnable() {
@@ -264,42 +245,4 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
             sig.setText(sigInfo);
         }
     };
-
-    public void handle_response(String response){
-        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
-        JSONObject result = null;
-        try {
-            result = new JSONObject(response);
-            int status = (int) result.get("status");
-            if(status==-1){
-                //子线程使用looper加入队列
-                Looper.prepare();
-                Toast.makeText(this,"该账户已被使用！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else if(status==0){
-                Looper.prepare();
-                Toast.makeText(this,"修改成功！", Toast.LENGTH_LONG).show();
-
-                Intent intent1 = new Intent(this,index.class);
-                intent1.putExtra("session",session);
-                startActivity(intent1);
-                Looper.loop();
-            }
-            else if(status==1){
-                Looper.prepare();
-                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else {
-                Looper.prepare();
-                Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        //取数据
-    }
 }

@@ -104,6 +104,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 Context context = getBaseContext();
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
+                                manager.deleteClientTable(context);
                                 String ua = SystemUtil.getSystemModel();
                                 String registerURL = URLUtil.getRegisterURL(context);
 
@@ -125,7 +126,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                                 if(check == 0){
                                     int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
-                                    String token = (String)(result.get("Token"));
+                                    String token =(String) result.get("Token");
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
 

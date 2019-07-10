@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.Utils;
 
 public class changeToken extends AppCompatActivity implements TokenListAdapter.InnerItemOnclickListener {
 
@@ -78,8 +79,9 @@ public class changeToken extends AppCompatActivity implements TokenListAdapter.I
                     String Tpub = manager.getTpub(context);
                     String Spub = manager.getSpub(context);
                     String Cpri = manager.getCpri(context,ID);
-                    byte[] token = manager.getToken(context,ID).getBytes();
+                    byte[] token = Utils.base64Decode(manager.getToken(context,ID));
                     int nonce = manager.getNonce(context,ID);
+                    manager.updateNonce(context,ID,nonce+1);
 
 
                     PublicKey TPub = StringToPKey.getPublicKey(Tpub);
@@ -92,7 +94,7 @@ public class changeToken extends AppCompatActivity implements TokenListAdapter.I
                     Map<String,Object> result = new HashMap<>();
                     result = gson.fromJson(resultJson,result.getClass());
 
-                    int check = (int) result.get("check");
+                    int check = (int) Math.round(Double.parseDouble(result.get("check").toString()));
                     if(check == 0){
 
                     } else {
@@ -108,16 +110,7 @@ public class changeToken extends AppCompatActivity implements TokenListAdapter.I
 
             }
         }).start();
-        TokenList list1 = new TokenList("ua1","token1");
-        lists.add(list1);
-        TokenList list2 = new TokenList("ua2","token1");
-        lists.add(list2);
-        TokenList list3 = new TokenList("ua3","token1");
-        lists.add(list3);
-        TokenList list4 = new TokenList("ua4","token1");
-        lists.add(list4);
-        TokenList list5 = new TokenList("ua5","token1");
-        lists.add(list5);
+
     }
 
     @Override

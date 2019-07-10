@@ -26,11 +26,11 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="20dp"
                 android:gravity="center|end"
-                android:text="userID:"
+                android:text="time:"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/userID"
+                android:id="@+id/time1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginRight="20dp"
@@ -38,28 +38,6 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:background="#ffffff"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="80dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="20dp"
-                android:gravity="center|end"
-                android:text="systemID:"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/systemID"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginRight="20dp"
-                android:gravity="start|center_vertical"
-                android:textSize="16sp" />
-        </LinearLayout>
 
 
         <LinearLayout

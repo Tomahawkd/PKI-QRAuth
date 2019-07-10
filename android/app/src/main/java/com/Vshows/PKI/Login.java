@@ -66,12 +66,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 
     private String name ;
     private String psw ;
-    String TAG = Register.class.getCanonicalName();
-
-    private JSONObject jsonObject;
-    private String session;
-
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -102,7 +96,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 break;
             case R.id.forget:
 //                Intent intent1 = new Intent(this,index.class);
-//                intent1.putExtra("session",session);
 //                startActivity(intent1);
 
                 Context context = this;
@@ -123,9 +116,11 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                         @Override
                         public void run() {
                             try {
+
                                 Context context = getBaseContext();
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
+                                manager.deleteClientTable(context);
                                 String ua = SystemUtil.getSystemModel();
                                 String url = URLUtil.getLoginURL(context);
 
@@ -147,16 +142,14 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                                 int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                                 if(check == 0){
                                     int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
-                                    String token = (String)(result.get("Token"));
+                                    String token = (String) result.get("Token");
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
-                                    session = (String)result.get("session");
-                                    Log.d("loginsession",session);
+
 
                                     manager.restoreClientInfo(context,name,Cpub,Cpri,token,nonce);
 
                                     Intent intent = new Intent(context,index.class);
-                                    intent.putExtra("session",session);
                                     intent.putExtra("username",name);
                                     startActivity(intent);
                                 } else {

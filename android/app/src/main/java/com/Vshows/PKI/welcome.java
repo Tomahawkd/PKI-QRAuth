@@ -42,6 +42,7 @@ public class welcome extends AppCompatActivity {
                     Context context = getBaseContext();
                     Connecter connecter = new Connecter();
                     keyManager manager = new keyManager();
+                    manager.deleteSeverTable(context);
                     String ua = SystemUtil.getSystemModel();
                     String TpubURL = URLUtil.getTpubURL(context);
                     String SpubURL = URLUtil.getSpubURL(context);

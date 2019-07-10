@@ -44,7 +44,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="Vshows"
                     android:textColor="#ffffff"
                     android:textSize="20sp" />
 
@@ -54,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="个性签名，此处限制25字以内。个性签名，此处限制25字以内。"
+                    android:hint="个人信息，限定25字"
                     android:textColor="#ffffff"
                     android:textSize="12sp" />
 
@@ -100,7 +99,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="Vshows"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -129,7 +127,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="男"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -159,7 +156,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="18340019029"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -189,7 +185,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="930657665@qq.com"
                         android:textSize="16sp" />
                 </LinearLayout>
                 <View
