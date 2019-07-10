@@ -78,13 +78,13 @@ public class UserInfoController {
                         String phone = URLEncoder.encode(bodyData.get("phone"),"UTF-8");
                         String bio = URLEncoder.encode(bodyData.get("bio"),"UTF-8");
 
-                        Map<String, MultipartFile> imageData =
+                        /*Map<String, MultipartFile> imageData =
                                 new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
                                 }.getType());
 
                         String image_path = this.getImagePath(Integer.parseInt(userid), imageData.get("image"));
-
-                        UserInfoModel model = new UserInfoModel(Integer.parseInt(userid) , name, sex, email, phone, bio, image_path);
+*/
+                        UserInfoModel model = new UserInfoModel(Integer.parseInt(userid) , name, sex, email, phone, bio, "");
                         systemLogService.insertLogRecord(UserInfoController.class.getName(),
                                 "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
                         boolean result = userInfoService.updateUserInfo(model);

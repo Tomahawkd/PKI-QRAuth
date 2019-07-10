@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 public class UserInfoModel {
 
-	private transient int index;
+	private transient int userid;
 	private String username;
 	private String name;
 	private Integer sex;
@@ -13,9 +13,9 @@ public class UserInfoModel {
 	private String bio;
 	private String image_path;
 
-	public UserInfoModel(int index,
+	public UserInfoModel(int userid,
 	                     String name, Integer sex, String email, String phone, String bio, String image_path) {
-		this.index = index;
+		this.userid = userid;
 		this.name = name;
 		this.sex = sex;
 		this.email = email;
@@ -25,7 +25,7 @@ public class UserInfoModel {
 	}
 
 	public int getIndex() {
-		return index;
+		return userid;
 	}
 
 	public String getUsername() {
