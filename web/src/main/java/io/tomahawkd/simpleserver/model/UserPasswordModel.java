@@ -1,7 +1,9 @@
 package io.tomahawkd.simpleserver.model;
 
+import com.google.gson.Gson;
+
 public class UserPasswordModel {
-    private int index;
+    private int userid;
     private String username;
     private String password;
 
@@ -9,9 +11,14 @@ public class UserPasswordModel {
         this.username = username;
         this.password = password;
     }
+    public UserPasswordModel(int userid ,String username,String password){
+        this.userid=userid;
+        this.username = username;
+        this.password = password;
+    }
 
     public int getIndex(){
-        return index;
+        return userid;
     }
 
     public String getUsername(){
@@ -23,6 +30,5 @@ public class UserPasswordModel {
     }
 
     public String toString(){
-        return "{\"index\":" + index + ",\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
-    }
+        return new Gson().toJson(this);    }
 }

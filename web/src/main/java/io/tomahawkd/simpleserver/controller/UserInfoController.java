@@ -39,119 +39,118 @@ public class UserInfoController {
     private StringRedisTemplate redisTemplate;
 
 
-    @GetMapping("/data")
+    @PostMapping("/data")
     public String getInfoPageById(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload -> {
-            int userid = (int) request.getSession().getAttribute("userid");
+        return Token.getInstance().authentication(body, request.getRemoteAddr(), request.getHeader("User-Agent"),
+                (payload, userid) -> {
 
-            systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "getInfoPageById", SystemLogModel.DEBUG, "Accept username: " + userid);
+                    systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                            "getInfoPageById", SystemLogModel.DEBUG, "Accept username: " + userid);
 
-            UserInfoModel model = userInfoService.getUserInfo(userid);
+                    UserInfoModel model = userInfoService.getUserInfo(Integer.parseInt(userid));
 
-            if (model == null) {
-                systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-                        SystemLogModel.WARN, "User not found");
-                return "{\"status\": -1, \"message\": \"user not found\"}";
-            }
-            systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
-                    SystemLogModel.OK, "User found: " + model.toString());
-            return model.toString();
-        });
-}
+                    if (model == null) {
+                        systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
+                                SystemLogModel.WARN, "User not found");
+                        return "{\"status\": -1, \"message\": \"user not found\"}";
+                    }
+                    systemLogService.insertLogRecord(UserInfoController.class.getName(), "getInfoPageById",
+                            SystemLogModel.OK, "User found: " + model.toString());
+                    return model.toString();
+                });
+    }
 
 
     @PostMapping("/update/info")
     public String updateUserInfo(@RequestBody String body, HttpServletRequest request) throws Exception {
 
-        return  Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload->{
-            try {
-                Map<String, String> bodyData =
-                        new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
-                        }.getType());
-                int userid = (int) request.getSession().getAttribute("userid");
-                String username = (String) request.getSession().getAttribute("username");
-                String name = bodyData.get("name");
-                int sex = Integer.parseInt(bodyData.get("sex"));
-                String email = bodyData.get("email");
-                String phone = bodyData.get("phone");
-                String bio = bodyData.get("bio");
+        return Token.getInstance().authentication(body, request.getRemoteAddr(), request.getHeader("User-Agent"),
+                (payload, userid) -> {
+                    try {
+                        Map<String, String> bodyData =
+                                new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
+                                }.getType());
+                        String name = bodyData.get("name");
+                        int sex = Integer.parseInt(bodyData.get("sex"));
+                        String email = bodyData.get("email");
+                        String phone = bodyData.get("phone");
+                        String bio = bodyData.get("bio");
 
-                Map<String, MultipartFile> imageData =
-                        new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
-                        }.getType());
+                        Map<String, MultipartFile> imageData =
+                                new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
+                                }.getType());
 
-                String image_path = this.getImagePath(userid, imageData.get("image"));
+                        String image_path = this.getImagePath(Integer.parseInt(userid), imageData.get("image"));
 
-                UserInfoModel model = new UserInfoModel(userid, username, name, sex, email, phone, bio, image_path);
-                systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                        "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
-                boolean result = userInfoService.updateUserInfo(model);
+                        UserInfoModel model = new UserInfoModel(Integer.parseInt(userid) , name, sex, email, phone, bio, image_path);
+                        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                "changeUserInfo", SystemLogModel.DEBUG, " changingInfo:" + model.toString());
+                        boolean result = userInfoService.updateUserInfo(model);
 
-                if (result) {
-                    systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                            "changeUserInfo", SystemLogModel.OK, " change Info successfully");
-                    return "{\"status\": 0, \"message\": \"success\"}";
+                        if (result) {
+                            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                    "changeUserInfo", SystemLogModel.OK, " change Info successfully");
+                            return "{\"status\": 0, \"message\": \"success\"}";
 
 
-                } else {
-                    systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                            "changeUserInfo", SystemLogModel.WARN, " change Info failed");
+                        } else {
+                            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                    "changeUserInfo", SystemLogModel.WARN, " change Info failed");
+                            return "{\"status\": 1, \"message\": \"failed\"}";
+
+                        }
+                    } catch (JsonSyntaxException e) {
+                        try {
+                            throw new MalformedJsonException("Json parse error");
+                        } catch (MalformedJsonException ex) {
+                            ex.printStackTrace();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     return "{\"status\": 1, \"message\": \"failed\"}";
-
-                }
-            } catch (JsonSyntaxException e) {
-                try {
-                    throw new MalformedJsonException("Json parse error");
-                } catch (MalformedJsonException ex) {
-                    ex.printStackTrace();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return "{\"status\": 1, \"message\": \"failed\"}";
-        });
+                });
     }
 
     @PostMapping("/update/password")
     public String updateUserPassword(HttpServletRequest request, @RequestBody String body) throws Exception {
-    return Token.getInstance().authentication(body,request.getRemoteAddr(),request.getHeader("User-Agent"),payload->{
+        return Token.getInstance().authentication(body, request.getRemoteAddr(), request.getHeader("User-Agent"),
+                (payload, userid) -> {
 
-        try {
-            Map<String, String> bodyData =
-                    new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
-                    }.getType());
+                    try {
+                        Map<String, String> bodyData =
+                                new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
+                                }.getType());
 
-            String username = (String) request.getSession().getAttribute("username");
-            String password = bodyData.get("password");
-            String new_password = bodyData.get("new_password");
+                        String password = bodyData.get("password");
+                        String new_password = bodyData.get("new_password");
 
-            UserPasswordModel model = new UserPasswordModel(username, password);
-            systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                    "updateUserPassword", SystemLogModel.DEBUG, " updateUserPassword:" + model.toString());
+                        UserPasswordModel model = new UserPasswordModel(Integer.parseInt(userid),"",password);
+                        systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                "updateUserPassword", SystemLogModel.DEBUG, " updateUserPassword:" + model.toString());
 
-            boolean result = userPasswordService.updateUserPassword(model, new_password);
+                        boolean result = userPasswordService.updateUserPassword(model, new_password);
 
-            if (result) {
-                systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                        "updateUserPassword", SystemLogModel.OK, " update user password successfully");
-                return "{\"status\": 0, \"message\": \"success\"}";
-            } else {
-                systemLogService.insertLogRecord(UserInfoController.class.getName(),
-                        "updateUserPassword", SystemLogModel.WARN, " update user password failed");
-                return "{\"status\": 1, \"message\": \"failed\"}";
+                        if (result) {
+                            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                    "updateUserPassword", SystemLogModel.OK, " update user password successfully");
+                            return "{\"status\": 0, \"message\": \"success\"}";
+                        } else {
+                            systemLogService.insertLogRecord(UserInfoController.class.getName(),
+                                    "updateUserPassword", SystemLogModel.WARN, " update user password failed");
+                            return "{\"status\": 1, \"message\": \"failed\"}";
 
 
-            }
-        } catch (Exception e) {
-            try {
-                throw new MalformedJsonException("Json parse error");
-            } catch (MalformedJsonException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return "{\"status\": 1, \"message\": \"failed\"}";
-    });
+                        }
+                    } catch (Exception e) {
+                        try {
+                            throw new MalformedJsonException("Json parse error");
+                        } catch (MalformedJsonException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    return "{\"status\": 1, \"message\": \"failed\"}";
+                });
 
     }
 

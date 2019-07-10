@@ -23,6 +23,6 @@ public interface UserInfoDao {
     @Update("update user_info set name=#{model.name} and sex=#{model.sex} " +
             "and email=#{model.email} and phone=#{model.phone} and " +
             "bio=#{model.bio} and image_path=#{model.image_path}" +
-            " where username=#{model.username}")
+            " where `index`=#{model.userid}")
     int updateUserInfo(@Param("model") UserInfoModel model);
 }

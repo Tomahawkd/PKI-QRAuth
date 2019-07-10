@@ -13,10 +13,9 @@ public class UserInfoModel {
 	private String bio;
 	private String image_path;
 
-	public UserInfoModel(int index, String username,
+	public UserInfoModel(int index,
 	                     String name, int sex, String email, String phone, String bio, String image_path) {
 		this.index = index;
-		this.username = username;
 		this.name = name;
 		this.sex = sex;
 		this.email = email;
