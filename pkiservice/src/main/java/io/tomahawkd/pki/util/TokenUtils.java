@@ -91,6 +91,8 @@ public class TokenUtils {
 			device = d[1];
 		}
 
+		systemLogService.insertLogRecord(TokenUtils.class.getName(),
+				"tokenValidate", SystemLogModel.INFO, "Start handling token.");
 		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMessage.getToken());
 		int nonce = tokenPair.getKey();
 		TokenModel tokenModel = TokenModel.deserialize(tokenPair.getValue());
@@ -138,8 +140,7 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
-		ThreadContext.getContext().set(tResponse);
-
+		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
 
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Tokenid " + tokenModel.getTokenId() +

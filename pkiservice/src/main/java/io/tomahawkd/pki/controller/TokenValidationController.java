@@ -62,7 +62,9 @@ public class TokenValidationController {
 	public String tokenInitialization(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException {
 
-
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenInitialization", SystemLogModel.INFO,
+				"Token initialization start.");
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "id", "T", "D");
 		Map<String, String> responseMap = new HashMap<>();
 
@@ -151,7 +153,7 @@ public class TokenValidationController {
 		String kResponse = Utils.base64Encode(ckp.getPublic().getEncoded());
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		ThreadContext.getContext().set(tResponse);
+		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
 		String mResponse = new Gson().toJson(new Message<>(0, "Authenticate Complete"));
 
 		systemLogService.insertLogRecord(TokenValidationController.class.getName(),

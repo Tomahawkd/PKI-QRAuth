@@ -2,9 +2,9 @@ package io.tomahawkd.pki.util;
 
 public class ThreadContext {
 
-	private static ThreadLocal<String> timeResponseContext = new ThreadLocal<>();
+	private static ThreadLocal<ThreadLocalData> timeResponseContext = new ThreadLocal<>();
 
-	public static ThreadLocal<String> getContext() {
+	public static ThreadLocal<ThreadLocalData> getContext() {
 		return timeResponseContext;
 	}
 }

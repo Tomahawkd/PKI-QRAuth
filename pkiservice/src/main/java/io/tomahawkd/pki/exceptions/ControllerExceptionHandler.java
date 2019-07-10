@@ -1,7 +1,9 @@
 package io.tomahawkd.pki.exceptions;
 
+import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.ThreadContext;
+import io.tomahawkd.pki.util.ThreadLocalData;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,7 +56,12 @@ public class ControllerExceptionHandler {
 	}
 
 	private Map<String, String> handle(Exception e) {
-		String tResponse = ThreadContext.getContext().get();
+		ThreadLocalData data = ThreadContext.getContext().get();
+
+		data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
+				"handle", SystemLogModel.FATAL, e.getMessage());
+		String tResponse = data.getTime();
+
 		Message<String> message = new Message<String>().setError().setMessage(e.getMessage());
 		Map<String, String> response = new HashMap<>();
 		if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);

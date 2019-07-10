@@ -61,6 +61,10 @@ public class QRCodeAuthenticationController {
 	public String qrNonceGenerate(@RequestBody String data)
 			throws MalformedJsonException, CipherErrorException, IOException {
 
+		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+				"qrNonceGenerate", SystemLogModel.INFO,
+				"Start generating qr code nonce.");
+
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "K", "iv", "T", "system");
 		Map<String, String> responseMap = new HashMap<>();
 
@@ -101,7 +105,7 @@ public class QRCodeAuthenticationController {
 
 		String nonce2Response = Utils.base64Encode(SecurityFunctions.encryptSymmetric(k, iv, nonceBytes));
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		ThreadContext.getContext().set(tResponse);
+		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
 
 		String mResponse = new Gson().toJson(new Message<>(0, "Generate Complete"));
 
@@ -227,6 +231,9 @@ public class QRCodeAuthenticationController {
 	@PostMapping("/query")
 	public String queryQRStatus(@RequestBody String data) throws MalformedJsonException, IOException {
 
+		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+				"queryQRStatus", SystemLogModel.INFO, "query start");
+
 		Map<String, String> requestMap = Utils.wrapMapFromJson(data, "nonce2", "T", "D", "system");
 
 		String[] d = requestMap.get("D").split(";", 2);
@@ -250,7 +257,7 @@ public class QRCodeAuthenticationController {
 				"queryQRStatus", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
-		ThreadContext.getContext().set(tResponse);
+		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
 
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);
 		if (model == null) {
