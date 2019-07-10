@@ -2,9 +2,9 @@ package io.tomahawkd.pki.exceptions;
 
 import com.google.gson.Gson;
 import io.tomahawkd.pki.model.SystemLogModel;
+import io.tomahawkd.pki.service.SystemLogService;
 import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.ThreadContext;
-import io.tomahawkd.pki.util.ThreadLocalData;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,15 +67,16 @@ public class ControllerExceptionHandler {
 			return new Gson().toJson(response);
 		}
 
-		ThreadLocalData data = ThreadContext.getContext().get();
-
 		message.setMessage(e.getMessage() == null ? message.getMessage() : e.getMessage());
 
-		if (data != null) {
-			data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
-					"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + message.getMessage());
+		SystemLogService log = ThreadContext.getLogContext().get();
 
-			String tResponse = data.getTime();
+		if (log != null) {
+			log.insertLogRecord(ControllerExceptionHandler.class.getName(),
+					"handle", SystemLogModel.FATAL,
+					e.getClass().getName() + ": " + message.getMessage());
+
+			String tResponse = ThreadContext.getTimeContext().get();
 
 			if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
 		}

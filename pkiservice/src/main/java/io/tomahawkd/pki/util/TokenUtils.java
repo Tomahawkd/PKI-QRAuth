@@ -78,6 +78,8 @@ public class TokenUtils {
 			                                       String, String, Message<T>>
 			                                       callback) throws IOException {
 
+		ThreadContext.getLogContext().set(systemLogService);
+
 		TokenRequestMessage<T> requestMessage =
 				new Gson().fromJson(data,
 						new TypeToken<TokenRequestMessage<T>>() {
@@ -140,7 +142,7 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
-		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
+		ThreadContext.getTimeContext().set(tResponse);
 
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Tokenid " + tokenModel.getCompiledId() +
