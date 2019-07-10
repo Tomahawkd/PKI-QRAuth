@@ -23,8 +23,11 @@ public class Token {
     private static PublicKey TpublicKey;
     private static String systemid;
 
+
+
     private static final String IP = "http://192.168.2.110";//"http://39.106.80.38";
-    private static Token instance;
+
+  private static Token instance;
 
     public static Token getInstance() {
         if (instance == null) instance = new Token();

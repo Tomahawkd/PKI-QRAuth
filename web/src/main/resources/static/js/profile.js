@@ -85,11 +85,11 @@ $.ajax({
                         sessionStorage.setItem("sex", sex[payload.sex]);
 
                         //display the infomation
-                        $("#name-display").append(payload.name);
+                        $("#name-display").text(payload.name);
                         $("#bio-display").text(payload.bio);
-                        $("#phone-display").append(payload.phone);
-                        $("#email-display").append(payload.email);
-                        $("#sex-display").append(sex[payload.sex]);
+                        $("#phone-display").text(payload.phone);
+                        $("#email-display").text(payload.email);
+                        $("#sex-display").text(sex[payload.sex]);
 
                         $("#name-input").val(payload.name);
                         $("#bio-input").val(payload.bio);

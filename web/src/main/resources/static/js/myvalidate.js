@@ -71,14 +71,14 @@ $(document).ready(function () {
             success: function (data) {
                 var msg = JSON.parse(data.M);
                 if (msg) {
-                    if (msg.status == -1) {
-                        $(".error_box").text("用户名不存在！");
-                    } else if (msg.status == 0) {
+                    if (msg.status === 0) {
                         if (validateInitialResponsePackage(data)) {
                             $(".error_box").text("登录成功！");
                             window.location.href = "home.html";
                         }
-                    } else if (data.status == 1) {
+                    } else if (msg.status == -1) {
+                        $(".error_box").text("用户名不存在！");
+                    } else if (data.status === -2) {
                         $(".error_box").text("密码错误！");
                     }
                 }
@@ -155,20 +155,20 @@ $(document).ready(function () {
             success: function (data) {
                 var msg = JSON.parse(data.M);
                 if (msg) {
-                    if (msg.status == -1) {
-                        $(".error_box").text("该用户名已存在！");
-                    } else if (msg.status == 0) {
+                    if (msg.status === 0) {
                         if (validateInitialResponsePackage(data)) {
                             $(".error_box").text("注册成功！");
                             window.location.href = "index.html";
                         }
-                    } else if (msg.status == 1) {
+                    } else if (msg.status === -1) {
+                        $(".error_box").text("该用户名已存在！");
+                    } else if (msg.status === -2) {
                         $(".error_box").text("注册失败！");
                     }
                 }
             },
             error: function (e) {
-                alert("错误！！");
+                $(".error_box").text("连接失败！");
             }
         });
     });
