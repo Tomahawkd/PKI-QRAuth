@@ -26,3 +26,10 @@ $(document).ready(function () {
         $('.content-inner').load('log.html');
     });
 });
+
+
+function logout() {
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = "index.html";
+}

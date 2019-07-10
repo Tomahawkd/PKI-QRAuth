@@ -447,7 +447,7 @@ function validateTimeStamp(T) {
 function generateInteractionPackage(data) {
     var timeStamp = generateTimeStamp();
     var eToken = generateEToken();
-    return {data: data, T:timeStamp, EToken: eToken};
+    return {payload: JSON.stringify(data), T:timeStamp, EToken: eToken};
 }
 
 

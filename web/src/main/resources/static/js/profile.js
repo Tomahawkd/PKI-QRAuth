@@ -1,53 +1,39 @@
-$(document).ready(function() {
+$(document).ready(function () {
     $.ajax({
-                url: "/user/info/data",
-                type: "post",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(generateInteractionPackage({})),
-                dataType: "json",
-                success: function (data) {
-                    alert("成功！");
-                    $("#name-display").append(data.name);
-                    $("#name-input").val(data.name);
-                    $("#bio-display").text(data.bio);
-                    $("#bio-input").val(data.bio);
-                    $("#phone-display").append(data.phone);
-                    $("#phone-input").val(data.phone);
-                    $("#email-display").append(data.email);
-                    $("#email-input").val(data.email);
-                    switch (data.sex) {
-                        case 1:
-                            $("#sex-display").append("女");
-                            $("#sex-input").val("女");
-                            break;
-                        case 2:
-                            $("#sex-display").append("男");
-                            $("#sex-input").val("男");
-                            break;
-                        default:
-                            $("#sex-display").append("未知");
-                            $("#sex-input").val("未知");
-                    }
-                    console.log(data.image);
-                },
-                error: function (e) {
-                    alert("错误！");
-                }
-            });
-
-    function showProfileTab() {
-        $('.nav-link.active').removeClass('active');
-        $('#profile-link').addClass('active');
-        $('.tab-content .active').removeClass('show').removeClass('active');
-        $('#profile-tab').addClass('show').addClass('active');
-    }
-
-    function showReferencesTab() {
-        $('.nav-link.active').removeClass('active');
-        $('#references-link').addClass('active');
-        $('.tab-content .active').removeClass('show').removeClass('active');
-        $('#references-tab').addClass('show').addClass('active');
-    }
+        url: "/user/info/data",
+        type: "post",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(generateInteractionPackage({})),
+        dataType: "json",
+        success: function (data) {
+            alert("成功！");
+            $("#name-display").append(data.name);
+            $("#name-input").val(data.name);
+            $("#bio-display").text(data.bio);
+            $("#bio-input").val(data.bio);
+            $("#phone-display").append(data.phone);
+            $("#phone-input").val(data.phone);
+            $("#email-display").append(data.email);
+            $("#email-input").val(data.email);
+            switch (data.sex) {
+                case 1:
+                    $("#sex-display").append("女");
+                    $("#sex-input").val("女");
+                    break;
+                case 2:
+                    $("#sex-display").append("男");
+                    $("#sex-input").val("男");
+                    break;
+                default:
+                    $("#sex-display").append("未知");
+                    $("#sex-input").val("未知");
+            }
+            console.log(data.image);
+        },
+        error: function (e) {
+            alert("错误！");
+        }
+    });
 
     $("#image-file").change(function (e) {
         console.log("change image");
@@ -62,7 +48,6 @@ $(document).ready(function() {
         }
         console.log("change image finish");
     });
-
 
     $("#save-profile-btn").click(function () {
         var formArray = $("#update-info-form").serializeArray();
@@ -86,3 +71,21 @@ $(document).ready(function() {
         });
     });
 });
+
+function update() {
+
+}
+
+function showProfileTab() {
+    $('.nav-link.active').removeClass('active');
+    $('#profile-link').addClass('active');
+    $('.tab-content .active').removeClass('show').removeClass('active');
+    $('#profile-tab').addClass('show').addClass('active');
+}
+
+function showReferencesTab() {
+    $('.nav-link.active').removeClass('active');
+    $('#references-link').addClass('active');
+    $('.tab-content .active').removeClass('show').removeClass('active');
+    $('#references-tab').addClass('show').addClass('active');
+}
