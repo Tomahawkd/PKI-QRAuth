@@ -7,14 +7,14 @@ public class UserInfoModel {
 	private transient int index;
 	private String username;
 	private String name;
-	private int sex;
+	private Integer sex;
 	private String email;
 	private String phone;
 	private String bio;
 	private String image_path;
 
 	public UserInfoModel(int index,
-	                     String name, int sex, String email, String phone, String bio, String image_path) {
+	                     String name, Integer sex, String email, String phone, String bio, String image_path) {
 		this.index = index;
 		this.name = name;
 		this.sex = sex;
