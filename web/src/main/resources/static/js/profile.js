@@ -28,7 +28,6 @@ $(document).ready(function () {
         });
         console.log(formObject);
 
-        alert("222");
         $.ajax({
             url: "/user/info/update/info",
             type: "post",
@@ -37,7 +36,7 @@ $(document).ready(function () {
             processData: false,
             success: function (data) {
                 update();
-                console.log(data);
+                window.location.href = "home.html";
             },
             error: function (data) {
                 console.log(data);
@@ -74,7 +73,6 @@ $.ajax({
                 if (msg.status === 0) {
                     var payload = parseInteractionPackage(data);
                     if (payload !== {}) {
-                        alert("成功！");
                         var sex = ["未知", "男", "女"]; //the mapping of number and sex.
 
                         // store the information to storage
@@ -85,19 +83,17 @@ $.ajax({
                         sessionStorage.setItem("sex", sex[payload.sex]);
 
                         //display the infomation
-                        $("#name-display").text(payload.name);
+                        $("#name-display").append(payload.name);
                         $("#bio-display").text(payload.bio);
-                        $("#phone-display").text(payload.phone);
-                        $("#email-display").text(payload.email);
-                        $("#sex-display").text(sex[payload.sex]);
+                        $("#phone-display").append(payload.phone);
+                        $("#email-display").append(payload.email);
+                        $("#sex-display").append(sex[payload.sex]);
 
                         $("#name-input").val(payload.name);
                         $("#bio-input").val(payload.bio);
                         $("#phone-input").val(payload.phone);
                         $("#email-input").val(payload.email);
                         $("#sex-input").val(sex[payload.sex]);
-
-                        console.log(data.image);
                     }
                 } else if (msg.status === 1) {
                     $(".error_box").text("注册失败！");

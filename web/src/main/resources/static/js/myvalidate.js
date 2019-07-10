@@ -84,7 +84,7 @@ $(document).ready(function () {
                 }
             },
             error: function (e) {
-                alert("错误！！");
+                $(".error_box").text("连接失败！");
             }
         });
     });
