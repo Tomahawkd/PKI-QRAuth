@@ -73,49 +73,49 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
     }
 
     public void init(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Context context = getContext();
-                    Connecter connecter = new Connecter();
-                    keyManager manager = new keyManager();
-                    String ua = SystemUtil.getSystemModel();
-                    String url = URLUtil.getGetLogURL(context);
-
-                    String Tpub = manager.getTpub(context);
-                    String Spub = manager.getSpub(context);
-                    String Cpri = manager.getCpri(context,name);
-                    byte[] token = manager.getToken(context,name).getBytes();
-                    int nonce = manager.getNonce(context,name);
-
-
-                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
-                    PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-
-                    String resultJson = connecter.getLog(url,token,nonce,TPub,SPub,ua,CPri);
-
-                    Gson gson = new Gson();
-                    Map<String,Object> result = new HashMap<>();
-                    result = gson.fromJson(resultJson,result.getClass());
-
-                    int check = (int) result.get("check");
-                    if(check == 0){
-                        List logList = (List)result.get("loglist");
-                    } else {
-                        String message = (String) result.get("message");
-                        Looper.prepare();
-                        Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
-                        Looper.loop();
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                    Log.d("loginit",e.getMessage());
-                }
-
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Context context = getContext();
+//                    Connecter connecter = new Connecter();
+//                    keyManager manager = new keyManager();
+//                    String ua = SystemUtil.getSystemModel();
+//                    String url = URLUtil.getGetLogURL(context);
+//
+//                    String Tpub = manager.getTpub(context);
+//                    String Spub = manager.getSpub(context);
+//                    String Cpri = manager.getCpri(context,name);
+//                    byte[] token = manager.getToken(context,name).getBytes();
+//                    int nonce = manager.getNonce(context,name);
+//
+//
+//                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
+//                    PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+//
+//                    String resultJson = connecter.getLog(url,token,nonce,TPub,SPub,ua,CPri);
+//
+//                    Gson gson = new Gson();
+//                    Map<String,Object> result = new HashMap<>();
+//                    result = gson.fromJson(resultJson,result.getClass());
+//
+//                    int check = (int) result.get("check");
+//                    if(check == 0){
+//                        List logList = (List)result.get("loglist");
+//                    } else {
+//                        String message = (String) result.get("message");
+//                        Looper.prepare();
+//                        Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+//                        Looper.loop();
+//                    }
+//                }catch (Exception e){
+//                    e.printStackTrace();
+//                    Log.d("loginit",e.getMessage());
+//                }
+//
+//            }
+//        }).start();
         UserLog userLog = new UserLog(1,1,"127.0.0.1","pct-sl00","change password");
         userLogList.add(userLog);
     }
@@ -185,7 +185,7 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                             Map<String,Object> result = new HashMap<>();
                             result = gson.fromJson(resultJson,result.getClass());
 
-                            int check = (int) result.get("check");
+                            int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                             if(check == 0){
                                 Intent intent = new Intent(getActivity(), Check.class);
                                 intent.putExtra("Extra", nonce2);
