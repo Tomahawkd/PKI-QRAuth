@@ -116,10 +116,6 @@ public class Token {
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
 
             if ((boolean) ereceive.get("status")) {
-                System.out.println(
-                        "error"
-                );
-
                 responseMap.put("M",
                         new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
                 return new Gson().toJson(responseMap);
