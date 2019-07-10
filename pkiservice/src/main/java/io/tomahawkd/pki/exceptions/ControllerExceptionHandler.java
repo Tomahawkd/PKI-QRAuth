@@ -59,7 +59,7 @@ public class ControllerExceptionHandler {
 		ThreadLocalData data = ThreadContext.getContext().get();
 
 		data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
-				"handle", SystemLogModel.FATAL, e.getMessage());
+				"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + e.getMessage());
 		String tResponse = data.getTime();
 
 		Message<String> message = new Message<String>().setError().setMessage(e.getMessage());
