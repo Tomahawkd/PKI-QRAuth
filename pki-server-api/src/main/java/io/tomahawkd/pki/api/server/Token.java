@@ -25,8 +25,8 @@ public class Token {
 
 
 
-    private static final String IP = "http://39.106.80.38";
- // private static final String IP = "http://192.168.137.136";
+    // private static final String IP = "http://39.106.80.38";
+ private static final String IP = "http://192.168.43.69";
 
   private static Token instance;
 
@@ -113,9 +113,7 @@ public class Token {
 
         try {
             String target_url = IP + "/token/init";
-
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
-
             if ((boolean) ereceive.get("status")) {
                 responseMap.put("M",
                         new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
