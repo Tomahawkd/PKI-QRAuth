@@ -181,7 +181,7 @@ public class Token {
             return new Gson().toJson(responseMap);
         }
         Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
-                new TypeToken<Map<String, Integer>>() {
+                new TypeToken<Map<String,String>>() {
                 }.getType());
 
         Message<String> message = new Gson().fromJson(receive.get("M"), new TypeToken<Message<String>>() {
