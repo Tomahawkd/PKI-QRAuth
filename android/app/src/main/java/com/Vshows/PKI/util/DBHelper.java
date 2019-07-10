@@ -8,7 +8,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private final static String DB_NAME = "keys.db";
     private final static int DB_VERSION = 1;
-    public final static String KEY_TABLE = "key_table";
+    public final static String SERVER_TABLE = "server_table";
+    public final static String CLIENT_TABLE = "client_table";
     public final static String ID = "id";
     public  final static String KTpub = "KTpub";
     public final static String KSpub = "KSpub";
@@ -27,18 +28,23 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        String KEY_TABLE_CMD = "CREATE TABLE " + KEY_TABLE
+        String SERVER_TABLE_CMD = "CREATE TABLE " + SERVER_TABLE
                 + "("
-                //+ ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + KTpub +" TEXT,"
+                + KSpub +" TEXT"
+                + ");" ;
+
+        String CLIENT_TABLE_CMD = "CREATE TABLE " + CLIENT_TABLE
+                + "("
                 + ID + " TEXT PRIMARY KEY ,"
                 + KCpub +" TEXT,"
                 + KCpri +" TEXT,"
-                + KTpub +" TEXT,"
-                + KSpub +" TEXT,"
                 + token +" TEXT,"
                 + nonce +" INTEGER "
                 + ");" ;
-        sqLiteDatabase.execSQL(KEY_TABLE_CMD);
+
+        sqLiteDatabase.execSQL(SERVER_TABLE_CMD);
+        sqLiteDatabase.execSQL(CLIENT_TABLE_CMD);
     }
 
     @Override
