@@ -144,7 +144,9 @@ public class UserAuthenticationController {
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
                 userid -> {
+/*
                     request.getSession().invalidate();
+*/
                     return true;
                 });
     }
