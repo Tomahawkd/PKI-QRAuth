@@ -83,7 +83,8 @@ function polling(pollingUrl, targetUrl, QRCodeElement) {
                 }
             } else {
                 sessionStorage.removeItem("currentStatus");
-                QRCodeElement.innerHTML("<p>状态码错误，点击刷新</p>");
+                clearInterval(poller);
+                QRCodeElement.innerHTML = "<p>状态码错误，点击刷新</p>";
             }
         },
         error: function () {
@@ -190,7 +191,7 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
             generateQRCode(sessionStorage.getItem("QRCodeNonce"), QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
-            }, 1000);
+            }, 5000);
         },
         error: function () {
             QRCodeElement.innerHTML = "<p>获取二维码失败，点击刷新</p>";
@@ -223,12 +224,9 @@ function generateKctAndIv() {
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
     var iv = $.md5(RandomSeed);
     var kct = sha256(RandomSeed);
-    console.log(kct.length);
-    console.log(iv.length);
 
     sessionStorage.setItem("kct", kct);
     sessionStorage.setItem("iv", iv);
-    console.log("store" + iv);
 }
 
 
@@ -247,7 +245,6 @@ function generateInitialPackage(data) {
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var kct = sessionStorage.getItem("kct");
     var iv = sessionStorage.getItem("iv");
-    console.log("create package" + iv);
     var Kct = encrypt.encrypt(kct); // hex string of initial vector for encryption
     var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
@@ -265,26 +262,18 @@ function validateInitialResponsePackage(dataPackage) {
     var Kp = dataPackage.KP;
 
     //decrypt KP to get the Kcpri and Kcpub;
-    console.log(sessionStorage.getItem("iv"));
     var kct = HexString2Bytes(sessionStorage.getItem("kct"));
     var iv = HexString2Bytes(sessionStorage.getItem("iv"));
     sessionStorage.removeItem("kct");
     sessionStorage.removeItem("iv");
-    console.log(kct);
-    console.log(iv);
+
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
     var keyPair = cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(Kp))));
     var split = findSplit(keyPair);
-    console.log("length" + keyPair.length);
-    console.log(keyPair);
     var Kcpub = String.fromCharCode.apply(null, keyPair.slice(0, split));
     var Kcpri = String.fromCharCode.apply(null, keyPair.slice(split+1));
-    console.log("key");
-    console.log(keyPair.slice(0, split).length);
-    console.log(keyPair.slice(split+1).length);
 
-    console.log(Kcpub);
-    console.log(Kcpri);
+
     localStorage.setItem("Kcpub", Kcpub);
     localStorage.setItem("Kcpri", Kcpri);
 
@@ -300,8 +289,6 @@ function validateInitialResponsePackage(dataPackage) {
     var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
     var token = nonceToken.substr(8);
 
-    console.log(nonce);
-    console.log(token);
     localStorage.setItem("nonce", nonce);
     localStorage.setItem("token", token);
     return true;
@@ -417,23 +404,14 @@ function generateTimeStamp() {
  * @returns {boolean} return true when the validate is successful
  */
 function validateTimeStamp(T) {
-    console.log("timeStamp start");
-    console.log(T.length);
     var key = localStorage.getItem("Kcpri");
 
     var encrypt = new JSEncrypt();
     encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + key + '-----END RSA PRIVATE KEY-----');
 
-    console.log("timeStamp");
-    console.log(encrypt.decrypt(T));
-    console.log(HexString2Bytes(encrypt.decrypt(T)));
-    console.log(bytesToInt(HexString2Bytes(encrypt.decrypt(T))));
+
     var timeStamp = bytesToInt(HexString2Bytes(encrypt.decrypt(T)));
     var localTimeStamp = parseInt(sessionStorage.getItem("timeStamp")) + 1;
-    console.log(timeStamp);
-    console.log(localTimeStamp);
-    console.log(intToBytes(localTimeStamp));
-    console.log(Bytes2HexString(intToBytes(localTimeStamp)));
     // sessionStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
 }
@@ -536,19 +514,15 @@ function hex2b64(h) {
 
 
 function cbcUnpading(array) {
-    console.log(array);
     var length = array.length;
     if (length & 0x0f !== 0)
         return null;
     var lastByte = array[array.length-1];
-    console.log(lastByte);
     var padValue = array[array.length-1] & 0x0ff;
-    console.log(padValue);
     if (padValue < 1 || padValue > 0xff)
         return null;
 
     var start = length - padValue;
-    console.log(start);
     if (start < 0)
         return null;
 
