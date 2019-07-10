@@ -2,9 +2,9 @@
  * get the SPub and TPub from server, store it in localStorage
  * @param serverUrl the url of the server.
  */
-function initialize(serverUrl) {
-    // localStorage.removeItem("SPub");
-    // localStorage.removeItem("TPub");
+function initialize() {
+    localStorage.removeItem("SPub");
+    localStorage.removeItem("TPub");
     if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
         $.ajax({
             url: "key/dist/spub",
@@ -53,24 +53,30 @@ function generateQRCode(QRCodeNonce, QRCodeElement) {
  * @param QRCodeElement the html "div" element where the QRCode is placed
  */
 function polling(pollingUrl, targetUrl, QRCodeElement) {
-    var nonce = sessionStorage.getItem("QRCodeNonce");
+    var nonce2 = sessionStorage.getItem("QRCodeNonce");
     var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStatus") : 0;
     $.ajax({
         url: pollingUrl,
         type: "post",
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: JSON.stringify({nonce: nonce}),
+        data: JSON.stringify({nonce2: nonce2}),
         success: function (data) {
-            if (data.status >= currentStatus + 1) {
-                if (data.status === 0) {
+            var msg = JSON.parse(data.M);
+            if (msg.status >= currentStatus) {
+                if (msg.status === 0) {
                 } else if (data.status === 1) {
                     sessionStorage.setItem("currentStatus", 1);
                     QRCodeElement.innerHTML("<p>已扫描，等待确认</p>");
-                } else if (data.status === 2) {
-                    sessionStorage.removeItem("QRCodeNonce");
-                    sessionStorage.removeItem("currentStatus");
-                    validateQRInitialResponsePackage(data);
-                    window.location.href = targetUrl;
+                } else if (msg.status === 2) {
+                    if(validateQRInitialResponsePackage(data)) {
+                        sessionStorage.removeItem("QRCodeNonce");
+                        sessionStorage.removeItem("currentStatus");
+                        window.location.href = targetUrl;
+                    } else {
+                        sessionStorage.removeItem("currentStatus");
+                        QRCodeElement.innerHTML("<p>验证失败，点击刷新</p>");
+                    }
                 } else {
                     clearInterval(poller);
                     console.log("incorrect status code.");
@@ -107,34 +113,47 @@ function clearPolling() {
  * @returns {boolean} return true when there is no fault
  */
 function validateQRInitialResponsePackage(dataPackage) {
-    var eToken = $.base64.decode(dataPackage.EToken);
-    var Kp = $.base64.decode(dataPackage.Kp);
+        var eToken = dataPackage.EToken;
+        var Kp = dataPackage.KP;
 
-    //decrypt KP to get the Kcpri and Kcpub;
-    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
-    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
-    sessionStorage.removeItem("kct");
-    sessionStorage.removeItem("iv");
-    var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
-    var keyPair = aesCbc.decrypt(HexString2Bytes(b64tohex(Kp)));
-    var split = findSplit(keyPair);
-    var Kcpub = hex2b64(Bytes2HexString(keyPair.slice(0, split)));
-    var Kcpri = hex2b64(Bytes2HexString(keyPair.slice(split+1, keyPair.length)));
+        //decrypt KP to get the Kcpri and Kcpub;
+        console.log(sessionStorage.getItem("iv"));
+        var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+        var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+        sessionStorage.removeItem("kct");
+        sessionStorage.removeItem("iv");
+        console.log(kct);
+        console.log(iv);
+        var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
+        var keyPair = cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(Kp))));
+        var split = findSplit(keyPair);
+        console.log("length" + keyPair.length);
+        console.log(keyPair);
+        var Kcpub = String.fromCharCode.apply(null, keyPair.slice(0, split));
+        var Kcpri = String.fromCharCode.apply(null, keyPair.slice(split+1));
+        console.log("key");
+        console.log(keyPair.slice(0, split).length);
+        console.log(keyPair.slice(split+1).length);
 
-    localStorage.setItem("Kcpub", Kcpub);
-    localStorage.setItem("Kcpri", Kcpri);
+        console.log(Kcpub);
+        console.log(Kcpri);
+        localStorage.setItem("Kcpub", Kcpub);
+        localStorage.setItem("Kcpri", Kcpri);
 
-    // parse token and nonce from eToken
-    var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
 
-    var nonceToken = encrypt.decrypt(eToken);
-    var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
-    var token = nonceToken.substr(8);
+        // parse token and nonce from eToken
+        var encrypt = new JSEncrypt();
+        encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + Kcpri + '-----END RSA PRIVATE KEY-----');
 
-    localStorage.setItem("nonce", nonce);
-    localStorage.setItem("token", token);
-    return true;
+        var nonceToken = encrypt.decrypt(eToken);
+        var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
+        var token = nonceToken.substr(8);
+
+        console.log(nonce);
+        console.log(token);
+        localStorage.setItem("nonce", nonce);
+        localStorage.setItem("token", token);
+        return true;
 }
 
 
@@ -149,28 +168,32 @@ function validateQRInitialResponsePackage(dataPackage) {
 function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function) {
     if (poller !== null)
         clearInterval(poller);
-    QRCodeElement.clear("click");
+    QRCodeElement.unbind("click");
     QRCodeElement.click(click_function ? click_function : function () {
         QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function);
     });
 
     generateKctAndIv();
-    var data = {kct: sessionStorage.getItem("kct"), iv: sessionStorage.getItem("iv")};
+    var encrypt = new JSEncrypt();
+    encrypt.setPrivateKey('-----BEGIN PUBLIC KEY-----' + localStorage.getItem("TPub") + '-----END PUBLIC KEY-----');
+    var data = {K: encrypt.encrypt(sessionStorage.getItem("kct")), iv: encrypt.encrypt(sessionStorage.getItem("iv"))};
+    console.log(data);
     $.ajax({
         url: QRCodeUrl,
         type: "post",
         data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
             QRCodeElement.empty();
-            sessionStorage.setItem("QRCodeNonce", data.nonce);
-            generateQRCode(data.nonce, QRCodeElement);
+            decryptNonce2(data.nonce2);
+            generateQRCode(sessionStorage.getItem("QRCodeNonce"), QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
             }, 1000);
         },
         error: function () {
-            QRCodeElement.innerHTML("<p>获取二维码失败，点击刷新</p>");
+            QRCodeElement.innerHTML = "<p>获取二维码失败，点击刷新</p>";
         }
     });
 }
@@ -198,11 +221,14 @@ function randomPassword(size) {
 
 function generateKctAndIv() {
     var RandomSeed = randomPassword(10); // used to generate Kct and iv
-    var kct = $.md5(RandomSeed);
-    var iv = sha256(RandomSeed).substr(0, 16);
+    var iv = $.md5(RandomSeed);
+    var kct = sha256(RandomSeed);
+    console.log(kct.length);
+    console.log(iv.length);
 
     sessionStorage.setItem("kct", kct);
     sessionStorage.setItem("iv", iv);
+    console.log("store" + iv);
 }
 
 
@@ -221,6 +247,7 @@ function generateInitialPackage(data) {
     encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + TPub + '-----END PUBLIC KEY-----');
     var kct = sessionStorage.getItem("kct");
     var iv = sessionStorage.getItem("iv");
+    console.log("create package" + iv);
     var Kct = encrypt.encrypt(kct); // hex string of initial vector for encryption
     var IV = encrypt.encrypt(iv); // hex string of encoded Kct
 
@@ -234,37 +261,61 @@ function generateInitialPackage(data) {
  * @returns {boolean} return true when there is no fault
  */
 function validateInitialResponsePackage(dataPackage) {
-    var eToken = $.base64.decode(dataPackage.EToken);
-    var Kp = $.base64.decode(dataPackage.Kp);
+    var eToken = dataPackage.EToken;
+    var Kp = dataPackage.KP;
 
     //decrypt KP to get the Kcpri and Kcpub;
+    console.log(sessionStorage.getItem("iv"));
     var kct = HexString2Bytes(sessionStorage.getItem("kct"));
     var iv = HexString2Bytes(sessionStorage.getItem("iv"));
     sessionStorage.removeItem("kct");
     sessionStorage.removeItem("iv");
+    console.log(kct);
+    console.log(iv);
     var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
-    var keyPair = aesCbc.decrypt(HexString2Bytes(b64tohex(Kp)));
+    var keyPair = cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(Kp))));
     var split = findSplit(keyPair);
-    var Kcpub = hex2b64(Bytes2HexString(keyPair.slice(0, split)));
-    var Kcpri = hex2b64(Bytes2HexString(keyPair.slice(split+1, keyPair.length)));
+    console.log("length" + keyPair.length);
+    console.log(keyPair);
+    var Kcpub = String.fromCharCode.apply(null, keyPair.slice(0, split));
+    var Kcpri = String.fromCharCode.apply(null, keyPair.slice(split+1));
+    console.log("key");
+    console.log(keyPair.slice(0, split).length);
+    console.log(keyPair.slice(split+1).length);
 
+    console.log(Kcpub);
+    console.log(Kcpri);
     localStorage.setItem("Kcpub", Kcpub);
     localStorage.setItem("Kcpri", Kcpri);
 
     // validate timeStamp
     if (!validateTimeStamp(dataPackage.T)) return false;
 
+    console.log("timeStamp success");
     // parse token and nonce from eToken
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + keyPair[1] + '-----END RSA PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + Kcpri + '-----END RSA PRIVATE KEY-----');
 
     var nonceToken = encrypt.decrypt(eToken);
     var nonce = bytesToInt(HexString2Bytes(nonceToken.substr(0, 8)));
     var token = nonceToken.substr(8);
 
+    console.log(nonce);
+    console.log(token);
     localStorage.setItem("nonce", nonce);
     localStorage.setItem("token", token);
     return true;
+}
+
+
+function decryptNonce2(encryptNonce) {
+    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+
+    var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
+    var nonce2 = bytesToInt(cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(encryptNonce)))));
+
+    sessionStorage.setItem("QRCodeNonce", nonce2);
 }
 
 
@@ -366,14 +417,24 @@ function generateTimeStamp() {
  * @returns {boolean} return true when the validate is successful
  */
 function validateTimeStamp(T) {
+    console.log("timeStamp start");
+    console.log(T.length);
     var key = localStorage.getItem("Kcpri");
 
     var encrypt = new JSEncrypt();
-    encrypt.setPrivateKey('-----BEGIN PRIVATE KEY-----' + key + '-----END PRIVATE KEY-----');
+    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + key + '-----END RSA PRIVATE KEY-----');
 
+    console.log("timeStamp");
+    console.log(encrypt.decrypt(T));
+    console.log(HexString2Bytes(encrypt.decrypt(T)));
+    console.log(bytesToInt(HexString2Bytes(encrypt.decrypt(T))));
     var timeStamp = bytesToInt(HexString2Bytes(encrypt.decrypt(T)));
-    var localTimeStamp = parseInt(localStorage.getItem("timeStamp")) + 1;
-    sessionStorage.removeItem("timeStamp");
+    var localTimeStamp = parseInt(sessionStorage.getItem("timeStamp")) + 1;
+    console.log(timeStamp);
+    console.log(localTimeStamp);
+    console.log(intToBytes(localTimeStamp));
+    console.log(Bytes2HexString(intToBytes(localTimeStamp)));
+    // sessionStorage.removeItem("timeStamp");
     return timeStamp === localTimeStamp;
 }
 
@@ -386,7 +447,7 @@ function validateTimeStamp(T) {
 function generateInteractionPackage(data) {
     var timeStamp = generateTimeStamp();
     var eToken = generateEToken();
-    return {data: data, T:timeStamp, EToken: eToken};
+    return {payload: JSON.stringify(data), T:timeStamp, EToken: eToken};
 }
 
 
@@ -474,6 +535,31 @@ function hex2b64(h) {
 }
 
 
+function cbcUnpading(array) {
+    console.log(array);
+    var length = array.length;
+    if (length & 0x0f !== 0)
+        return null;
+    var lastByte = array[array.length-1];
+    console.log(lastByte);
+    var padValue = array[array.length-1] & 0x0ff;
+    console.log(padValue);
+    if (padValue < 1 || padValue > 0xff)
+        return null;
+
+    var start = length - padValue;
+    console.log(start);
+    if (start < 0)
+        return null;
+
+    for (var i = start; i< length; i++)
+        if (array[i] !== padValue)
+            return null;
+
+    return array.slice(0, start);
+}
+
+
 function b64tohex(s) {
     var ret = "";
     var i;
@@ -526,45 +612,4 @@ function findSplit(array) {
             return i
     }
     return 0;
-}
-
-
-
-function encrypt() {
-    var pub = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN" +
-        "FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76" +
-        "xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4" +
-        "gwQco1KRMDSmXSMkDwIDAQAB";
-    var pri = "MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I" +
-        "5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJT" +
-        "eucF+S76xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKB" +
-        "USLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQABAoGAfY" +
-        "9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+" +
-        "57fI4fvxTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLo" +
-        "q06V+FyBfDSwL8KbLyeHm7KUZnLNQbk8yGLzB3iYKkRHlmUanQG" +
-        "aNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd8XJTSdcIX4a3gy3GGC" +
-        "JxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAFz/7+B" +
-        "SMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE" +
-        "0/mPwmP5rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8R" +
-        "v7QnD/YBvi52POIlRSSIMV7SwWvSK4WSMnGb1ZBbhgdg57DXasp" +
-        "cwHsFV7hByQ5BvMtIduHcT14ECfcECQATeaTgjFnqE/lQ22Rk0e" +
-        "GaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5AzilpsLB" +
-        "YuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRU" +
-        "nU8Jfm3Ozuku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876";
-
-    localStorage.setItem("TPub", pub);
-    localStorage.setItem("Kcpri", pri);
-
-    var pubKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwibfwzLDKKbGFBn1UtwQJDSw1unxEJbdci3EpMlKgS0ki5p5l0hJxoOgrZfEcNdEga1hgDPoF9Yk9FJvHhNX/+FiXRME3B98d2DjAzOYNXizMNPw9baSyaPl7vdF815b8yMIX1l2AYJcsljj/G6liqRSy0FZpOV3RiPMTOQGxPgsBfrfTq7CiudDN2X16sOoSI233jW9ulKwjcdH0lXMUTD1dIwy30KJC9vmnmmeKa7LzDThLL3ep22CDqdIMX3MHpgpi+c+Gd0hZq+nz8U7je+9JGA9HFu7n6Y85QXNUsgzVoi3TDIqvoIBPU5+8ogg3uG8ndSI7rmgmaUHXjGvtwIDAQAB";
-    var priKey = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCiVAt4YLKMoBjW+TD+EqMQsptKXjg/hQ3feqPgXVK552EWxbJ7yo/ZnxWuhfGa7iBmj+61bC0GUNCThBnQZF9ovU/EfKc6XtfQSfpfXj+Zzwl/iYfATh57St8edbcmK7QumzWkFgYNWY4AICZEgAFdxWwlQYuvLWoOi8T2yrCu47AqPcPumYoDJVaqbafGdcQPUYeQzECucHTU6R2SVg7gSMfxj/A2eKXPFrl9/tYAR/mzW0TE64+nuOo4dy2DPhI2c5UJOhtJWP57zcLvc7yBuDAiutLI+ZC2Jf8roM9g0C+hq+dkYCwr+MiEw4z1+4RUExY/msjIUXYCBU1AVwVpAgMBAAECggEAfXjbONv9hydEq/4HuYvsUT7NO+miLq8I7yHbw9Q+2oWXjUOY14jWMg9+cd0EyI2hq8U7bS5FiykyX6PvVB4RhWM3Yhg8JqkixdQ43Dh8jsXygItsy99WPlS8K84vmCiV6KR+DOwdF3qOgVhYXABZjgLIue91Kh2/aajtwRkhAryueicByg2F5gQovEO+MHx647glYOIGVQYxM2V7cVpYkYyK4w7N+lzcpi3F7+1KHpkkFZ28FW7cBROKVqaHvhOoLExXin8Bxr5wxd+jG73RRlOlxTwW4QCfolgKae4l39o80oTKPo8VpNq5620m9xBtB03IzO2I5cFyAWlYRt071QKBgQDVUTGfqknUvkOGzEXT0xEhqoQlKpe/sLJYzDoQyD4ffdIchCOzVx4b6Qw8Oi0MGc+k6AWBlUajk8jfny6GGavn8TmAqRabby1VIgaSk8mb40Uc3Gd2V0knJ/ApEefv3LA0smlaS9yOY6VRTntAKi+pYgZuyceRZs1Rth/q3ql2jwKBgQDCzwinrNk04Tb7QskQz19sFO4V8C0jwx+RJJn446Kr/tYeqA+tCo7DMOXTLCmW8LzVlh3TYc0r+dKpqi8Gcn5b20VE4XpF+YMJHBTrGLwwWuiZ6cejgylyocY/xXSmirgj/HeLWwXYsplIQNV+1zsJ+Hfr1jxh7kRm6Jx/dC6AhwKBgQCR0RnJ2f70JUdFmtdUsCAy0jvYqB/pUiDn4FsE48zLfBenlJBO5ItZatoJRX9LmU0+nbg910vdP4V9j3OfCWdgep3jHDKu97WWT1cM1WdoX1f8HZG/7HS+Bmf9uxa/+SyeKSMpLVhMIUN9q9dGik/gSni5PMdl1k8dvxBcXe6bcwKBgCXpSJPpDXQ/CAYp3xtIYBeWkybt0LsO9Au5BcXr9vJl66GXr0VLsrDFyVQpWgan3vfp+O/0LouKWLbwCarFiVWy/G4FO1h20EtrjZ6a97SpXG7nkhR+KAjI9t3ePW9Tu7Y1Icaa9i5Pw4jOJT5EAJdWJXBeBu5AAkvMpPgg0hPtAoGBAIxRnGtdqQue6HdXuXH2ogpS83YhU0LuhHJ7q5Ex1WtWiIAtWKnl8OC9soVN7nHvM+Om5fIqRcb4+JNuu5bzdtU4Pgdv6dfYicOZJUEvIm+1CzqeH3hPp70vGVHGu0h7ayrQOqyRYuWED/wxKNHlBzkHrAhDuAVCF0zoSj2RERb7";
-    var en = "P8rw+Bkzp6tvhWa8lqGORvdSpIDIA+ulIV5BCYajfStOOqPfNpfjGSmnQwaKSnsrMHXZtes0tdjSUeJYMIbwdn7q02wqqrPkttCQp1mttpJHudm5LcPQVwFZEGA7izLSQZkHluAkiRxUcLX3He9pKHNFuz1uVhnRmELcDs4OqsGHnA3LaTQhL+aDNtiVwIxCl9JWHqDvXHkXhemA/3+bDjG6uwi9BeFrLuyChI9qUBFkOEZfr2u6jSCwM3lhHu9/egU3W697lexwJqrk/sv3F5HKcgHqc+ZJyAt9LGBjCA3iZHk9I8TU5pN4q1EptW4ucdmSQ7LDTP77yiV/hmvwYA==";
-    var encrypt = new JSEncrypt();
-    encrypt.setPublicKey('-----BEGIN PUBLIC KEY-----' + pubKey + '-----END PUBLIC KEY-----');
-    encrypt.setPrivateKey('-----BEGIN RSA PRIVATE KEY-----' + priKey + '-----END RSA PRIVATE KEY-----');
-    var de = encrypt.decrypt(en);
-    console.log(de);
-
-    var str = de.substr(0, 8);
-    var bytes = HexString2Bytes(str);
-    console.log(bytesToInt(bytes));
 }

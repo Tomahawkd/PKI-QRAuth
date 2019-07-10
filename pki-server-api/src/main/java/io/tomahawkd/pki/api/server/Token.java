@@ -242,7 +242,7 @@ public class Token {
 
         String content = new Gson().toJson(requestMap);
         Map<String, Object> result = request(content, IP + "/qr/genqr");
-
+      
         Map<String, String> responseMap = new HashMap<>();
 
         if ((boolean) result.get("status")){

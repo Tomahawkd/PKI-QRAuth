@@ -69,17 +69,18 @@ $(document).ready(function () {
             data: JSON.stringify(data),
             dataType: "json",
             success: function (data) {
-                if (data.status == -1) {
+                var msg = JSON.parse(data.M);
+                if(msg) {
+                if (msg.status == -1) {
                     $(".error_box").text("用户名不存在！");
-                } else if (data.status == 0) {
-                    if (validateInitialResponsePackage(data)) {
-                        $(".error_box").text("登录成功！");
-                        window.location.href = "home.html";
-                    } else {
-                        $(".error_box").text("数据验证失败！");
+                } else if (msg.status == 0) {
+                    if(validateInitialResponsePackage(data)) {
+                    $(".error_box").text("登录成功！");
+                    window.location.href = "home.html";
                     }
                 } else if (data.status == 1) {
                     $(".error_box").text("密码错误！");
+                }
                 }
             },
             error: function (e) {
@@ -152,13 +153,18 @@ $(document).ready(function () {
             data: JSON.stringify(package),
             dataType: "json",
             success: function (data) {
-                if (data.status == -1) {
+                var msg = JSON.parse(data.M);
+                if(msg) {
+                if (msg.status == -1) {
                     $(".error_box").text("该用户名已存在！");
-                } else if (data.status == 0) {
-                    $(".error_box").text("注册成功！");
-                    window.location.href = "index.html";
-                } else if (data.status == 1) {
+                } else if (msg.status == 0) {
+                    if(validateInitialResponsePackage(data)) {
+                        $(".error_box").text("注册成功！");
+                        window.location.href = "index.html";
+                    }
+                } else if (msg.status == 1) {
                     $(".error_box").text("注册失败！");
+                }
                 }
             },
             error: function (e) {
