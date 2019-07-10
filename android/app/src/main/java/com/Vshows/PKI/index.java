@@ -28,14 +28,15 @@ public class index extends AppCompatActivity {
         BottomBar bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.setContainer(R.id.fl_container)
                 .setTitleBeforeAndAfterColor("#999999", "#ff5d5e")
-                .addItem(userLogFragment.class,
-                        "日志",
-                        R.mipmap.u25,
-                        R.mipmap.u21)
                 .addItem(userInfoFragment.class,
                         "我的",
                         R.mipmap.u29,
                         R.mipmap.u33)
+                .addItem(userLogFragment.class,
+                        "日志",
+                        R.mipmap.u25,
+                        R.mipmap.u21)
+
                 .build();
 
 

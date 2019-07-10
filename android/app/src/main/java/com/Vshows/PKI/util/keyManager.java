@@ -172,4 +172,26 @@ public class keyManager {
         sqLiteDatabase.close();
 
     }
+
+    public void getAllInfo(Context context){
+        SQLiteDatabase sqLiteDatabase = getReadableDB(context);
+
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE,null,null,null,null,null,null);
+        if(cursor.moveToFirst()) {
+            do{
+                String id = cursor.getString(cursor.getColumnIndex(ID));
+                String cpub = cursor.getString(cursor.getColumnIndex(KCpub));
+                String cpri = cursor.getString(cursor.getColumnIndex(KCpri));
+                String Token = cursor.getString(cursor.getColumnIndex(token));
+                int Nonce = cursor.getInt(cursor.getColumnIndex(nonce));
+
+                Log.d("alldata", "\nid:" + id + "\ntoken:" + Token + "\ncpub:" + cpub + "\ncpri:" + cpri + "\nnonce:" + Nonce);
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("getAllInfoerror","0" );
+        }
+        cursor.close();
+        sqLiteDatabase.close();
+
+    }
 }
