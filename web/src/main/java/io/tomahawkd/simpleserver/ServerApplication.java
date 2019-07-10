@@ -18,11 +18,11 @@ public class ServerApplication {
 		Token.setApiKey("cab4af0fc499491eb9bb16120e3ae195");
 
 		byte[] pubBytes = Base64.getDecoder().decode(
-				FileUtil.readFile("./web/src/main/resources/public.pub"));
+				FileUtil.readFile("./web/src/main/resources/server.pub"));
 		Token.readPublicKey(pubBytes);
 
 		byte[] priBytes = Utils.base64Decode(
-				FileUtil.readFile("./web/src/main/resources/private.pri"));
+				FileUtil.readFile("./web/src/main/resources/server.pri"));
 		Token.readPrivateKey(priBytes);
 
 

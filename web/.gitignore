@@ -207,4 +207,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+server.pri
+server.pub
+tpublic.pub
 application.properties

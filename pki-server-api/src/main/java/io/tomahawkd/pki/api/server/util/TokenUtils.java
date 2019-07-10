@@ -28,7 +28,7 @@ public class TokenUtils {
         tokenRequestMessage.setToken(bodydata.get("EToken"));
         tokenRequestMessage.setDevice(ip + ";" + device);
         tokenRequestMessage.setTime(time2);
-        tokenRequestMessage.setRawMessage(bodydata.get("M"));
+        tokenRequestMessage.setRawMessage(new Message<String>().setOK().setMessage(bodydata.get("payload")).toJson());
 
         Map<String, String> responseMap = new HashMap<>();
 
