@@ -28,7 +28,6 @@ $(document).ready(function () {
         });
         console.log(formObject);
 
-        alert("222");
         $.ajax({
             url: "/user/info/update/info",
             type: "post",
@@ -74,7 +73,6 @@ $.ajax({
                 if (msg.status === 0) {
                     var payload = parseInteractionPackage(data);
                     if (payload !== {}) {
-                        alert("成功！");
                         var sex = ["未知", "男", "女"]; //the mapping of number and sex.
 
                         // store the information to storage
