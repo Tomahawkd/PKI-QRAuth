@@ -114,24 +114,68 @@ function getKeys() {
                     var list = msg.message;
                     for (var index in list) {
                         var text = '<div class="form-group row">' +
-                                        '<div class="col-2">' + list[index].data + '</div>' +
+                                        '<div class="col-2">' + list[index].date + '</div>' +
                                         '<div class="col-2">' + list[index].ip + '</div>' +
                                         '<div class="col-2">' + list[index].device + '</div>' +
                                         '<div class="col-3">' + list[index].id + '</div>'+
                                         '<div class="col-3">' +
                                             '<button id="delete0" type="button" class="btn btn-success"' + 'name="' + list[index].id + '"' +
-                                                'style="width: 100px; height: 38px; padding: 0px">注销</button>' +
+                                                'onclick="deleteToken(this)" style="width: 100px; height: 38px; padding: 0px">注销</button>' +
                                         '</div></div><hr>';
                         console.log(text);
                         $("#token_list_content").append(text);
                     }
                 } else if (msg.status === 1) {
-                    $(".error_box").text("注册失败！");
+                    $(".error_box").text("获取信息失败！");
                 }
             }
         },
         error: function (data) {
+               alert("获取信息失败，请刷新页面重试！");
+        }
+    });
+}
 
+
+function deleteToken(btn) {
+    var payload = {tokenid: btn.name};
+    $.ajax({
+        url: "/user/management/token/revoke",
+        type: "post",
+        data: JSON.stringify(generateInteractionPackage()),
+        contentType: "json/application; charset=utf-8",
+        dataType: "json",
+        success: function(data) {
+            var msg = JSON.parse(data.M);
+                            if (msg) {
+                                if (msg.status === 0 && validateTimeStamp(data.T)) {
+                                    getKeys();
+                                } else if (msg.status === -1) {
+                                    $(".error_box").text("删除失败！");
+                                } else {
+                                    alert("未知错误");
+                                }
+                            }
+        },
+        error: function(data) {
+            alert("删除失败");
+        }
+    });
+}
+
+
+function resetKeyPair() {
+    $.ajax({
+        url: "/user/management/token/regenkeys",
+        type: "post",
+        data: JSON.stringify(generateInteractionPackage({})),
+        contentType: "json/application; charset=utf-8",
+        dataType: "json",
+        success: function(data) {
+            logout();
+        },
+        error: function(data) {
+            alert("密钥重置失败");
         }
     });
 }
