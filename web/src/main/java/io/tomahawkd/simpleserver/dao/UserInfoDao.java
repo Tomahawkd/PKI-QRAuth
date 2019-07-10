@@ -8,7 +8,7 @@ public interface UserInfoDao {
     //查询获取用户信息
     @Select("select `index`,name,sex,email,phone,bio,image_path from user_info where `index`=#{userid}")
     @Results({
-            @Result(property = "index",column = "index"),
+            @Result(property = "userid",column = "index"),
             @Result(property = "name",column = "name"),
             @Result(property = "sex",column = "sex"),
             @Result(property = "email",column = "email"),
