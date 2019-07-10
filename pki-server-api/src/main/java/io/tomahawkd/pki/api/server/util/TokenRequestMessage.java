@@ -48,6 +48,10 @@ public class TokenRequestMessage<T> {
         this.message = new Gson().toJson(message);
     }
 
+    public void setRawMessage(String message) {
+        this.message = message;
+    }
+
     public String toJson() {
         return new Gson().toJson(this);
     }

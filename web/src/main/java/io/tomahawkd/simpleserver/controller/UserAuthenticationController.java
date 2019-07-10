@@ -56,7 +56,7 @@ public class UserAuthenticationController {
                         if (userPasswordService.checkUserExistence(username)) {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "user\"" + username + "\"+ existing");
-                            return new Message<String>().setStatus(-1).setMessage( "user already existing");
+                            return new Message<String>().setStatus(-1).setMessage("user already existing");
                         }
 
                         systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
@@ -69,11 +69,11 @@ public class UserAuthenticationController {
                         if (index != -1) {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.OK, "Registering successful: " + username);
-                            return new Message<String>().setStatus(index).setMessage( "success");
+                            return new Message<String>().setStatus(index).setMessage("success");
                         } else {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(),
                                     "registerUser", SystemLogModel.WARN, "Registering failed: " + username);
-                            return new Message<String>().setStatus(-1).setMessage( "registering failed");
+                            return new Message<String>().setStatus(-1).setMessage("registering failed");
 
                         }
                     } catch (JsonSyntaxException e) {
@@ -139,17 +139,16 @@ public class UserAuthenticationController {
                 }
         );
     }
+
     @PostMapping("/logout")
-    public void logout(@RequestBody String body,HttpServletRequest request) throws Exception {
-        String ip = request.getRemoteAddr();
-        String device = request.getHeader("User-Agent");
-        String result = Token.getInstance().deinit(body, ip, device);
-        Map<String, String> map = new Gson().fromJson(result, new TypeToken<Map<String, String>>() {
-        }.getType());
-        Map<String, String> M = new Gson().fromJson(map.get("M"), new TypeToken<Map<String, String>>() {
-        }.getType());
-
-        request.getSession().invalidate();
+    public String logout(@RequestBody String body, HttpServletRequest request) throws Exception {
+        return Token.getInstance().deinit(body,
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"),
+                userid -> {
+                    request.getSession().invalidate();
+                    return true;
+                });
     }
 
-    }
+}
