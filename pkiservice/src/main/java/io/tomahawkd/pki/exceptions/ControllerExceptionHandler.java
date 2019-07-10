@@ -71,13 +71,15 @@ public class ControllerExceptionHandler {
 
 		message.setMessage(e.getMessage() == null ? message.getMessage() : e.getMessage());
 
-		if (data.getLog() != null)
+		if (data != null) {
 			data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
 					"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + message.getMessage());
 
-		String tResponse = data.getTime();
+			String tResponse = data.getTime();
 
-		if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
+			if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
+		}
+
 		response.put("M", message.toJson());
 		return new Gson().toJson(response);
 	}
