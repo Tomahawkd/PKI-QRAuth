@@ -53,6 +53,14 @@ public class TokenModel {
 		return tokenId;
 	}
 
+	public String getCompiledId() throws IOException {
+		return Utils.base64Encode(SecurityFunctions.encryptUsingAuthenticateServerKey(
+				ByteBuffer.allocate(16)
+						.order(ByteOrder.LITTLE_ENDIAN)
+						.putInt(tokenId).array()
+		));
+	}
+
 	public int getUserId() {
 		return userId;
 	}

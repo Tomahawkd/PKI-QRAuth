@@ -143,7 +143,7 @@ public class TokenUtils {
 		ThreadContext.getContext().set(new ThreadLocalData(systemLogService, tResponse));
 
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
-				device, ip, "Tokenid " + tokenModel.getTokenId() +
+				device, ip, "Tokenid " + tokenModel.getCompiledId() +
 						" used with status: " + message.getStatus());
 
 		Message<T> responseMessage = null;
