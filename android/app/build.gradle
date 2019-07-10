@@ -9,7 +9,17 @@ android {
         versionCode version_code
         versionName version_name
         vectorDrawables.useSupportLibrary = true
+        ndk {
+            moduleName "jni-aes"
+        }
     }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -17,6 +27,7 @@ android {
 
         }
     }
+    sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jni/'] } }
 }
 
 dependencies {
@@ -31,4 +42,5 @@ dependencies {
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:3.4.1'
+    implementation files('libs/ClientApi.jar')
 }

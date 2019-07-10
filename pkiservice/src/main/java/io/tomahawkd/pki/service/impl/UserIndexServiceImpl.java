@@ -15,8 +15,8 @@ public class UserIndexServiceImpl implements UserIndexService {
 	private UserIndexDao dao;
 
 	@Override
-	public int getUserIdByTag(String tag) {
-		return dao.getUserIdByTag(tag);
+	public int getUserIdByTag(String tag, int system) {
+		return dao.getUserIdByTag(tag, system);
 	}
 
 	@Override

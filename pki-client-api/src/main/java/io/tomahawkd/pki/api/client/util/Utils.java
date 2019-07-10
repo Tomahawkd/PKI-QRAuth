@@ -61,23 +61,12 @@ public class Utils {
 												.order(ByteOrder.LITTLE_ENDIAN).getInt() + 1).array()));
 	}
 
-	public static byte[] gzipEncode(byte[] source) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		GZIPOutputStream gzip = new GZIPOutputStream(out);
-		gzip.write(source);
-		gzip.close();
-		return out.toByteArray();
-	}
 
-	public static byte[] gzipDecode(byte[] source) throws IOException {
-		GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(source));
-		BufferedInputStream is = new BufferedInputStream(in);
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		byte[] buf = new byte[1024];
-		int count;
-		while ((count = is.read(buf)) != -1) {
-			os.write(buf, 0, count);
-		}
-		return os.toByteArray();
+
+	public static String generateEtoken(byte[] token,int nonce,PublicKey key) throws CipherErrorException {
+		byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
+				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce+1).put(token).array();
+		return Utils.base64Encode(
+				SecurityFunctions.encryptAsymmetric(key, tokenArr));
 	}
 }

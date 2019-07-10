@@ -53,6 +53,14 @@ public class TokenModel {
 		return tokenId;
 	}
 
+	public String getCompiledId() throws IOException {
+		return Utils.base64Encode(SecurityFunctions.encryptUsingAuthenticateServerKey(
+				ByteBuffer.allocate(16)
+						.order(ByteOrder.LITTLE_ENDIAN)
+						.putInt(tokenId).array()
+		));
+	}
+
 	public int getUserId() {
 		return userId;
 	}
@@ -142,7 +150,7 @@ public class TokenModel {
 
 	public static TokenModel deserialize(byte[] data) throws CipherErrorException {
 
-		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid");
+		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid: " + data.length);
 
 		byte[] tokenBytes = new byte[Integer.BYTES];
 		System.arraycopy(data, 0, tokenBytes, 0, Integer.BYTES);

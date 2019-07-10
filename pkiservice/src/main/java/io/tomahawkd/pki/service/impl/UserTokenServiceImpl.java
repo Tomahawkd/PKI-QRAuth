@@ -26,7 +26,7 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 	@Override
 	public TokenModel generateNewToken(String userTag, int systemId, String device, String ip) {
-		int userId = indexDao.getUserIdByTag(userTag);
+		int userId = indexDao.getUserIdByTag(userTag, systemId);
 		TokenModel model = new TokenModel(userId, SecurityFunctions.generateRandom(), device, ip);
 		dao.initToken(model);
 		model = dao.getByTokenId(model.getTokenId());

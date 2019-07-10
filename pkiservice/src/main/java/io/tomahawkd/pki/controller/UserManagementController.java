@@ -65,8 +65,19 @@ public class UserManagementController {
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, List.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
+
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"getUserLogById", SystemLogModel.INFO,
+							"Start to collect user log");
+
 					List<UserLogModel> logModelList =
-							userLogService.getUserActivitiesById(userKeyModel.getUserId(), userKeyModel.getSystemId());
+							userLogService.getUserActivitiesById(userKeyModel.getUserId(),
+									userKeyModel.getSystemId());
+
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"getUserLogById", SystemLogModel.INFO,
+							"Collect user log complete");
+
 					Message<List> message = new Message<>();
 					return message.setOK().setMessage(logModelList);
 				});
@@ -96,8 +107,16 @@ public class UserManagementController {
 				userKeyService, systemKeyService, userIndexService, List.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"getUserLogById", SystemLogModel.INFO,
+							"Start collect user token");
+
 					List<Map<String, String>> tokenIdList =
 							tokenService.getTokenListByUserId(userKeyModel.getUserId());
+
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"getUserLogById", SystemLogModel.INFO,
+							"Collect user token complete");
 
 					return new Message<List>().setOK().setMessage(tokenIdList);
 				});
@@ -131,6 +150,10 @@ public class UserManagementController {
 				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
 
+					systemLogService.insertLogRecord(UserManagementController.class.getName(),
+							"getUserLogById", SystemLogModel.INFO,
+							"Start revoke user token");
+
 					try {
 						String token = requestMessage.getMessage().getMessage();
 						int tokenId = ByteBuffer.wrap(
@@ -155,6 +178,10 @@ public class UserManagementController {
 							return new Message<String>().setOK().setMessage("Revoke Complete");
 						}
 					} catch (CipherErrorException e) {
+						systemLogService.insertLogRecord(UserManagementController.class.getName(),
+								"getUserLogById", SystemLogModel.INFO,
+								"Token not found");
+
 						return new Message<String>().setError().setMessage("Token not found");
 					}
 				});

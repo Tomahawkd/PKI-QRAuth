@@ -1,6 +1,6 @@
-package io.tomahawkd.pki.util;
+package io.tomahawkd.pki.api.client.util;
 
-import io.tomahawkd.pki.exceptions.CipherErrorException;
+import io.tomahawkd.pki.api.client.exceptions.CipherErrorException;
 import javafx.util.Pair;
 
 import java.io.IOException;

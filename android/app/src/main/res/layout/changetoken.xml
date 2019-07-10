@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -17,32 +15,24 @@
             android:background="@mipmap/head"
             android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/scan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:layout_marginRight="20dp"
-                android:layout_marginTop="20dp"
-                android:background="@mipmap/scanbtn"/>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="20dp"
                 android:gravity="start|center_vertical"
-                android:text="登录日志"
+                android:text="登录设备"
                 android:textColor="#ffffff"
                 android:textSize="30sp" />
         </LinearLayout>
 
         <ListView
-            android:id="@+id/userlogListView"
+            android:id="@+id/tokenListView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:divider="@null">
 
         </ListView>
+
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

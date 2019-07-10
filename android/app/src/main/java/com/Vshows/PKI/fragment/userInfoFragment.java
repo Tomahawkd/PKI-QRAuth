@@ -1,10 +1,12 @@
 package com.Vshows.PKI.fragment;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -20,6 +22,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.Vshows.PKI.ChangeSelfInfo;
 import com.Vshows.PKI.Check;
@@ -28,9 +31,14 @@ import com.Vshows.PKI.R;
 import com.Vshows.PKI.changeToken;
 import com.Vshows.PKI.changepsw;
 import com.Vshows.PKI.index;
+import com.Vshows.PKI.util.StringToPKey;
+import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
+import com.Vshows.PKI.util.keyManager;
 import com.Vshows.zxinglibrary.android.CaptureActivity;
 import com.Vshows.zxinglibrary.bean.ZxingConfig;
 import com.Vshows.zxinglibrary.common.Constant;
+import com.google.gson.Gson;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
@@ -39,8 +47,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import io.tomahawkd.pki.api.client.Connecter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -52,7 +65,7 @@ import okhttp3.Response;
 import static android.app.Activity.RESULT_OK;
 
 
-public class fragment3 extends Fragment implements View.OnClickListener {
+public class userInfoFragment extends Fragment implements View.OnClickListener {
     @Nullable
     ImageButton scanBtn ;
     private int REQUEST_CODE_SCAN = 111;
@@ -70,6 +83,7 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     TextView mail_information;
 
     private String session;
+    private String ID;
     private Handler handler = null;
 
     private String username,name,email,phone,bio,imagepath;
@@ -101,7 +115,8 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         phone_information  = (TextView)view.findViewById(R.id.phone_infomation);
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
-        session = getActivity().getIntent().getStringExtra("session");
+//        session = getActivity().getIntent().getStringExtra("session");
+        ID = getActivity().getIntent().getStringExtra("username");
 
         //Log.d("sessin" ,session);
 
@@ -111,51 +126,99 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     }
 
     public void init_info(){
-        String url ="http://192.168.43.159/user/info/data/";
+//        String url ="http://192.168.43.159/user/info/data/";
+//
+//        OkHttpClient client = new OkHttpClient();
+//
+//        final Request request = new Request.Builder()
+//                .addHeader("cookie",session)
+//                .url(url)
+//                .get()
+//                .build();
+//
+//        Call call = client.newCall(request);
+//        call.enqueue(new Callback() {
+//            public void onFailure(Call call, IOException e) {
+//                Log.d("getInfoError","<<<<e="+e);
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
+//                if(response.isSuccessful()) {
+//                    String jsonString = response.body().string();
+//                    try {
+//                        JSONObject mesJson = new JSONObject(jsonString);
+//                        String json = mesJson.getString("message");
+//                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
+//                        username = resultJson.getString("username");
+//                        name = resultJson.getString("name");
+//                        sex = resultJson.getInt("sex");
+//                        email = resultJson.getString("email");
+//                        phone = resultJson.getString("phone");
+//                        bio = resultJson.getString("bio");
+//                        //imagepath = resultJson.getString("imagepath");
+//
+//                        new Thread() {
+//                            @Override
+//                            public void run() {
+//                                //super.run();
+//                                handler.post(changeInfoUI);
+//                            }
+//                        }.start();
+//                    } catch (JSONException e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
 
-        OkHttpClient client = new OkHttpClient();
-
-        final Request request = new Request.Builder()
-                .addHeader("cookie",session)
-                .url(url)
-                .get()
-                .build();
-
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            public void onFailure(Call call, IOException e) {
-                Log.d("getInfoError","<<<<e="+e);
-            }
-
+        new Thread(new Runnable() {
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.isSuccessful()) {
-                    String jsonString = response.body().string();
-                    try {
-                        JSONObject mesJson = new JSONObject(jsonString);
-                        String json = mesJson.getString("message");
-                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
-                        username = resultJson.getString("username");
-                        name = resultJson.getString("name");
-                        sex = resultJson.getInt("sex");
-                        email = resultJson.getString("email");
-                        phone = resultJson.getString("phone");
-                        bio = resultJson.getString("bio");
-                        //imagepath = resultJson.getString("imagepath");
+            public void run() {
+                try {
+                    Context context = getContext();
+                    Connecter connecter = new Connecter();
+                    keyManager manager = new keyManager();
+                    String ua = SystemUtil.getSystemModel();
+                    String url = URLUtil.getSelfInfoURL(context);
 
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                //super.run();
-                                handler.post(changeInfoUI);
-                            }
-                        }.start();
-                    } catch (JSONException e){
-                        e.printStackTrace();
+                    String Tpub = manager.getTpub(context);
+                    String Spub = manager.getSpub(context);
+                    String Cpri = manager.getCpri(context,ID);
+                    byte[] token = manager.getToken(context,ID).getBytes();
+                    int nonce = manager.getNonce(context,ID);
+                    String payload = null;
+
+
+                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                    PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                    String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+
+                    Gson gson = new Gson();
+                    Map<String,Object> result = new HashMap<>();
+                    result = gson.fromJson(resultJson,result.getClass());
+
+                    int check = (int) result.get("check");
+                    if(check == 0){
+                        String data = (String)result.get("data");
+                        /**
+                         * change UI
+                         */
+
+                    } else {
+                        String message = (String) result.get("message");
+                        Looper.prepare();
+                        Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                        Looper.loop();
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Log.d("getselfinfo",e.getMessage());
                 }
             }
-        });
+        }).start();
     }
 
     Runnable changeInfoUI = new Runnable() {
@@ -206,11 +269,13 @@ public class fragment3 extends Fragment implements View.OnClickListener {
             case R.id.changeinfo:
                 Intent intent3 = new Intent(getActivity(), ChangeSelfInfo.class);
                 intent3.putExtra("session",session);
+                intent3.putExtra("username",ID);
                 startActivity(intent3);
                 break;
             case R.id.changepsw:
                 Intent intent4 = new Intent(getActivity(), changepsw.class);
                 intent4.putExtra("session",session);
+                intent4.putExtra("username",ID);
                 startActivity(intent4);
                 break;
             case R.id.quit:
@@ -220,6 +285,8 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changetoken:
                 Intent intent5 = new Intent(getActivity(), changeToken.class);
+//                intent5.putExtra("session",session);
+                intent5.putExtra("username",ID);
                 startActivity(intent5);
                 break;
             default:

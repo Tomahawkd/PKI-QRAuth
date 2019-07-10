@@ -1,12 +1,14 @@
 package com.Vshows.PKI;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
+
+import com.Vshows.PKI.fragment.userInfoFragment;
+import com.Vshows.PKI.fragment.userLogFragment;
 
 public class index extends AppCompatActivity {
     public String session;
@@ -18,11 +20,6 @@ public class index extends AppCompatActivity {
 
         setContentView(R.layout.index);
 
-//        Intent intent = getIntent();
-//        session = intent.getStringExtra("session");
-//        Bundle bundle = new Bundle();
-//        bundle.putString("session",session);
-//        homePageFragment.setArguments(bundle);
         initView();
     }
 
@@ -31,14 +28,15 @@ public class index extends AppCompatActivity {
         BottomBar bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.setContainer(R.id.fl_container)
                 .setTitleBeforeAndAfterColor("#999999", "#ff5d5e")
-                .addItem(com.Vshows.PKI.fragment.fragment1.class,
-                        "日志",
-                        R.mipmap.u25,
-                        R.mipmap.u21)
-                .addItem(com.Vshows.PKI.fragment.fragment3.class,
+                .addItem(userInfoFragment.class,
                         "我的",
                         R.mipmap.u29,
                         R.mipmap.u33)
+                .addItem(userLogFragment.class,
+                        "日志",
+                        R.mipmap.u25,
+                        R.mipmap.u21)
+
                 .build();
 
 

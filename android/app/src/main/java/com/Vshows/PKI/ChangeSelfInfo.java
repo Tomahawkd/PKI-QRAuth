@@ -1,6 +1,7 @@
 package com.Vshows.PKI;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,11 +16,22 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Vshows.PKI.util.StringToPKey;
+import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
+import com.Vshows.PKI.util.keyManager;
+import com.google.gson.Gson;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
 
+import io.tomahawkd.pki.api.client.Connecter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -30,6 +42,7 @@ import okhttp3.Response;
 
 public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickListener {
     private String session;
+    private String ID;
 
     private Button conformButton;
     private EditText name,sex,phone,mail,sig;
@@ -49,6 +62,7 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
 
         Intent intent = getIntent();
         session = intent.getStringExtra("session");
+        ID = intent.getStringExtra("username");
         //Log.d("changeinfosession" ,session);
 
         handler = new Handler();
@@ -69,52 +83,108 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
     public void onClick(View view){
         switch (view.getId()){
             case R.id.confirm_info:
-                try{
-                    JSONObject jsonObject = new JSONObject()
-                            .put("name",name.getText().toString())
-                            .put("phone",phone.getText().toString())
-                            .put("email",mail.getText().toString())
-                            .put("bio",sig.getText().toString())
-                            .put("image_path",imagePath);
-                    if(sex.getText().toString().equals("男"))
-                        jsonObject.put("sex",1);
-                    else if (sex.getText().toString().equals("女"))
-                        jsonObject.put("sex",2);
-                    else
-                        jsonObject.put("sex",0);
-                    //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
-                    //base64解码
-                    //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
+//                try{
+//                    JSONObject jsonObject = new JSONObject()
+//                            .put("name",name.getText().toString())
+//                            .put("phone",phone.getText().toString())
+//                            .put("email",mail.getText().toString())
+//                            .put("bio",sig.getText().toString())
+//                            .put("image_path",imagePath);
+//                    if(sex.getText().toString().equals("男"))
+//                        jsonObject.put("sex",1);
+//                    else if (sex.getText().toString().equals("女"))
+//                        jsonObject.put("sex",2);
+//                    else
+//                        jsonObject.put("sex",0);
+//                    //String strBase64 = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.DEFAULT);
+//                    //base64解码
+//                    //String str2 = new String(Base64.decode(strBase64.getBytes(), Base64.DEFAULT));
+//
+//                    String url ="http://192.168.43.159/user/info/update/info/";
+//                    OkHttpClient client = new OkHttpClient();
+//                    RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+//                    Log.d("changeinfo","<<<<e="+jsonObject.toString());
+//                    final Request request = new Request.Builder()
+//                            .addHeader("cookie",session)
+//                            .url(url)
+//                            .post(body)
+//                            .build();
+//
+//                    Call call = client.newCall(request);
+//                    call.enqueue(new Callback() {
+//                        public void onFailure(Call call, IOException e) {
+//                            Log.d("changeinfoerror","<<<<e="+e);
+//                        }
+//
+//                        @Override
+//                        public void onResponse(Call call, Response response) throws IOException {
+//                            if(response.isSuccessful()) {
+//                                String jsonString = response.body().string();
+//                                Log.d("changesuccess","<<<<d="+jsonString);
+//                                handle_response(jsonString);
+//                            }
+//                        }
+//                    });
+//                }catch (JSONException e){
+//                    e.printStackTrace();
+//                }
+//                //showConfirmDialog();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Context context = getBaseContext();
+                            Connecter connecter = new Connecter();
+                            keyManager manager = new keyManager();
+                            String ua = SystemUtil.getSystemModel();
+                            String url = URLUtil.getChangeInfoURL(context);
 
-                    String url ="http://192.168.43.159/user/info/update/info/";
-                    OkHttpClient client = new OkHttpClient();
-                    RequestBody body = RequestBody.create(JSON,jsonObject.toString());
-                    Log.d("changeinfo","<<<<e="+jsonObject.toString());
-                    final Request request = new Request.Builder()
-                            .addHeader("cookie",session)
-                            .url(url)
-                            .post(body)
-                            .build();
+                            String Tpub = manager.getTpub(context);
+                            String Spub = manager.getSpub(context);
+                            String Cpri = manager.getCpri(context,ID);
+                            byte[] token = manager.getToken(context,ID).getBytes();
+                            int nonce = manager.getNonce(context,ID);
 
-                    Call call = client.newCall(request);
-                    call.enqueue(new Callback() {
-                        public void onFailure(Call call, IOException e) {
-                            Log.d("changeinfoerror","<<<<e="+e);
-                        }
+                            Gson gson = new Gson();
+                            Map<String,Object> info = new HashMap<>();
+                            info.put("name",name.getText().toString());
+                            info.put("phone",phone.getText().toString());
+                            info.put("email",mail.getText().toString());
+                            info.put("bio",sig.getText().toString());
+                            info.put("image_path",imagePath);
+                            if(sex.getText().toString().equals("男"))
+                                info.put("sex",1);
+                            else if (sex.getText().toString().equals("女"))
+                                info.put("sex",2);
+                            else
+                                info.put("sex",0);
+                            String payload = gson.toJson(info);
 
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            if(response.isSuccessful()) {
-                                String jsonString = response.body().string();
-                                Log.d("changesuccess","<<<<d="+jsonString);
-                                handle_response(jsonString);
+                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+
+                            Map<String,Object> result = new HashMap<>();
+                            result = gson.fromJson(resultJson,result.getClass());
+
+                            int check = (int) result.get("check");
+                            if(check == 0){
+
+                            } else {
+                                String message = (String) result.get("message");
+                                Looper.prepare();
+                                Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                                Looper.loop();
                             }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Log.d("loginit",e.getMessage());
                         }
-                    });
-                }catch (JSONException e){
-                    e.printStackTrace();
-                }
-                //showConfirmDialog();
+
+                    }
+                }).start();
                 break;
             default:
         }
