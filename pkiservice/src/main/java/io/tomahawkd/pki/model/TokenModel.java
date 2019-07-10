@@ -150,7 +150,7 @@ public class TokenModel {
 
 	public static TokenModel deserialize(byte[] data) throws CipherErrorException {
 
-		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid");
+		if (data.length != BYTE_ARRAY_SIZE) throw new IllegalArgumentException("Array length invalid: " + data.length);
 
 		byte[] tokenBytes = new byte[Integer.BYTES];
 		System.arraycopy(data, 0, tokenBytes, 0, Integer.BYTES);
