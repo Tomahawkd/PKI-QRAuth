@@ -222,7 +222,7 @@ public class Token {
                         responseMap.put("T", time);
                         responseMap.put("payload", data);
                     } else {
-                        responseMap.put("M", new Message<String>().setOK().setMessage("authentication failed").toJson());
+                        responseMap.put("M", new Message<String>().setError().setMessage("authentication failed").toJson());
                         responseMap.put("T", time);
                         responseMap.put("payload", data);
                     }
