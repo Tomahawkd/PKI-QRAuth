@@ -532,7 +532,7 @@ public class Token {
      * }
      */
     public String tokenListManagement(String body, String ip, String device) throws Exception {
-        return TokenUtils.tokenResponse(IP + "/token/list", body, ip, device, TpublicKey, privateKey);
+        return TokenUtils.tokenResponse(IP + "/user/token/list", body, ip, device, TpublicKey, privateKey);
     }
 
 
@@ -555,7 +555,7 @@ public class Token {
      * }
      */
     public String revokeToken(String body, String ip, String device) throws Exception {
-        return TokenUtils.tokenResponse(IP + "/token/revoke", body, ip, device, TpublicKey, privateKey);
+        return TokenUtils.tokenResponse(IP + "/user/token/revoke", body, ip, device, TpublicKey, privateKey);
     }
 
     /**
@@ -572,7 +572,7 @@ public class Token {
      * }
      */
     public String regenerateKeys(String body, String ip, String device) throws Exception {
-        return TokenUtils.tokenResponse(IP + "/keys/regen", body, ip, device, TpublicKey, privateKey);
+        return TokenUtils.tokenResponse(IP + "/user/keys/regen", body, ip, device, TpublicKey, privateKey);
     }
 
 
