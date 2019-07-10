@@ -6,29 +6,41 @@ $(document).ready(function () {
         data: JSON.stringify(generateInteractionPackage({})),
         dataType: "json",
         success: function (data) {
-            alert("成功！");
-            $("#name-display").append(data.name);
-            $("#name-input").val(data.name);
-            $("#bio-display").text(data.bio);
-            $("#bio-input").val(data.bio);
-            $("#phone-display").append(data.phone);
-            $("#phone-input").val(data.phone);
-            $("#email-display").append(data.email);
-            $("#email-input").val(data.email);
-            switch (data.sex) {
-                case 1:
-                    $("#sex-display").append("女");
-                    $("#sex-input").val("女");
-                    break;
-                case 2:
-                    $("#sex-display").append("男");
-                    $("#sex-input").val("男");
-                    break;
-                default:
-                    $("#sex-display").append("未知");
-                    $("#sex-input").val("未知");
+            var msg = JSON.parse(data.M);
+            if (msg) {
+                if (msg.status === 0) {
+                    var payload = parseInteractionPackage(data);
+                    if (payload !== {}) {
+                        alert("成功！");
+                        var sex = ["女", "男", "未知"]; //the mapping of number and sex.
+
+                        // store the infomation to storage
+                        sessionStorage.setItem("username", data.name);
+                        sessionStorage.setItem("bio", data.bio);
+                        sessionStorage.setItem("phone", data.phone);
+                        sessionStorage.setItem("email", data.email);
+                        sessionStorage.setItem("sex", sex[data.sex]);
+
+                        //display the infomation
+                        $("#name-display").append(data.name);
+                        $("#bio-display").text(data.bio);
+                        $("#phone-display").append(data.phone);
+                        $("#email-display").append(data.email);
+                        $("#sex-display").append(sex[data.sex]);
+
+                        $("#name-input").val(data.name);
+                        $("#bio-input").val(data.bio);
+                        $("#phone-input").val(data.phone);
+                        $("#email-input").val(data.email);
+                        $("#sex-input").val(sex[data.sex]);
+
+                        console.log(data.image);
+                    }
+                } else if (msg.status === 1) {
+                    $(".error_box").text("注册失败！");
+                }
             }
-            console.log(data.image);
+
         },
         error: function (e) {
             alert("错误！");
@@ -56,10 +68,13 @@ $(document).ready(function () {
             formObject[item.name] = item.value;
         });
 
+        var sex = ["女", "男", "未知"];
+        formObject["sex"] = sex[sex.find(formObject["sex"])];
+
         $.ajax({
             url: "/user/info/update/info",
             type: "post",
-            data: JSON.stringify(formObject),
+            data: JSON.stringify(generateInteractionPackage(formObject)),
             contentType: "application/json; charset=utf-8",
             processData: false,
             success: function (data) {
@@ -72,9 +87,6 @@ $(document).ready(function () {
     });
 });
 
-function update() {
-
-}
 
 function showProfileTab() {
     $('.nav-link.active').removeClass('active');

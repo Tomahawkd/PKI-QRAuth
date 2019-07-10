@@ -70,17 +70,17 @@ $(document).ready(function () {
             dataType: "json",
             success: function (data) {
                 var msg = JSON.parse(data.M);
-                if(msg) {
-                if (msg.status == -1) {
-                    $(".error_box").text("用户名不存在！");
-                } else if (msg.status == 0) {
-                    if(validateInitialResponsePackage(data)) {
-                    $(".error_box").text("登录成功！");
-                    window.location.href = "home.html";
+                if (msg) {
+                    if (msg.status == -1) {
+                        $(".error_box").text("用户名不存在！");
+                    } else if (msg.status == 0) {
+                        if (validateInitialResponsePackage(data)) {
+                            $(".error_box").text("登录成功！");
+                            window.location.href = "home.html";
+                        }
+                    } else if (data.status == 1) {
+                        $(".error_box").text("密码错误！");
                     }
-                } else if (data.status == 1) {
-                    $(".error_box").text("密码错误！");
-                }
                 }
             },
             error: function (e) {
@@ -136,35 +136,35 @@ $(document).ready(function () {
      * implements the register event
      */
     $("#register_btn").click(function () {
-        if (!$("#register_form").valid()) {
+        var form = $("#register_form");
+        if (!form.valid()) {
             return;
         }
 
         var formObject = {};
-        var formArray = $("#register_form").serializeArray();
+        var formArray = form.serializeArray();
         $.each(formArray, function (i, item) {
             formObject[item.name] = item.value;
         });
-        var package = generateInitialPackage(formObject);
         $.ajax({
             url: "/user/register",
             type: "post",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(package),
+            data: JSON.stringify(generateInitialPackage(formObject)),
             dataType: "json",
             success: function (data) {
                 var msg = JSON.parse(data.M);
-                if(msg) {
-                if (msg.status == -1) {
-                    $(".error_box").text("该用户名已存在！");
-                } else if (msg.status == 0) {
-                    if(validateInitialResponsePackage(data)) {
-                        $(".error_box").text("注册成功！");
-                        window.location.href = "index.html";
+                if (msg) {
+                    if (msg.status == -1) {
+                        $(".error_box").text("该用户名已存在！");
+                    } else if (msg.status == 0) {
+                        if (validateInitialResponsePackage(data)) {
+                            $(".error_box").text("注册成功！");
+                            window.location.href = "index.html";
+                        }
+                    } else if (msg.status == 1) {
+                        $(".error_box").text("注册失败！");
                     }
-                } else if (msg.status == 1) {
-                    $(".error_box").text("注册失败！");
-                }
                 }
             },
             error: function (e) {

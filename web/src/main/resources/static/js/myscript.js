@@ -29,6 +29,13 @@ $(document).ready(function () {
 
 
 function logout() {
+    $.ajax({
+        url: "/user/logout",
+        type: "post",
+        data: JSON.stringify(generateInteractionPackage({})),
+        contentType: "json/applicetion; charset=utf-8",
+        dataType: "json"
+    });
     sessionStorage.clear();
     localStorage.clear();
     window.location.href = "index.html";
