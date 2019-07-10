@@ -1,5 +1,6 @@
 package io.tomahawkd.pki.exceptions;
 
+import com.google.gson.Gson;
 import io.tomahawkd.pki.model.SystemLogModel;
 import io.tomahawkd.pki.util.Message;
 import io.tomahawkd.pki.util.ThreadContext;
@@ -19,14 +20,14 @@ public class ControllerExceptionHandler {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MalformedJsonException.class)
 	@ResponseBody
-	public Map<String, String> malformedJson(Exception e) {
+	public String malformedJson(Exception e) {
 		return handle(e);
 	}
 
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler({NullPointerException.class, NotFoundException.class})
 	@ResponseBody
-	public Map<String, String> notFound(Exception e) {
+	public String notFound(Exception e) {
 		return handle(e);
 
 	}
@@ -34,7 +35,7 @@ public class ControllerExceptionHandler {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(CipherErrorException.class)
 	@ResponseBody
-	public Map<String, String> cipherIssue(Exception e) {
+	public String cipherIssue(Exception e) {
 		return handle(e);
 
 	}
@@ -42,7 +43,7 @@ public class ControllerExceptionHandler {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(Base64EncodeException.class)
 	@ResponseBody
-	public Map<String, String> base64Issue(Exception e) {
+	public String base64Issue(Exception e) {
 		return handle(e);
 
 	}
@@ -50,12 +51,12 @@ public class ControllerExceptionHandler {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
 	@ResponseBody
-	public Map<String, String> others(Exception e) {
+	public String others(Exception e) {
 		e.printStackTrace();
 		return handle(new Exception("Internal Error"));
 	}
 
-	private Map<String, String> handle(Exception e) {
+	private String handle(Exception e) {
 
 		String error = e.getMessage() == null ? "Unknown Error" : e.getMessage();
 
@@ -69,6 +70,6 @@ public class ControllerExceptionHandler {
 		Map<String, String> response = new HashMap<>();
 		if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
 		response.put("M", message.toJson());
-		return response;
+		return new Gson().toJson(response);
 	}
 }
