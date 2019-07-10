@@ -36,7 +36,7 @@ $(document).ready(function () {
             processData: false,
             success: function (data) {
                 update();
-                console.log(data);
+                window.location.href = "home.html";
             },
             error: function (data) {
                 console.log(data);
@@ -94,8 +94,6 @@ $.ajax({
                         $("#phone-input").val(payload.phone);
                         $("#email-input").val(payload.email);
                         $("#sex-input").val(sex[payload.sex]);
-
-                        window.location.href = "home.html";
                     }
                 } else if (msg.status === 1) {
                     $(".error_box").text("注册失败！");
