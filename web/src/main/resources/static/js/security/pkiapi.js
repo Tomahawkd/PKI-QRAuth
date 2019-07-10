@@ -53,13 +53,14 @@ function generateQRCode(QRCodeNonce, QRCodeElement) {
  * @param QRCodeElement the html "div" element where the QRCode is placed
  */
 function polling(pollingUrl, targetUrl, QRCodeElement) {
-    var nonce = sessionStorage.getItem("QRCodeNonce");
+    var nonce2 = sessionStorage.getItem("QRCodeNonce");
     var currentStatus = sessionStorage.getItem("currentStatus") ? sessionStorage.getItem("currentStatus") : 0;
     $.ajax({
         url: pollingUrl,
         type: "post",
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: JSON.stringify({nonce: nonce}),
+        data: JSON.stringify({nonce2: nonce2}),
         success: function (data) {
             if (data.status >= currentStatus + 1) {
                 if (data.status === 0) {
@@ -149,28 +150,32 @@ function validateQRInitialResponsePackage(dataPackage) {
 function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function) {
     if (poller !== null)
         clearInterval(poller);
-    QRCodeElement.clear("click");
+    QRCodeElement.unbind("click");
     QRCodeElement.click(click_function ? click_function : function () {
         QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_function);
     });
 
     generateKctAndIv();
-    var data = {kct: sessionStorage.getItem("kct"), iv: sessionStorage.getItem("iv")};
+    var encrypt = new JSEncrypt();
+    encrypt.setPrivateKey('-----BEGIN PUBLIC KEY-----' + localStorage.getItem("TPub") + '-----END PUBLIC KEY-----');
+    var data = {K: encrypt.encrypt(sessionStorage.getItem("kct")), iv: encrypt.encrypt(sessionStorage.getItem("iv"))};
+    console.log(data);
     $.ajax({
         url: QRCodeUrl,
         type: "post",
         data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
             QRCodeElement.empty();
-            sessionStorage.setItem("QRCodeNonce", data.nonce);
-            generateQRCode(data.nonce, QRCodeElement);
+            decryptNonce2(data.nonce2);
+            generateQRCode(sessionStorage.getItem("QRCodeNonce"), QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
             }, 1000);
         },
         error: function () {
-            QRCodeElement.innerHTML("<p>获取二维码失败，点击刷新</p>");
+            QRCodeElement.innerHTML = "<p>获取二维码失败，点击刷新</p>";
         }
     });
 }
@@ -282,6 +287,17 @@ function validateInitialResponsePackage(dataPackage) {
     localStorage.setItem("nonce", nonce);
     localStorage.setItem("token", token);
     return true;
+}
+
+
+function decryptNonce2(encryptNonce) {
+    var kct = HexString2Bytes(sessionStorage.getItem("kct"));
+    var iv = HexString2Bytes(sessionStorage.getItem("iv"));
+
+    var aesCbc = new aesjs.ModeOfOperation.cbc(kct, iv);
+    var nonce2 = bytesToInt(cbcUnpading(aesCbc.decrypt(HexString2Bytes(b64tohex(encryptNonce)))));
+
+    sessionStorage.setItem("QRCodeNonce", nonce2);
 }
 
 

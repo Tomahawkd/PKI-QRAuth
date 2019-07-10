@@ -231,6 +231,7 @@ public class Token {
         }.getType());
         String Kct = bodydata.get("K");
         String iv = bodydata.get("iv");
+        System.out.println("receive:"+Kct+"    "+iv);
         int t = SecurityFunctions.generateRandom();
         String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
@@ -243,21 +244,31 @@ public class Token {
 
         String content = new Gson().toJson(requestMap);
         Map<String, Object> result = request(content, IP + "/qr/genqr");
-        if ((boolean) result.get("status"))
-            return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson()));
+        System.out.println("8");
+        if ((boolean) result.get("status")) {
+            System.out.println("error");
+            System.out.println( result.get("message"));
+            return new Gson().toJson(new HashMap<>().put("M",
+                    new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson()));
 
+        }
+        System.out.println("9");
         Map<String, String> eresult = new Gson().fromJson((String) result.get("message"), new TypeToken<Map<String, String>>() {
         }.getType());
+        System.out.println("10");
         int t1 = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(privateKey, Base64.getDecoder().decode(eresult.get("T")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
         if (t1 != t + 1)
             return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(1).setMessage("time authentication failed").toJson()));
+        System.out.println("11");
         Message<String> M = new Gson().fromJson(eresult.get("M"), new TypeToken<Message<String>>() {
         }.getType());
         if (M.getStatus() == 1)
             return new Gson().toJson(new HashMap<>().put("M", new Message<String>().setStatus(1).setMessage(M.getMessage()).toJson()));
+        System.out.println(12);
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("nonce2", eresult.get("nonce2"));
         responseMap.put("M", new Message<String>().setOK().setMessage(M.getMessage()).toJson());
+        System.out.println("success");
         return new Gson().toJson(responseMap);
     }
 
