@@ -15,7 +15,7 @@ public class ControllerExceptionHandler {
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Not found")
-	@ExceptionHandler({NullPointerException.class, NotFoundException.class})
+	@ExceptionHandler({NotFoundException.class})
 	public void notFound(Exception e) {
 
 	}
