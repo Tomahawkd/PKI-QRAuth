@@ -115,7 +115,7 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         phone_information  = (TextView)view.findViewById(R.id.phone_infomation);
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
-        session = getActivity().getIntent().getStringExtra("session");
+//        session = getActivity().getIntent().getStringExtra("session");
         ID = getActivity().getIntent().getStringExtra("username");
 
         //Log.d("sessin" ,session);
@@ -285,7 +285,7 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changetoken:
                 Intent intent5 = new Intent(getActivity(), changeToken.class);
-                intent5.putExtra("session",session);
+//                intent5.putExtra("session",session);
                 intent5.putExtra("username",ID);
                 startActivity(intent5);
                 break;

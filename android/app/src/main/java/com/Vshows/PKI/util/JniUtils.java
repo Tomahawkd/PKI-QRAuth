@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Objects;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -28,9 +29,12 @@ public class JniUtils {
 
     public native static byte[] getKeyValue();
     public native static byte[] getIv();
+    // 0 : sucess  1: fail
+    public native static int checkSign(Object object);
 
     private static byte[]keyValue;
     private static byte[]iv;
+
 
 
 
