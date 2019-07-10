@@ -458,7 +458,7 @@ function generateInteractionPackage(data) {
  */
 function parseInteractionPackage(data) {
     if (!validateTimeStamp(data.T)) return null;
-    return JSON.parse(data.data);
+    return JSON.parse(data.payload);
 }
 
 
