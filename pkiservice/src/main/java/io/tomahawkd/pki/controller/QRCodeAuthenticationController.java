@@ -216,7 +216,7 @@ public class QRCodeAuthenticationController {
 	 * @return {
 	 * "M": "result message
 	 * {
-	 * "type": "number(-1:not exist, 0:not scanned, 1:scanned, 2:confirmed)",
+	 * "status": number(-1:not exist, 0:not scanned, 1:scanned, 2:confirmed),
 	 * "message": "message"
 	 * }"
 	 * "T": "Base64 encoded Kc,t encrypted challenge number+1"
@@ -252,14 +252,11 @@ public class QRCodeAuthenticationController {
 		String tResponse = Utils.responseChallenge(requestMap.get("T"), spub);
 		ThreadContext.getContext().set(tResponse);
 
-		Map<String, String> message = new HashMap<>();
 		QrStatusModel model = qrStatusService.getQrStatusByNonce(nonce);
 		if (model == null) {
-			message.put("type", "-1");
-			message.put("message", "qrcode invalid");
 
 			Map<String, String> responseMap = new HashMap<>();
-			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("M", new Message<String>().setStatus(-1).setMessage("qrcode invalid").toJson());
 			responseMap.put("T", tResponse);
 
 			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
@@ -267,20 +264,16 @@ public class QRCodeAuthenticationController {
 
 			return new Gson().toJson(responseMap);
 		} else if (model.getStatus() != 1 && model.getStatus() != 2) {
-			message.put("type", "0");
-			message.put("message", "qrcode not scanned");
 
 			Map<String, String> responseMap = new HashMap<>();
-			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("M", new Message<String>().setStatus(0).setMessage("qrcode not scanned").toJson());
 			responseMap.put("T", tResponse);
 
 			return new Gson().toJson(responseMap);
 		} else if (model.getStatus() == 1) {
-			message.put("type", "1");
-			message.put("message", "qrcode scanned");
 
 			Map<String, String> responseMap = new HashMap<>();
-			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("M", new Message<String>().setStatus(1).setMessage("qrcode scanned").toJson());
 			responseMap.put("T", tResponse);
 
 			systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
@@ -331,11 +324,8 @@ public class QRCodeAuthenticationController {
 			userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 					device, ip, "Token initialized via qr code");
 
-			message.put("type", "2");
-			message.put("message", "qrcode confirmed");
-
 			Map<String, String> responseMap = new HashMap<>();
-			responseMap.put("M", new Gson().toJson(message));
+			responseMap.put("M", new Message<String>().setStatus(2).setMessage("qrcode confirmed").toJson());
 			responseMap.put("T", tResponse);
 			responseMap.put("KP", kpResponse);
 			responseMap.put("EToken", etokenResponse);
