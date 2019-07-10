@@ -149,7 +149,7 @@ public class TokenUtils {
 		Message<T> responseMessage = null;
 		if (message.isOk()) {
 			systemLogService.insertLogRecord(TokenUtils.class.getName(),
-					"tokenValidate", SystemLogModel.WARN,
+					"tokenValidate", SystemLogModel.INFO,
 					"Context loaded, invoke controller callback");
 
 			responseMessage =
