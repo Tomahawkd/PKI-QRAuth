@@ -244,8 +244,7 @@ public class QRCodeAuthenticationController {
 			device = d[1];
 		}
 
-		int nonce = ByteBuffer.wrap(
-						Utils.base64Decode(requestMap.get("nonce2"))).order(ByteOrder.LITTLE_ENDIAN).getInt();
+		int nonce = Integer.parseInt(requestMap.get("nonce2"));
 
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
 				"queryQRStatus", SystemLogModel.DEBUG, "nonce decryption complete.");
