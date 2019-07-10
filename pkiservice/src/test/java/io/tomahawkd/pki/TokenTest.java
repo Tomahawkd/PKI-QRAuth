@@ -40,11 +40,13 @@ public class TokenTest {
 		System.out.println(auth);
 		PublicKey k = SecurityFunctions.readPublicKey(auth);
 
+		// client generate iv/kct
 		byte[] iv = SecurityFunctions.generateRandom(16);
 		byte[] kct = SecurityFunctions.generateRandom(32);
 		String ivString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k, iv));
 		String kctString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(k, kct));
 
+		// server user info and challenge number
 		String userTag = Utils.base64Encode(SecurityFunctions.generateHash("1"));
 		String system = "cab4af0fc499491eb9bb16120e3ae195";
 		String idString =
@@ -76,6 +78,7 @@ public class TokenTest {
 				.order(ByteOrder.LITTLE_ENDIAN).getInt();
 		assertThat(tRes).isEqualTo(t + 1);
 
+		// public;private
 		String[] kp =
 				new String(SecurityFunctions.decryptSymmetric(kct, iv, Utils.base64Decode(result.get("KP"))))
 						.split(";");
@@ -89,6 +92,7 @@ public class TokenTest {
 		byte[] token = new byte[etoken.length - Integer.BYTES];
 		System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
 
+		// next validate
 		nonce++;
 		byte[] tokenArr = ByteBuffer.allocate(token.length + Integer.BYTES)
 				.order(ByteOrder.LITTLE_ENDIAN).putInt(nonce).put(token).array();

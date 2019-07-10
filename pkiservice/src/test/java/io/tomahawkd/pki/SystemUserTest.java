@@ -23,6 +23,7 @@ public class SystemUserTest {
 	private TestRestTemplate testRestTemplate;
 
 
+	@Test
 	public void register() throws IOException {
 
 		String body = "{\"user\": \"123\", \"pass\": \"123\"}";

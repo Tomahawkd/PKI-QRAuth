@@ -47,7 +47,7 @@ public class TokenUtils {
 	 * @param data {
 	 *             "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
 	 *             "T": "Base64 encoded Kt public key encrypted challenge number",
-	 *             "D": "Device information(device;ip)",
+	 *             "D": "Device information(ip;device)",
 	 *             "M": "service message" (optional)
 	 *             }
 	 * @return {
@@ -87,8 +87,8 @@ public class TokenUtils {
 		String device = "";
 		String ip = "";
 		if (d.length == 2) {
-			device = d[0];
-			ip = d[1];
+			ip = d[0];
+			device = d[1];
 		}
 
 		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMessage.getToken());
@@ -133,6 +133,14 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.WARN,
 				"get system context: " + systemKeyModel.toString());
 
+		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
+		systemLogService.insertLogRecord(TokenUtils.class.getName(),
+				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
+
+		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
+		ThreadContext.getContext().set(tResponse);
+
+
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
 				device, ip, "Tokenid " + tokenModel.getTokenId() +
 						" used with status: " + message.getStatus());
@@ -147,12 +155,6 @@ public class TokenUtils {
 					callback.invoke(requestMessage, userKeyModel, tokenModel, systemKeyModel, message, device, ip);
 		}
 
-		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
-		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
-
-		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
-		ThreadContext.getContext().set(tResponse);
 		String kResponse = userKeyModel.getPublicKey();
 
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),

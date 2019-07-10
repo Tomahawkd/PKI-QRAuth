@@ -11,4 +11,6 @@ public interface UserPasswordService {
 	int addUser(UserPasswordModel model);
 
 	boolean updateUserPassword(UserPasswordModel model, String new_password) throws Exception;
+
+	void deleteUser(int index);
 }

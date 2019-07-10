@@ -30,8 +30,7 @@ public class PkiApplication {
 					fileToDelete.delete();
 				}
 
-			SecurityFunctions.generateNewAuthenticateServerKeys(
-					"./pkiservice/" + FileUtil.rootPath + "/resources/");
+			SecurityFunctions.generateNewAuthenticateServerKeys(FileUtil.rootPath + "/resources/");
 		}
 
 		// Alright, launch the server

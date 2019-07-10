@@ -42,68 +42,62 @@
                             <div class="col-md-12 panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-comment"></i>编辑信息</h3><br>
                             </div>
-                            <form id="update-info-form">
-
-                                <div class="col-md-12">
-                                    <div class="form-group row">
-                                        <div class="col-md-5"></div>
-                                        <div class="col-md-2">
-                                            <img src="img/avatar-1.jpg" class="img-fluid rounded-circle"
-                                                 id="show-image">
-                                            <input name="image" type="file" id="image-file" accept="image/*">
-                                        </div>
-                                        <div class="col-md-5"></div>
+                            <div class="col-md-12">
+                                <div class="form-group row">
+                                    <div class="col-md-5"></div>
+                                    <div class="col-md-2">
+                                        <img src="img/avatar-1.jpg" class="img-fluid rounded-circle"
+                                             id="show-image">
+                                        <input name="image" type="file" id="image-file" accept="image/*">
                                     </div>
+                                    <div class="col-md-5"></div>
                                 </div>
+                            </div>
+                            <form id="update-info-form" class="col-md-12">
                                 <div class="col-md-12">
                                     <div class="form-group row">
                                         <label for="bio-input" style="width: 85px;"
                                                class=" col-form-label">个人简介</label>
                                         <div class="col-9">
-                                            <input class="form-control" type="text" value="Steena Ben"
-                                                   id="bio-input" name="bio">
+                                            <input class="form-control" type="text" id="bio-input" name="bio">
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6 ">
-                                    <div class="form-group row">
-                                        <label for="name-input" style="width: 85px;"
-                                               class=" col-form-label">姓名</label>
-                                        <div class="col-9">
-                                            <input class="form-control" type="text" value="Steena Ben"
-                                                   id="name-input" name="name">
+                                <div class="row mx-2">
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label for="name-input" style="width: 85px;"
+                                                   class=" col-form-label">姓名</label>
+                                            <div class="col-9">
+                                                <input class="form-control" type="text" id="name-input" name="name">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="email-input" style="width: 85px;"
+                                                   class=" col-form-label">邮箱</label>
+                                            <div class="col-9">
+                                                <input class="form-control" type="email" id="email-input" name="email">
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="email-input" style="width: 85px;"
-                                               class=" col-form-label">邮箱</label>
-                                        <div class="col-9">
-                                            <input class="form-control" type="email" value="steena@gmail.com"
-                                                   id="email-input" name="email">
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label for="sex-input" style="width: 85px;"
+                                                   class=" col-form-label">性别</label>
+                                            <div class="col-9">
+                                                <input class="form-control" type="text" id="sex-input" name="sex">
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group row">
-                                        <label for="sex-input" style="width: 85px;"
-                                               class=" col-form-label">性别</label>
-                                        <div class="col-9">
-                                            <input class="form-control" type="text" value="Programming"
-                                                   id="sex-input" name="sex">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
-                                        <div class="col-9">
-                                            <input class="form-control" type="tel" value="+91-(555)-555-5555"
-                                                   id="phone-input" name="phone">
+                                        <div class="form-group row">
+                                            <label for="phone-input" style="width: 85px;" class=" col-form-label">电话</label>
+                                            <div class="col-9">
+                                                <input class="form-control" type="tel" id="phone-input" name="phone">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </form>
-                        </div>
-
-
+                            </div>
                         <div class="row mx-2">
                             <div class="col-md-4"></div>
                             <div class="col-md-4">
@@ -146,7 +140,7 @@
         console.log("change image finish");
     });
 
-    //方式一 Jquery实现
+
     $("#save-profile-btn").click(function () {
         var formArray = $("#update-info-form").serializeArray();
         var formObject = {};
@@ -168,6 +162,4 @@
             }
         });
     });
-
-
 </script>

@@ -1,5 +1,8 @@
 package io.tomahawkd.pki.api.server;
 
-public interface ReturnDataFunction<P,T,R> {
-    R apply(P message,T data);
+
+import io.tomahawkd.pki.api.server.util.MalformedJsonException;
+
+public interface ReturnDataFunction<T,R> {
+    R apply( T data) throws MalformedJsonException;
 }
