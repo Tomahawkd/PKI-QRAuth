@@ -71,8 +71,10 @@ public class ControllerExceptionHandler {
 
 		message.setMessage(e.getMessage() == null ? message.getMessage() : e.getMessage());
 
-		data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
-				"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + message.getMessage());
+		if (data.getLog() != null)
+			data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
+					"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + message.getMessage());
+
 		String tResponse = data.getTime();
 
 		if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
