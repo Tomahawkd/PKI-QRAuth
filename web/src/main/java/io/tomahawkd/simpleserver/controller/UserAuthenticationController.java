@@ -116,14 +116,12 @@ public class UserAuthenticationController {
                         if (index != -1) {  //登陆成功
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
                                     SystemLogModel.OK, "User " + username + " login successfully");
-                            HttpSession session = request.getSession();
+                          /*  HttpSession session = request.getSession();
                             session.setAttribute("userid", index);//用户名存入该用户的session 中
                             session.setAttribute("username", username);//用户名存入该用户的session 中
                             redisTemplate.opsForValue().set("loginUser:" + index, session.getId());
+*/
 
-                            //Cookie cookie = new Cookie("SESSIONID",session.getId());
-                            //cookie.setPath(request.getContextPath());
-                            //response.addCookie(cookie);
                             return new Message<>(index, "success");
                         } else {
                             systemLogService.insertLogRecord(UserAuthenticationController.class.getName(), "userLogin",
