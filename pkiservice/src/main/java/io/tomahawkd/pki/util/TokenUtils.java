@@ -121,7 +121,7 @@ public class TokenUtils {
 			throw new NotFoundException("User not found");
 		}
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.WARN,
+				"tokenValidate", SystemLogModel.INFO,
 				"get user context: " + userKeyModel.toString());
 
 		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
@@ -132,7 +132,7 @@ public class TokenUtils {
 			throw new NotFoundException("System not found");
 		}
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.WARN,
+				"tokenValidate", SystemLogModel.INFO,
 				"get system context: " + systemKeyModel.toString());
 
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
