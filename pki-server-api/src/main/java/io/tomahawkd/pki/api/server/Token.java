@@ -23,9 +23,11 @@ public class Token {
     private static PublicKey TpublicKey;
     private static String systemid;
 
-    // private static final String IP = "http://39.106.80.38";
-    private static final String IP = "http://192.168.2.110";
-    private static Token instance;
+
+
+    private static final String IP = "http://192.168.2.110";//"http://39.106.80.38";
+
+  private static Token instance;
 
     public static Token getInstance() {
         if (instance == null) instance = new Token();
@@ -61,14 +63,14 @@ public class Token {
     }
 
     /**
+     * @param {"payload": "Base64 encoded Ks public key encrypted (username,password)",
+     *                    * * "S": "Base64 encoded Ks public key encrypted (Kc,s,time1)",
+     *                    * * "K": "Base64 encoded Kt public key encrypted Kc,t",
+     *                    * * "iv": "Base64 encoded Kt public key encrypted iv"}
      * @return {"EToken": "Base64 encoded Kc public key encrypted token",
      * "M": {"status": (number 0,1,2),"message": "status description"},
      * "KP": "Base64 encoded Kc,t encrypted (Kc public key,Kc private key)",
      * "T": "Base64 encoded Kc public key encrypted (time1+1)"}
-     * @param body {"payload": "Base64 encoded Ks public key encrypted (username,password)",
-     * * * "S": "Base64 encoded Ks public key encrypted (Kc,s,time1)",
-     * * * "K": "Base64 encoded Kt public key encrypted Kc,t",
-     * * * "iv": "Base64 encoded Kt public key encrypted iv"}
      */
     public String acceptInitializeAuthenticationMessage(String body, String ip, String device,
                                                         ThrowableFunction<String, Message<String>> callback,
@@ -79,9 +81,20 @@ public class Token {
 
         String payload = bodyData.get("payload");
         Message<String> userMessage = callback.apply(payload);
-        if (userMessage.getStatus() == -1)
-            return new Gson().toJson(new HashMap<>().put("M",
-                    new Message<String>().setStatus(-1).setMessage(" failed").toJson()));
+
+        Map<String, String> responseMap = new HashMap<>();
+
+        if (userMessage.getStatus() == -1)  //注册 用户已存在  登录  用户不存在
+        {
+            responseMap.put("M", new Message<String>().setStatus(-1).setMessage(" failed").toJson());
+            return new Gson().toJson(responseMap);
+        }
+
+        if (userMessage.getStatus() == -2)//注册失败  密码错误
+        {
+            responseMap.put("M", new Message<String>().setStatus(-1).setMessage(" failed").toJson());
+            return new Gson().toJson(responseMap);
+        }
 
         int t = SecurityFunctions.generateRandom();
         String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey,
@@ -96,7 +109,6 @@ public class Token {
         requestMap.put("D", ip + ";" + device);
         requestMap.put("T", time2);
 
-        Map<String, String> responseMap = new HashMap<>();
 
         try {
             String target_url = IP + "/token/init";
@@ -133,6 +145,9 @@ public class Token {
                     responseMap.put("EToken", receive.get("EToken"));
                     responseMap.put("KP", receive.get("KP"));
                     responseMap.put("T", time);
+
+                    System.out.println("initialize success");
+
                     return new Gson().toJson(responseMap);
                 } else throw new Exception("Time authentication error");
             } else throw new Exception("Message status error");
@@ -145,19 +160,19 @@ public class Token {
     }
 
     /**
+     * @param body {"payload": "Base64 encoded data",
+     *             * "EToken": "Base64 encoded Kt public key encrypted (token,nonce+1)",
+     *             * payload
+     *             * "T": "Base64 encoded Ks public key encrypted time1"}
      * @return {"T": "Base64 encoded Kc public key encrypted token",
      * "M": {
      * "status": (number 0,1,2),"message":
      * "status description"
      * }
      * "payload": "Base64 encoded Kc public key encrypted data"}
-     * @param body {"payload": "Base64 encoded data",
-     * * "EToken": "Base64 encoded Kt public key encrypted (token,nonce+1)",
-     * * payload
-     * * "T": "Base64 encoded Ks public key encrypted time1"}
      */
     public String authentication(String body, String ip, String device,
-                                 ReturnDataFunction<String,String, String> callback) throws Exception {
+                                 ReturnDataFunction<String, String, String> callback) throws Exception {
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
 
@@ -179,6 +194,7 @@ public class Token {
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
                     new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
+            System.out.println((String)ereceive.get("message"));
             return new Gson().toJson(responseMap);
         }
         TokenResponseMessage<String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -186,7 +202,7 @@ public class Token {
                 }.getType());
 
         Message<String> message = receive.getMessage();
-
+        System.out.println(message.toJson());
         if (message.isOk()) {
             int t1 = ByteBuffer.wrap(
                     SecurityFunctions.decryptAsymmetric(privateKey, Utils.base64Decode(receive.getTime())))
@@ -206,6 +222,7 @@ public class Token {
                 responseMap.put("M", new Message<String>().setOK().setMessage("authentication success").toJson());
                 responseMap.put("T", time);
                 responseMap.put("payload", data);
+                System.out.println("authentication scaaess");
             } else {
                 responseMap.put("M", new Message<String>().setStatus(2).setMessage("time auth failed").toJson());
             }
@@ -218,8 +235,8 @@ public class Token {
 
     /**
      * @param body { "K": "Base64 encoded Kt public key encrypted Kct"
-     *          "iv": "Base64 encoded Kt public key encrypted iv"
-     *          }
+     *             "iv": "Base64 encoded Kt public key encrypted iv"
+     *             }
      * @return {
      * "nonce2": "Base64 encoded Kc encrypted nonce2"
      * "M": {"status": 0:success,1:time authentication failed,2:other error,
@@ -242,11 +259,11 @@ public class Token {
 
         String content = new Gson().toJson(requestMap);
         Map<String, Object> result = request(content, IP + "/qr/genqr");
-      
+
         Map<String, String> responseMap = new HashMap<>();
 
-        if ((boolean) result.get("status")){
-            responseMap.put("M",new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
+        if ((boolean) result.get("status")) {
+            responseMap.put("M", new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -257,15 +274,15 @@ public class Token {
         Message<String> message = new Gson().fromJson(eresult.get("M"), new TypeToken<Message<String>>() {
         }.getType());
 
-        if (message.isError()){
-            responseMap.put("M",new Message<String>().setStatus(1).setMessage(message.getMessage()).toJson());
+        if (message.isError()) {
+            responseMap.put("M", new Message<String>().setStatus(1).setMessage(message.getMessage()).toJson());
             return new Gson().toJson(responseMap);
         }
 
         int t1 = ByteBuffer.wrap(SecurityFunctions.decryptAsymmetric(privateKey,
                 Base64.getDecoder().decode(eresult.get("T")))).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
-        if (t1 != t + 1){
+        if (t1 != t + 1) {
             responseMap.put("M",
                     new Message<String>().setStatus(1).setMessage("time authentication failed").toJson());
             return new Gson().toJson(responseMap);
@@ -273,16 +290,17 @@ public class Token {
 
         responseMap.put("nonce2", eresult.get("nonce2"));
         responseMap.put("M", new Message<String>().setOK().setMessage(message.getMessage()).toJson());
+        System.out.println("QRGenerate success");
         return new Gson().toJson(responseMap);
     }
 
     /**
      * @param body { "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-     *          "T": "Base64 encoded Ks public key encrypted challenge number",
-     *          M:{
-     *          status: 1  2
-     *          N:
-     *          }
+     *             "T": "Base64 encoded Ks public key encrypted challenge number",
+     *             M:{
+     *             status: 1  2
+     *             N:
+     *             }
      * @return {
      * "M": "
      * {
@@ -334,6 +352,7 @@ public class Token {
                 String time = Utils.responseChallenge(bodydata.get("T"), Kcpub);
                 responseMap.put("T", time);
                 responseMap.put("M", new Message<String>().setOK().setMessage(message.getMessage()).toJson());
+                System.out.println("QRUpgrade success");
                 return new Gson().toJson(responseMap);
             }
             responseMap.put("M",
@@ -350,9 +369,9 @@ public class Token {
     /**
      * -
      *
+     * @param body nonce2
      * @return M:{type: -1 not exists 0 not scanned 1 scanned 2 confimed} if type==2  EToken :  KP:
      * if type==2  EToken  KP
-     * @param body nonce2
      */
     public String rolling(String body, String ip, String device) throws Exception {
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
@@ -375,7 +394,7 @@ public class Token {
 
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
+                    new Message<String>().setStatus(-2).setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
         Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -404,6 +423,7 @@ public class Token {
             if (statusMessage.getStatus() == 2) { // confirmed
                 responseMap.put("KP", receive.get("KP"));
                 responseMap.put("EToken", receive.get("EToken"));
+                System.out.println("confirmed");
             }
 
             return new Gson().toJson(responseMap);
@@ -476,9 +496,9 @@ public class Token {
 
     /**
      * @param body { "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-     *          "T": "Base64 encoded Ks public key encrypted challenge number",
-     *          <p>
-     *          }
+     *             "T": "Base64 encoded Ks public key encrypted challenge number",
+     *             <p>
+     *             }
      * @return {
      * "
      * "M": "
@@ -496,8 +516,8 @@ public class Token {
 
     /**
      * @param body { "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-     *          "T": "Base64 encoded Ks public key encrypted challenge number",
-     *          }
+     *             "T": "Base64 encoded Ks public key encrypted challenge number",
+     *             }
      * @return {
      * "M":
      * {
@@ -514,12 +534,12 @@ public class Token {
 
     /**
      * @param body { "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-     *          "T": "Base64 encoded Ks public key encrypted challenge number",
-     *          "M": {
-     *          "status": 0
-     *          "message": "single token id to revoke"
-     *          }
-     *          }
+     *             "T": "Base64 encoded Ks public key encrypted challenge number",
+     *             "M": {
+     *             "status": 0
+     *             "message": "single token id to revoke"
+     *             }
+     *             }
      * @return {
      * "M": "
      * {
@@ -536,8 +556,8 @@ public class Token {
 
     /**
      * @param body { "EToken": "Base64 encoded Kt public key encrypted token,nonce+1(by client)",
-     *          "T": "Base64 encoded Ks public key encrypted challenge number",
-     *          }
+     *             "T": "Base64 encoded Ks public key encrypted challenge number",
+     *             }
      * @return {
      * "M": "
      * {
