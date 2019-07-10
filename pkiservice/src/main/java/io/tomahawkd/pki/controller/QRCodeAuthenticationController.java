@@ -178,9 +178,7 @@ public class QRCodeAuthenticationController {
 								"updateQRStatus", SystemLogModel.INFO,
 								"Client ask to update status to confirmed.");
 
-						String stateString = new String(
-								SecurityFunctions.decryptUsingAuthenticateServerPrivateKey(
-										Utils.base64Decode(requestMessage.getMessage().getMessage())));
+						String stateString = requestMessage.getMessage().getMessage();
 						if (stateString.equals("1")) {
 							qrStatusService.updateQrNonceStatusToConfirmed(tokenModel.getTokenId());
 
