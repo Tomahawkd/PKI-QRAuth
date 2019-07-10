@@ -590,7 +590,6 @@ public class Token {
             try {
                 file.createNewFile();
                 FileWriter writer = new FileWriter(file);
-                System.out.println("    55  ");
                 writer.write("");//清空原文件内容
                 writer.write(text.toString());
                 writer.flush();

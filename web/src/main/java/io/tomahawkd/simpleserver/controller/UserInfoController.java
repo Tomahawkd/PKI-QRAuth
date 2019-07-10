@@ -21,6 +21,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 
@@ -70,11 +72,11 @@ public class UserInfoController {
                         Map<String, String> bodyData =
                                 new Gson().fromJson(payload, new TypeToken<Map<String, String>>() {
                                 }.getType());
-                        String name = bodyData.get("name");
+                        String name = URLEncoder.encode(bodyData.get("name"), "UTF-8");
                         int sex = Integer.parseInt(bodyData.get("sex"));
-                        String email = bodyData.get("email");
-                        String phone = bodyData.get("phone");
-                        String bio = bodyData.get("bio");
+                        String email = URLEncoder.encode(bodyData.get("email"), "UTF-8");
+                        String phone = URLEncoder.encode(bodyData.get("phone"),"UTF-8");
+                        String bio = URLEncoder.encode(bodyData.get("bio"),"UTF-8");
 
                         Map<String, MultipartFile> imageData =
                                 new Gson().fromJson(body, new TypeToken<Map<String, MultipartFile>>() {
