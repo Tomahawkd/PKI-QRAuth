@@ -7,17 +7,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
 import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
 
+import java.security.PublicKey;
+
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
 
 public class welcome extends AppCompatActivity {
     private ImageView welcome;
@@ -41,9 +47,18 @@ public class welcome extends AppCompatActivity {
                     String SpubURL = URLUtil.getSpubURL(context);
 
                     String Tpub = connecter.getAuthenticationServerPublicKey(TpubURL,ua);
+                    Log.d("getTpub",Tpub);
+                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                    Log.d("TpublicKey",TPub.toString());
                     String Spub = connecter.getServerPublicKey(SpubURL,ua);
+                    Log.d("getSpub",Spub);
+                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                    Log.d("SpublicKey",SPub.toString());
 
+//                    String Tpub = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
+//                    String Spub = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
                     manager.restoreServerKey(context,Tpub,Spub);
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }

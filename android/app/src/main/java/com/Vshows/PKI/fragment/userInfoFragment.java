@@ -118,9 +118,9 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         session = getActivity().getIntent().getStringExtra("session");
         ID = getActivity().getIntent().getStringExtra("username");
 
-        //Log.d("sessin" ,session);
+        Log.d("userinfosessin" ,session);
 
-        //init_info();
+        init_info();
 
         return view;
     }
@@ -194,7 +194,7 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                     PublicKey SPub = StringToPKey.getPublicKey(Spub);
                     PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
 
-                    String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+                    String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua,session);
 
                     Gson gson = new Gson();
                     Map<String,Object> result = new HashMap<>();
@@ -206,7 +206,7 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                         /**
                          * change UI
                          */
-
+                        Log.d("selfinfo:",data);
                     } else {
                         String message = (String) result.get("message");
                         Looper.prepare();
@@ -282,10 +282,11 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                 showAlerDialog();
                 break;
             case R.id.changekey:
+                new Thread(reGenKey).start();
                 break;
             case R.id.changetoken:
                 Intent intent5 = new Intent(getActivity(), changeToken.class);
-                intent5.putExtra("session",session);
+//                intent5.putExtra("session",session);
                 intent5.putExtra("username",ID);
                 startActivity(intent5);
                 break;
@@ -293,6 +294,49 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         }
 
     }
+
+    Runnable reGenKey = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Context context = getContext();
+                Connecter connecter = new Connecter();
+                keyManager manager = new keyManager();
+                String ua = SystemUtil.getSystemModel();
+                String url = URLUtil.getReGenKeyURL(context);
+
+                String Tpub = manager.getTpub(context);
+                String Spub = manager.getSpub(context);
+                String Cpri = manager.getCpri(context,ID);
+                byte[] token = manager.getToken(context,ID).getBytes();
+                int nonce = manager.getNonce(context,ID);
+
+
+                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                String resultJson = connecter.regenerateKeys(url,token,nonce,TPub,SPub,ua,CPri);
+
+                Gson gson = new Gson();
+                Map<String,Object> result = new HashMap<>();
+                result = gson.fromJson(resultJson,result.getClass());
+
+                int check = (int) result.get("check");
+                if(check == 0){
+
+                } else {
+                    String message = (String) result.get("message");
+                    Looper.prepare();
+                    Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                    Looper.loop();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.d("loginit",e.getMessage());
+            }
+        }
+    };
 
     private void showAlerDialog() {
         final AlertDialog dialog = new AlertDialog.Builder(this.getContext()).create();
@@ -326,12 +370,57 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode,final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // 扫描二维码/条码回传
         if (requestCode == REQUEST_CODE_SCAN && resultCode == RESULT_OK) {
             if (data != null) {
 
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Context context = getContext();
+                            Connecter connecter = new Connecter();
+                            keyManager manager = new keyManager();
+                            String ua = SystemUtil.getSystemModel();
+                            String url = URLUtil.getScanQRCodeURL(context);
+
+                            String Tpub = manager.getTpub(context);
+                            String Spub = manager.getSpub(context);
+                            String Cpri = manager.getCpri(context,name);
+                            byte[] token = manager.getToken(context,name).getBytes();
+                            int nonce1 = manager.getNonce(context,name);
+                            String nonce2 = data.getStringExtra(Constant.CODED_CONTENT);
+
+                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                            String resultJson = connecter.updateQRStatus(url,token,nonce1,nonce2,TPub,SPub,CPri,ua);
+
+                            Gson gson = new Gson();
+                            Map<String,Object> result = new HashMap<>();
+                            result = gson.fromJson(resultJson,result.getClass());
+
+                            int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
+                            if(check == 0){
+                                Intent intent = new Intent(getActivity(), Check.class);
+                                intent.putExtra("Extra", nonce2);
+                                intent.putExtra("username", name);
+                                startActivity(intent);
+                            } else {
+                                String message = (String) result.get("message");
+                                Looper.prepare();
+                                Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                                Looper.loop();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Log.d("scanerror",e.getMessage());
+                        }
+                    }
+                }).start();
                 String content = data.getStringExtra(Constant.CODED_CONTENT);
                 Intent intent = new Intent(getActivity(), Check.class);
                 intent.putExtra("Extra", content);

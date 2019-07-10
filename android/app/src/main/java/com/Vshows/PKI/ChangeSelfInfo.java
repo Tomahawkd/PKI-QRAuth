@@ -63,7 +63,7 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
         Intent intent = getIntent();
         session = intent.getStringExtra("session");
         ID = intent.getStringExtra("username");
-        //Log.d("changeinfosession" ,session);
+        Log.d("changeinfosession" ,session);
 
         handler = new Handler();
         initView();
@@ -164,7 +164,7 @@ public class ChangeSelfInfo extends AppCompatActivity implements View.OnClickLis
                             PublicKey SPub = StringToPKey.getPublicKey(Spub);
                             PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
 
-                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua,session);
 
                             Map<String,Object> result = new HashMap<>();
                             result = gson.fromJson(resultJson,result.getClass());

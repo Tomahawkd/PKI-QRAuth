@@ -94,6 +94,7 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
                     if (type == 1){
                         if(check == 0){
                             Intent intent = new Intent(getBaseContext(),index.class);
+                            intent.putExtra("id",1);
                             intent.putExtra("Extra", nonce2);
                             intent.putExtra("username", name);
                             startActivity(intent);

@@ -104,9 +104,11 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
 //                Intent intent1 = new Intent(this,index.class);
 //                intent1.putExtra("session",session);
 //                startActivity(intent1);
+
                 Context context = this;
                 keyManager manager = new keyManager();
                 manager.getAllServerKey(context);
+                manager.getAllInfo(context);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -121,63 +123,48 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                         @Override
                         public void run() {
                             try {
-                                //deleteDatabase("keys.db");
                                 Context context = getBaseContext();
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
                                 String ua = SystemUtil.getSystemModel();
-                                String getTpubURL = URLUtil.getTpubURL(context);
+                                String url = URLUtil.getLoginURL(context);
 
-                                String Tpub = connecter.getAuthenticationServerPublicKey(getTpubURL,ua);
-                                Log.d("getTpub",Tpub);
-                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-                                Log.d("TpublicKey",TPub.toString());
+                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getSpub(context));
 
+                                Gson gson = new Gson();
+                                Map<String, Object> map1 = new HashMap<>();
+                                map1.put("username",name);
+                                map1.put("password",psw);
+                                String data = gson.toJson(map1);
 
-//                                String testPu = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPublic().getEncoded());
-//                                String testPr = Utils.base64Encode(SecurityFunctions.generateKeyPair().getPrivate().getEncoded());
-//
-//                                manager.restoreServerKey(context,name,testPu,testPu);
-//
-//                                String Tpub = manager.getTpub(context);
-//                                String Spub = manager.getSpub(context);
-//                                String Cpri = manager.getCpri(context,name);
-//                                byte[] token = manager.getToken(context,name).getBytes();
-//                                int nonce = manager.getNonce(context,name);
-//
-//                                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-//                                PublicKey SPub = StringToPKey.getPublicKey(Spub);
-//                                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-//
-////                                PublicKey TPub = SecurityFunctions.generateKeyPair().getPublic();
-////                                PublicKey SPub = SecurityFunctions.generateKeyPair().getPublic();
-////                                PrivateKey CPri = SecurityFunctions.generateKeyPair().getPrivate();
-////                                byte[] token = "liucheng".getBytes();
-////                                int nonce = 12345;
-//
-//                                String data = "Login";
-//
-//                                String resultJson = connecter.interactAuthentication(data,TPub,SPub,token,nonce,CPri,ua);
-//
-//                                Gson gson = new Gson();
-//                                Map<String,Object> result = new HashMap<>();
-//                                result = gson.fromJson(resultJson,result.getClass());
-//
-//                                int check = (int) result.get("check");
-//                                if(check == 0){
-//                                    Looper.prepare();
-//                                    Toast.makeText(getBaseContext(),"login success", Toast.LENGTH_LONG).show();
-//                                    Intent intent1 = new Intent(getBaseContext(),index.class);
-//                                    intent1.putExtra("session",session);
-//                                    intent1.putExtra("username",name);
-//                                    startActivity(intent1);
-//                                    Looper.loop();
-//                                } else {
-//                                    String message = (String) result.get("message");
-//                                    Looper.prepare();
-//                                    Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
-//                                    Looper.loop();
-//                                }
+                                String resultJson = connecter.initalizeAuthentication(url,data,TpublicKey,SpublicKey,ua);
+                                Log.d("resultjson",resultJson);
+
+                                Map<String,Object> result = new HashMap<>();
+                                result = gson.fromJson(resultJson,result.getClass());
+
+                                int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
+                                if(check == 0){
+                                    int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
+                                    String token = (String)(result.get("Token"));
+                                    String Cpub = (String) result.get("Cpub");
+                                    String Cpri = (String) result.get("Cpri");
+                                    session = (String)result.get("session");
+                                    Log.d("loginsession",session);
+
+                                    manager.restoreClientInfo(context,name,Cpub,Cpri,token,nonce);
+
+                                    Intent intent = new Intent(context,index.class);
+                                    intent.putExtra("session",session);
+                                    intent.putExtra("username",name);
+                                    startActivity(intent);
+                                } else {
+                                    String message = (String) result.get("message");
+                                    Looper.prepare();
+                                    Toast.makeText(getBaseContext(),"message: " + message, Toast.LENGTH_LONG).show();
+                                    Looper.loop();
+                                }
                             } catch (Exception e){
                                 e.printStackTrace();
                                 Log.d("resulterror",e.getMessage());
@@ -189,44 +176,4 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
             default:
         }
     }
-
-    public void handle_response(String response){
-        //String responses = new String(Base64.decode(response.getBytes(), Base64.DEFAULT));
-        JSONObject result = null;
-        try {
-            result = new JSONObject(response);
-            int status = (int) result.get("status");
-            if(status==-1){
-                Looper.prepare();
-                Toast.makeText(this,"密码错误！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else if(status==0){
-                Looper.prepare();
-                Toast.makeText(this,"登录成功！", Toast.LENGTH_LONG).show();
-
-                Intent intent1 = new Intent(this,index.class);
-
-                intent1.putExtra("session",session);
-
-                startActivity(intent1);
-                Looper.loop();
-            }
-            else if(status==1){
-                Looper.prepare();
-                Toast.makeText(this,"！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-            else {
-                Looper.prepare();
-                Toast.makeText(this,"网络出现错误，请稍后重试！", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        //取数据
-    }
-
 }

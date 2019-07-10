@@ -34,7 +34,7 @@ import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
 
-public class changeToken extends AppCompatActivity {
+public class changeToken extends AppCompatActivity implements TokenListAdapter.InnerItemOnclickListener {
 
     private String session;
     private String ID;
@@ -53,12 +53,13 @@ public class changeToken extends AppCompatActivity {
         setContentView(R.layout.changetoken);
 
         Intent intent = getIntent();
-        session = intent.getStringExtra("session");
+//        session = intent.getStringExtra("session");
         ID = intent.getStringExtra("username");
 
         ListView listView = (ListView)findViewById(R.id.tokenListView);
         init();
-        TokenListAdapter adapter = new TokenListAdapter(this,R.layout.token_list,lists);
+        TokenListAdapter adapter = new TokenListAdapter(this,R.layout.token_list,lists,ID,session);
+        adapter.setOnInnerItemOnClickListener(this);
         listView.setAdapter(adapter);
 
     }
@@ -109,13 +110,67 @@ public class changeToken extends AppCompatActivity {
         }).start();
         TokenList list1 = new TokenList("ua1","token1");
         lists.add(list1);
-        TokenList list2 = new TokenList("ua1","token1");
+        TokenList list2 = new TokenList("ua2","token1");
         lists.add(list2);
-        TokenList list3 = new TokenList("ua1","token1");
+        TokenList list3 = new TokenList("ua3","token1");
         lists.add(list3);
-        TokenList list4 = new TokenList("ua1","token1");
+        TokenList list4 = new TokenList("ua4","token1");
         lists.add(list4);
-        TokenList list5 = new TokenList("ua1","token1");
+        TokenList list5 = new TokenList("ua5","token1");
         lists.add(list5);
+    }
+
+    @Override
+    public void itemClick(final View v) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+//                    Context context = getBaseContext();
+//                    Connecter connecter = new Connecter();
+//                    keyManager manager = new keyManager();
+//                    String ua = SystemUtil.getSystemModel();
+//                    String url = URLUtil.getRevokeTokenURL(context);
+//
+//                    String Tpub = manager.getTpub(context);
+//                    String Spub = manager.getSpub(context);
+//                    String Cpri = manager.getCpri(context,ID);
+//                    byte[] token = manager.getToken(context,ID).getBytes();
+//                    int nonce = manager.getNonce(context,ID);
+//
+//                    PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                    PublicKey SPub = StringToPKey.getPublicKey(Spub);
+//                    PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+//
+//                    String resultJson = connecter.revokeToken(url,token,nonce,TPub,SPub,ua,CPri);
+//
+//                    Gson gson = new Gson();
+//                    Map<String,Object> result = new HashMap<>();
+//                    result = gson.fromJson(resultJson,result.getClass());
+//
+//                    int check = (int) result.get("check");
+//                    if(check == 0){
+//                        /**
+//                         * change UI
+//                         */
+//                        Intent intent = new Intent(context, changeToken.class);
+//                        intent.putExtra("session",session);
+//                        intent.putExtra("username",ID);
+//                        startActivity(intent);
+//                    } else {
+//                        String message = (String) result.get("message");
+//                        Looper.prepare();
+//                        Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+//                        Looper.loop();
+//                    }
+                    String s = (String)v.getTag();
+                    Looper.prepare();
+                    Toast.makeText(getBaseContext(),"ua: " + s, Toast.LENGTH_LONG).show();
+                    Looper.loop();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

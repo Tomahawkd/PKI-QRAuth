@@ -108,24 +108,31 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 String registerURL = URLUtil.getRegisterURL(context);
 
                                 PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
-                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
-//                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-//                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-
-                                String resultJson = connecter.initalizeAuthentication(registerURL,username,password1,TpublicKey,SpublicKey,ua);
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getSpub(context));
 
                                 Gson gson = new Gson();
+                                Map<String, Object> map1 = new HashMap<>();
+                                map1.put("username", username);
+                                map1.put("password", password1);
+                                String data = gson.toJson(map1);
+
+                                String resultJson = connecter.initalizeAuthentication(registerURL,data,TpublicKey,SpublicKey,ua);
+                                Log.d("resultjson",resultJson);
+
                                 Map<String,Object> result = new HashMap<>();
                                 result = gson.fromJson(resultJson,result.getClass());
 
-                                int check = (int) result.get("check");
+                                int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                                 if(check == 0){
-                                    int nonce = (int) result.get("nonce");
-                                    String token = new String((byte[]) result.get("Token"));
+                                    int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
+                                    String token = (String)(result.get("Token"));
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
 
                                     manager.restoreClientInfo(context,username,Cpub,Cpri,token,nonce);
+
+                                    Intent intent = new Intent(context,Login.class);
+                                    startActivity(intent);
                                 } else {
                                     String message = (String) result.get("message");
                                     Looper.prepare();
@@ -142,6 +149,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 }
                 break;
             case R.id.forget_re:
+                Context context = this;
+                keyManager manager = new keyManager();
+                manager.getAllServerKey(context);
+                manager.getAllInfo(context);
                 break;
             case R.id.login_re_:
                 Intent intent1 = new Intent(this,Login.class);
