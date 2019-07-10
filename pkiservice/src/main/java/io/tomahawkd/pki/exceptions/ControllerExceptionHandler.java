@@ -58,16 +58,23 @@ public class ControllerExceptionHandler {
 
 	private String handle(Exception e) {
 
-		String error = e.getMessage() == null ? "Unknown Error" : e.getMessage();
+		Map<String, String> response = new HashMap<>();
+
+		Message<String> message = new Message<String>().setError().setMessage("Unknown error");
+
+		if (e == null) {
+			response.put("M", message.toJson());
+			return new Gson().toJson(response);
+		}
 
 		ThreadLocalData data = ThreadContext.getContext().get();
 
+		message.setMessage(e.getMessage() == null ? message.getMessage() : e.getMessage());
+
 		data.getLog().insertLogRecord(ControllerExceptionHandler.class.getName(),
-				"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + error);
+				"handle", SystemLogModel.FATAL, e.getClass().getName() + ": " + message.getMessage());
 		String tResponse = data.getTime();
 
-		Message<String> message = new Message<String>().setError().setMessage(error);
-		Map<String, String> response = new HashMap<>();
 		if (tResponse != null && !tResponse.isEmpty()) response.put("T", tResponse);
 		response.put("M", message.toJson());
 		return new Gson().toJson(response);
