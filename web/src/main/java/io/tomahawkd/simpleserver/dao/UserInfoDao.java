@@ -6,10 +6,9 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface UserInfoDao {
     //查询获取用户信息
-    @Select("select `index`,username,name,sex,email,phone,bio,image_path from user_info where `index`=#{userid}")
+    @Select("select `index`,name,sex,email,phone,bio,image_path from user_info where `index`=#{userid}")
     @Results({
-            @Result(property = "index",column = "index"),
-            @Result(property = "username",column = "username"),
+            @Result(property = "userid",column = "index"),
             @Result(property = "name",column = "name"),
             @Result(property = "sex",column = "sex"),
             @Result(property = "email",column = "email"),
@@ -20,9 +19,9 @@ public interface UserInfoDao {
     UserInfoModel getUserInfo(int userid);
 
     //修改用户信息
-    @Update("update user_info set name=#{model.name} and sex=#{model.sex} " +
-            "and email=#{model.email} and phone=#{model.phone} and " +
-            "bio=#{model.bio} and image_path=#{model.image_path}" +
-            " where username=#{model.username}")
+    @Update("update user_info set name=#{model.name} , sex=#{model.sex} " +
+            ", email=#{model.email} , phone=#{model.phone} , " +
+            "bio=#{model.bio} , image_path=#{model.image_path}" +
+            " where `index`=#{model.userid}")
     int updateUserInfo(@Param("model") UserInfoModel model);
 }

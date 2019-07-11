@@ -1,5 +1,7 @@
 package io.tomahawkd.simpleserver.model;
 
+import com.google.gson.Gson;
+
 public class SystemLogModel {
 
     private int index;
@@ -42,8 +44,7 @@ public class SystemLogModel {
 
     @Override
     public String toString() {
-        return "{\"index\": \"" + index + "\",\"module\":\""+module+"\",\"level\": " + level + " ," +
-                "\"data\":\"" + data + "\",\"message\":\"" + message + "\"}";
+        return new Gson().toJson(this);
     }
 
 
