@@ -1,0 +1,12 @@
+TPubURL = http://192.168.43.159/key/dist/tpub
+SPubURL = http://192.168.43.159/key/dist/spub
+LoginURL = http://192.168.43.159/user/login
+RegisterURL = http://192.168.43.159/user/register
+SelfInfoURL = http://192.168.43.159/user/info/data
+ChangeInfoURL = http://192.168.43.159/user/info/update/info
+ChangePasswordURL = http://192.168.43.159/user/info/update/password
+GetLogURL = http://192.168.43.159/user/management/log
+GetTokenListURL = http://192.168.43.159/user/management/token/list
+RevokeTokenURL = http://192.168.43.159/user/management/token/revoke
+ReGenKeyURL = http://192.168.43.159/user/management/token/regenkeys
+ScanQRCodeURL = http://192.168.43.159/server/qr/opera

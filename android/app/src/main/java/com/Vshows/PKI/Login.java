@@ -1,4 +1,5 @@
 package com.Vshows.PKI;
+import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
@@ -15,8 +16,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
+import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,10 +33,17 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.KeyManager;
 
+import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.SecurityFunctions;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -89,18 +101,13 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 startActivity(intent);
                 break;
             case R.id.forget:
-//                deleteDatabase("keys.db");
-//                name = username.getText().toString();
-//                keyManager km = new keyManager();
-//                km.restoreNonce(this,name,2333333);
-//               int n  = km.getNonce(this,name);
-//                Toast.makeText(this,"nonce: " + n, Toast.LENGTH_LONG).show();
-
                 Intent intent1 = new Intent(this,index.class);
-
                 intent1.putExtra("session",session);
-
                 startActivity(intent1);
+//                Context context = this;
+//                keyManager manager = new keyManager();
+//                manager.getAllServerKey(context);
+//                manager.getAllInfo(context);
                 break;
             case R.id.loginBtn:
                 name = username.getText().toString();
@@ -111,47 +118,54 @@ public class Login extends AppCompatActivity implements View.OnClickListener  {
                 else if (TextUtils.isEmpty(psw))
                     Toast.makeText(this,"请输入密码！", Toast.LENGTH_LONG).show();
                 else {
-                    try {
-                        JSONObject jsonObject = new JSONObject();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Context context = getBaseContext();
+                                Connecter connecter = new Connecter();
+                                keyManager manager = new keyManager();
+                                String ua = SystemUtil.getSystemModel();
+                                String url = URLUtil.getLoginURL(context);
 
-                        jsonObject.put("username",name);
-                        jsonObject.put("password",psw);
+                                PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
+                                PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getSpub(context));
 
-                        String url ="http://192.168.43.159/user/login";
+                                String resultJson = connecter.initalizeAuthentication(url,name,psw,TpublicKey,SpublicKey,ua);
 
+                                Log.d("resultjson",resultJson);
 
-                        OkHttpClient client = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON,jsonObject.toString());
+                                Gson gson = new Gson();
+                                Map<String,Object> result = new HashMap<>();
+                                result = gson.fromJson(resultJson,result.getClass());
 
-                        final Request request = new Request.Builder()
-                                .url(url)
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        call.enqueue(new Callback() {
-                            public void onFailure(Call call, IOException e) {
-                                Log.d("error","<<<<e="+e);
-                            }
+                                int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
+                                if(check == 0){
+                                    int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
+                                    String token = (String)(result.get("Token"));
+                                    String Cpub = (String) result.get("Cpub");
+                                    String Cpri = (String) result.get("Cpri");
+//                                    session = (String)result.get("session");
+//                                    Log.d("loginsession",session);
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                if(response.isSuccessful()) {
-                                    Headers headers=response.headers();
-                                    List<String> cookies=headers.values("Set-Cookie");
-                                    if(cookies.size()>0) {
-                                        session = cookies.get(0);
-                                        Log.d("session","<<<<d="+session);
-//                                        session = result.substring(0, result.indexOf(";"));
-                                    }
-                                    String jsonString = response.body().string();
-                                    Log.d("success","<<<<d="+jsonString);
-                                    handle_response(jsonString);
+                                    manager.restoreClientInfo(context,name,Cpub,Cpri,token,nonce);
+
+                                    Intent intent = new Intent(context,index.class);
+//                                    intent.putExtra("session",session);
+                                    intent.putExtra("username",name);
+                                    startActivity(intent);
+                                } else {
+                                    String message = (String) result.get("message");
+                                    Looper.prepare();
+                                    Toast.makeText(getBaseContext(),"message: " + message, Toast.LENGTH_LONG).show();
+                                    Looper.loop();
                                 }
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                Log.d("resulterror",e.getMessage());
                             }
-                        });
-                    } catch (JSONException e){
-                        e.printStackTrace();
-                    }
+                        }
+                    }).start();
                 }
                 break;
             default:

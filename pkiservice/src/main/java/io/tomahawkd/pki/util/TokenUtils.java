@@ -78,6 +78,8 @@ public class TokenUtils {
 			                                       String, String, Message<T>>
 			                                       callback) throws IOException {
 
+		ThreadContext.getLogContext().set(systemLogService);
+
 		TokenRequestMessage<T> requestMessage =
 				new Gson().fromJson(data,
 						new TypeToken<TokenRequestMessage<T>>() {
@@ -91,6 +93,8 @@ public class TokenUtils {
 			device = d[1];
 		}
 
+		systemLogService.insertLogRecord(TokenUtils.class.getName(),
+				"tokenValidate", SystemLogModel.INFO, "Start handling token.");
 		Pair<Integer, byte[]> tokenPair = TokenUtils.decodeToken(requestMessage.getToken());
 		int nonce = tokenPair.getKey();
 		TokenModel tokenModel = TokenModel.deserialize(tokenPair.getValue());
@@ -119,7 +123,7 @@ public class TokenUtils {
 			throw new NotFoundException("User not found");
 		}
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.WARN,
+				"tokenValidate", SystemLogModel.INFO,
 				"get user context: " + userKeyModel.toString());
 
 		SystemKeyModel systemKeyModel = systemKeyService.getById(userKeyModel.getSystemId());
@@ -130,7 +134,7 @@ public class TokenUtils {
 			throw new NotFoundException("System not found");
 		}
 		systemLogService.insertLogRecord(TokenUtils.class.getName(),
-				"tokenValidate", SystemLogModel.WARN,
+				"tokenValidate", SystemLogModel.INFO,
 				"get system context: " + systemKeyModel.toString());
 
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
@@ -138,17 +142,16 @@ public class TokenUtils {
 				"tokenValidate", SystemLogModel.DEBUG, "Server public key load complete.");
 
 		String tResponse = Utils.responseChallenge(requestMessage.getTime(), spub);
-		ThreadContext.getContext().set(tResponse);
-
+		ThreadContext.getTimeContext().set(tResponse);
 
 		userLogService.insertUserActivity(userKeyModel.getUserId(), userKeyModel.getSystemId(),
-				device, ip, "Tokenid " + tokenModel.getTokenId() +
+				device, ip, "Tokenid " + tokenModel.getCompiledId() +
 						" used with status: " + message.getStatus());
 
 		Message<T> responseMessage = null;
 		if (message.isOk()) {
 			systemLogService.insertLogRecord(TokenUtils.class.getName(),
-					"tokenValidate", SystemLogModel.WARN,
+					"tokenValidate", SystemLogModel.INFO,
 					"Context loaded, invoke controller callback");
 
 			responseMessage =

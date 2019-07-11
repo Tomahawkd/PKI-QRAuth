@@ -1,22 +1,31 @@
 package com.Vshows.PKI.fragment;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.Vshows.PKI.ChangeSelfInfo;
 import com.Vshows.PKI.Check;
 import com.Vshows.PKI.Login;
 import com.Vshows.PKI.R;
+import com.Vshows.PKI.changeToken;
 import com.Vshows.PKI.changepsw;
 import com.Vshows.PKI.index;
 import com.Vshows.zxinglibrary.android.CaptureActivity;
@@ -51,6 +60,8 @@ public class fragment3 extends Fragment implements View.OnClickListener {
     Button changePsw;
     Button quit;
     Button changeKey;
+    Button changeToken;
+    Button confirmQuit,cancelQuit;
     TextView username_information;
     TextView sig_information;
     TextView username2_information;
@@ -81,6 +92,8 @@ public class fragment3 extends Fragment implements View.OnClickListener {
         changeKey.setOnClickListener(this);
         quit = (Button) view.findViewById(R.id.quit);
         quit.setOnClickListener(this);
+        changeToken = (Button) view.findViewById(R.id.changetoken);
+        changeToken.setOnClickListener(this);
         username_information = (TextView)view.findViewById(R.id.username_information);
         username2_information = (TextView)view.findViewById(R.id.username2_information);
         sig_information = (TextView)view.findViewById(R.id.sig_information);
@@ -201,16 +214,50 @@ public class fragment3 extends Fragment implements View.OnClickListener {
                 startActivity(intent4);
                 break;
             case R.id.quit:
-                Intent intent2 = new Intent(getActivity(), Login.class);
-                startActivity(intent2);
+                showAlerDialog();
                 break;
             case R.id.changekey:
                 break;
-
+            case R.id.changetoken:
+                Intent intent5 = new Intent(getActivity(), changeToken.class);
+                startActivity(intent5);
+                break;
             default:
         }
 
     }
+
+    private void showAlerDialog() {
+        final AlertDialog dialog = new AlertDialog.Builder(this.getContext()).create();
+
+        View dialogView = View.inflate(getContext(),R.layout.confirm_to_quit,null);
+        dialog.setView(dialogView);
+        dialog.show();
+
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+        params.height = 480;
+        params.width = 850;
+        window.setAttributes(params);
+
+        confirmQuit = (Button)dialogView.findViewById(R.id.confirm_quit);
+        cancelQuit = (Button)dialogView.findViewById(R.id.not_quit);
+
+        confirmQuit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent2 = new Intent(getActivity(), Login.class);
+                startActivity(intent2);
+            }
+        });
+        cancelQuit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+    }
+
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
