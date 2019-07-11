@@ -55,6 +55,7 @@ $(document).ready(function () {
         if (!$("#login_form").valid()) {
             return;
         }
+        $(".error_box").empty();
         var formObject = {};
         var formArray = $("#login_form").serializeArray();
         $.each(formArray, function (i, item) {
@@ -76,7 +77,7 @@ $(document).ready(function () {
                             $(".error_box").text("登录成功！");
                             window.location.href = "home.html";
                         }
-                    } else if (msg.status == -1) {
+                    } else if (msg.status === -1) {
                         $(".error_box").text("用户名不存在！");
                     } else if (data.status === -2) {
                         $(".error_box").text("密码错误！");
@@ -140,6 +141,7 @@ $(document).ready(function () {
         if (!form.valid()) {
             return;
         }
+        $(".error_box").empty();
 
         var formObject = {};
         var formArray = form.serializeArray();
