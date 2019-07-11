@@ -2,11 +2,13 @@
  * add validator to the forms, add listener for login and register event
  */
 $(document).ready(function () {
-    initialize();
-
     if (localStorage.getItem("token") !== null && localStorage.getItem("Kcpub") !== null && localStorage.getItem("Kcpri") !== null) {
         $(".error_box").text("检测到账号信息，即将自动登录");
-        setInterval(function() {window.location.href = "home.html";}, 2000);
+        initialize2();
+        window.location.href = "home.html";
+        // setInterval(function() {window.location.href = "home.html";}, 2000);
+    } else {
+        initialize1();
     }
 
 

@@ -1,8 +1,7 @@
 /**
  * get the SPub and TPub from server, store it in localStorage
- * @param serverUrl the url of the server.
  */
-function initialize() {
+function initialize1() {
     localStorage.removeItem("SPub");
     localStorage.removeItem("TPub");
     if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
@@ -23,6 +22,44 @@ function initialize() {
         $.ajax({
             url: "key/dist/tpub",
             type: "get",
+            success: function (data) {
+                localStorage.setItem("TPub", data);
+                console.log("success to get public keys of server");
+            },
+            error: function () {
+                console.log("failed to get public keys of server");
+            }
+        })
+    }
+}
+
+
+/**
+ * get the SPub and TPub from server, store it in localStorage
+ */
+function initialize2() {
+    localStorage.removeItem("SPub");
+    localStorage.removeItem("TPub");
+    if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
+        $.ajax({
+            url: "key/dist/spub",
+            type: "get",
+            async: false,
+            success: function (data) {
+                localStorage.setItem("SPub", data);
+                console.log("success to get public keys of server");
+            },
+            error: function () {
+                console.log("failed to get public keys of server");
+            }
+        })
+    }
+
+    if (localStorage.getItem("TPub") === null || localStorage.getItem("TPub") === "undefined") {
+        $.ajax({
+            url: "key/dist/tpub",
+            type: "get",
+            async: false,
             success: function (data) {
                 localStorage.setItem("TPub", data);
                 console.log("success to get public keys of server");
