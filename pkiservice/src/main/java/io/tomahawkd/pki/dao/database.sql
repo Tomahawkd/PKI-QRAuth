@@ -53,7 +53,7 @@ create table if not exists user_key
 
 create view user_id_tag as
     (
-        select user_id, user_tag
+        select user_id, user_tag, system_id
         from user_key
     );
 

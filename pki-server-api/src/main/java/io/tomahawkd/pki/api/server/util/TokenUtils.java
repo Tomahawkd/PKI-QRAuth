@@ -1,6 +1,7 @@
 package io.tomahawkd.pki.api.server.util;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import io.tomahawkd.pki.api.server.Token;
 
@@ -14,11 +15,12 @@ import java.util.Map;
 public class TokenUtils {
 
     public static String tokenResponse(String url, String body, String ip, String device,
-                                           PublicKey TpublicKey,
-                                           PrivateKey key) throws Exception {
+                                       PublicKey TpublicKey,
+                                       PrivateKey key) throws Exception {
 
         Map<String, String> bodydata = new Gson().fromJson(body, new TypeToken<Map<String, String>>() {
         }.getType());
+
 
         int t = SecurityFunctions.generateRandom();
         String time2 = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(TpublicKey,
@@ -28,7 +30,14 @@ public class TokenUtils {
         tokenRequestMessage.setToken(bodydata.get("EToken"));
         tokenRequestMessage.setDevice(ip + ";" + device);
         tokenRequestMessage.setTime(time2);
-        tokenRequestMessage.setRawMessage(bodydata.get("M"));
+
+        if (bodydata.containsKey("payload")) {
+            Map<String, String> payload = new Gson().fromJson(bodydata.get("payload"),
+                    new TypeToken<Map<String, String>>() {
+                    }.getType());
+            tokenRequestMessage.setMessage(new Message<String>().setOK()
+                    .setMessage(payload.get("tokenid")));
+        }
 
         Map<String, String> responseMap = new HashMap<>();
 

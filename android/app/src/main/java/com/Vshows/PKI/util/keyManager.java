@@ -13,7 +13,8 @@ import java.security.PublicKey;
 public class keyManager {
     private final static String DB_NAME = "keys.db";
     private final static int DB_VERSION = 1;
-    public final static String KEY_TABLE = "key_table";
+    public final static String SERVER_TABLE = "server_table";
+    public final static String CLIENT_TABLE = "client_table";
     public final static String ID = "id";
     public  final static String KTpub = "KTpub";
     public final static String KSpub = "KSpub";
@@ -32,59 +33,35 @@ public class keyManager {
         return dbhelper.getReadableDatabase();
     }
 
-    public void restoreSpub(Context context,String id,String Spub){
+    public void restoreServerKey(Context context,String Tpub,String Spub){
         SQLiteDatabase sqLiteDatabase = getWritableDB(context);
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ID ,id);
         contentValues.put(KSpub,Spub);
-
-        sqLiteDatabase.insert(KEY_TABLE,null,contentValues);
-
-    }
-    public void restoreTpub(Context context,String id,String Tpub){
-        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(ID ,id);
         contentValues.put(KTpub,Tpub);
 
-        sqLiteDatabase.insert(KEY_TABLE,null,contentValues);
+        sqLiteDatabase.insert(SERVER_TABLE,null,contentValues);
+        sqLiteDatabase.close();
     }
-    public void restoreCkey(Context context,String id,String Cpub, String Cpri){
+
+    public void restoreClientInfo(Context context,String id,String Cpub,String Cpri,String Token,int Nonce){
         SQLiteDatabase sqLiteDatabase = getWritableDB(context);
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(ID ,id);
-        contentValues.put(KCpub ,Cpub);
-        contentValues.put(KCpri ,Cpri);
-
-        sqLiteDatabase.insert(KEY_TABLE,null,contentValues);
-    }
-    public void restoreToken(Context context,String id,String Token){
-        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(ID ,id);
+        contentValues.put(KCpub,Cpub);
+        contentValues.put(KCpri,Cpri);
         contentValues.put(token,Token);
-
-        sqLiteDatabase.insert(KEY_TABLE,null,contentValues);
-    }
-
-    public void restoreNonce(Context context,String id,int Nonce){
-        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(ID ,id);
         contentValues.put(nonce,Nonce);
 
-        sqLiteDatabase.insert(KEY_TABLE,null,contentValues);
+        sqLiteDatabase.insert(CLIENT_TABLE,null,contentValues);
+        sqLiteDatabase.close();
     }
 
-    public String getSpub(Context context,String id){
+    public String getSpub(Context context){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,KSpub }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { KSpub }, null,null, null, null, null);
         String kspub = "";
         if(cursor.moveToFirst()) {
             kspub = cursor.getString(cursor.getColumnIndex(KSpub));
@@ -93,13 +70,14 @@ public class keyManager {
             Log.d("kspuberror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return kspub;
     }
 
-    public String getTpub(Context context,String id){
+    public String getTpub(Context context){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,KTpub }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE, new String[] { KTpub }, null, null, null, null, null);
         String ktpub = "";
         if(cursor.moveToFirst()) {
             ktpub = cursor.getString(cursor.getColumnIndex(KTpub));
@@ -108,13 +86,14 @@ public class keyManager {
             Log.d("ktpuberror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return ktpub;
     }
 
     public String getCpub(Context context,String id){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,KCpub }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE, new String[] { ID,KCpub }, "id=?", new String[] {id }, null, null, null);
         String kCpub = "";
         if(cursor.moveToFirst()) {
             kCpub = cursor.getString(cursor.getColumnIndex(KCpub));
@@ -123,13 +102,14 @@ public class keyManager {
             Log.d("kCpuberror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return kCpub;
     }
 
     public String getCpri(Context context,String id){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,KCpri }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE, new String[] { ID,KCpri }, "id=?", new String[] {id }, null, null, null);
         String kCpri = "";
         if(cursor.moveToFirst()) {
             kCpri = cursor.getString(cursor.getColumnIndex(KCpri));
@@ -138,13 +118,14 @@ public class keyManager {
             Log.d("kCprierror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return kCpri;
     }
 
     public String getToken(Context context,String id){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,token }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE, new String[] { ID,token }, "id=?", new String[] {id }, null, null, null);
         String Token = "";
         if(cursor.moveToFirst()) {
             Token = cursor.getString(cursor.getColumnIndex(token));
@@ -153,13 +134,14 @@ public class keyManager {
             Log.d("Tokenerror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return Token;
     }
 
     public int getNonce(Context context,String id){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        Cursor cursor = sqLiteDatabase.query(KEY_TABLE, new String[] { ID,nonce }, "id=?", new String[] {id }, null, null, null);
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE, new String[] { ID,nonce }, "id=?", new String[] {id }, null, null, null);
         int Nonce = 0;
         if(cursor.moveToFirst()) {
             Nonce = cursor.getInt(cursor.getColumnIndex(nonce));
@@ -168,28 +150,48 @@ public class keyManager {
             Log.d("Nonceerror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
         return Nonce;
     }
-    public void test(Context context,String str){
-        SQLiteOpenHelper dbhelper =    new DBHelper(context,"keys.db",null,1);
 
-        SQLiteDatabase sqLiteDatabase = dbhelper.getWritableDatabase();
-        SQLiteDatabase sqLiteDatabase1 = dbhelper.getReadableDatabase();
+    public void getAllServerKey(Context context){
+        SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("id",1);
-        contentValues.put("KTpub",str);
-
-        sqLiteDatabase.insert("key_table",null,contentValues);
-
-        Cursor cursor = sqLiteDatabase1.rawQuery("select * from key_table where id=?",new String[]{"1"});
+        Cursor cursor = sqLiteDatabase.query(SERVER_TABLE,null,null,null,null,null,null);
         if(cursor.moveToFirst()) {
-            String ktpub = cursor.getString(cursor.getColumnIndex("KTpub"));
-            Log.d("ktpub", ktpub);
+            do{
+                String Tpub = cursor.getString(cursor.getColumnIndex(KTpub));
+                String Spub = cursor.getString(cursor.getColumnIndex(KSpub));
+
+                Log.d("alldata", "\ntpub:" + Tpub + "\nSpub:" + Spub);
+            } while (cursor.moveToNext());
         } else {
-            Log.d("ktpuberror","0000000000000000000" );
+            Log.d("getAllServerKeyerror","0" );
         }
         cursor.close();
+        sqLiteDatabase.close();
+
     }
 
+    public void getAllInfo(Context context){
+        SQLiteDatabase sqLiteDatabase = getReadableDB(context);
+
+        Cursor cursor = sqLiteDatabase.query(CLIENT_TABLE,null,null,null,null,null,null);
+        if(cursor.moveToFirst()) {
+            do{
+                String id = cursor.getString(cursor.getColumnIndex(ID));
+                String cpub = cursor.getString(cursor.getColumnIndex(KCpub));
+                String cpri = cursor.getString(cursor.getColumnIndex(KCpri));
+                String Token = cursor.getString(cursor.getColumnIndex(token));
+                int Nonce = cursor.getInt(cursor.getColumnIndex(nonce));
+
+                Log.d("alldata", "\nid:" + id + "\ntoken:" + Token + "\ncpub:" + cpub + "\ncpri:" + cpri + "\nnonce:" + Nonce);
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("getAllInfoerror","0" );
+        }
+        cursor.close();
+        sqLiteDatabase.close();
+
+    }
 }

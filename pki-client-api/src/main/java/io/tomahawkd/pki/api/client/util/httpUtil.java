@@ -5,6 +5,9 @@
 
 package io.tomahawkd.pki.api.client.util;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -15,12 +18,13 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 public class httpUtil {
     public httpUtil() {
     }
 
-    public static String getJsonData(String jsonObject, String urls) {
+    public static String getJsonData(String jsonObject, String urls, String ua) {
         StringBuffer sb = new StringBuffer();
 
         try {
@@ -34,6 +38,7 @@ public class httpUtil {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Charset", "UTF-8");
+            conn.setRequestProperty("User-agent",ua);
             byte[] data = jsonObject.getBytes();
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -73,7 +78,7 @@ public class httpUtil {
         return sb.toString();
     }
 
-    public static String getJsonData(String urls) {
+    public static String getJsonData(String urls,String ua) {
         try {
             URL url = new URL(urls);
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -81,19 +86,22 @@ public class httpUtil {
             connection.setDoInput(true);
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.setRequestProperty("User-agent",ua);
             connection.connect();
             InputStream inputStream = connection.getInputStream();
-            byte[] data = new byte[1024];
-            StringBuffer sb = new StringBuffer();
-            boolean var6 = false;
-
-            String message;
-            while(inputStream.read(data) != -1) {
-                message = new String(data, Charset.forName("utf-8"));
-                sb.append(message);
-            }
-
-            message = sb.toString();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String message = bufferedReader.readLine();
+//            byte[] data = new byte[1024];
+//            StringBuffer sb = new StringBuffer();
+//            boolean var6 = false;
+//
+//            String message;
+//            while(inputStream.read(data) != -1) {
+//                message = new String(data, Charset.forName("utf-8"));
+//                sb.append(message);
+//            }
+//
+//            message = sb.toString();
             inputStream.close();
             connection.disconnect();
             return message;

@@ -18,8 +18,9 @@ public class Message<T> {
 		this.message = message;
 	}
 
-	public void setStatus(int status) {
+	public Message<T> setStatus(int status) {
 		this.status = status;
+		return this;
 	}
 
 	public Message<T> setOK() {
