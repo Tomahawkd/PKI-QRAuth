@@ -253,7 +253,7 @@ public class QRCodeAuthenticationController {
 		int nonce = Integer.parseInt(requestMap.get("nonce2"));
 
 		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
-				"queryQRStatus", SystemLogModel.DEBUG, "nonce decryption complete.");
+				"queryQRStatus", SystemLogModel.DEBUG, "nonce parse complete.");
 
 		SystemKeyModel systemKeyModel = systemKeyService.getByApi(requestMap.get("system"));
 		PublicKey spub = SecurityFunctions.readPublicKey(systemKeyModel.getPublicKey());
