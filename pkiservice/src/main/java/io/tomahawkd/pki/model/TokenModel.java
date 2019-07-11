@@ -84,6 +84,9 @@ public class TokenModel {
 				", userId=" + userId +
 				", createDate=" + createDate +
 				", validBy=" + validBy +
+				", nonce=" + nonce +
+				", device='" + device + '\'' +
+				", ip='" + ip + '\'' +
 				'}';
 	}
 
