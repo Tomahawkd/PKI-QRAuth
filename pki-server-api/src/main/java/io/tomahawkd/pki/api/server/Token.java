@@ -92,7 +92,7 @@ public class Token {
 
         if (userMessage.getStatus() == -2)//注册失败  密码错误
         {
-            responseMap.put("M", new Message<String>().setStatus(-1).setMessage(" failed").toJson());
+            responseMap.put("M", new Message<String>().setStatus(-2).setMessage(" failed").toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -109,7 +109,7 @@ public class Token {
         requestMap.put("D", ip + ";" + device);
         requestMap.put("T", time2);
 
-
+        System.out.println("init");
         try {
             String target_url = IP + "/token/init";
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
@@ -185,7 +185,7 @@ public class Token {
         String target_url = IP + "/token/validate";
 
         Map<String, String> responseMap = new HashMap<>();
-
+        System.out.println("auth");
         Map<String, Object> ereceive = request(new Gson().toJson(tokenRequestMessage), target_url);
 
         if ((boolean) ereceive.get("status")) {
@@ -264,7 +264,7 @@ public class Token {
         requestMap.put("iv", bodydata.get("iv"));
         requestMap.put("T", time2);
         requestMap.put("system", systemid);
-
+        System.out.println("gen");
         String content = new Gson().toJson(requestMap);
         Map<String, Object> result = request(content, IP + "/qr/genqr");
 
@@ -331,7 +331,7 @@ public class Token {
         tokenRequestMessage.setDevice(ip + ";" + device);
         tokenRequestMessage.setTime(time2);
         tokenRequestMessage.setRawMessage(bodydata.get("M"));
-
+        System.out.println("update");
         result = request(tokenRequestMessage.toJson(), IP + "/qr/update");
         Map<String, String> responseMap = new HashMap<>();
 
@@ -395,7 +395,7 @@ public class Token {
         String content = new Gson().toJson(requestMap);
         String target_url = IP + "/qr/query";
         Map<String, String> responseMap = new HashMap<>();
-
+        System.out.println("roll");
         Map<String, Object> ereceive = request(content, target_url);
 
         if ((boolean) ereceive.get("status")) {
