@@ -112,6 +112,7 @@ function getKeys() {
             if (msg) {
                 if (msg.status === 0 && validateTimeStamp(data.T)) {
                     var list = msg.message;
+                    $("#token_list_content").empty();
                     for (var index in list) {
                         var text = '<div class="form-group row">' +
                                         '<div class="col-2">' + list[index].date + '</div>' +
@@ -142,7 +143,7 @@ function deleteToken(btn) {
     $.ajax({
         url: "/user/management/token/revoke",
         type: "post",
-        data: JSON.stringify(generateInteractionPackage()),
+        data: JSON.stringify(generateInteractionPackage(payload)),
         contentType: "json/application; charset=utf-8",
         dataType: "json",
         success: function(data) {
@@ -166,13 +167,23 @@ function deleteToken(btn) {
 
 function resetKeyPair() {
     $.ajax({
-        url: "/user/management/token/regenkeys",
+        url: "/user/management/regenkeys",
         type: "post",
         data: JSON.stringify(generateInteractionPackage({})),
         contentType: "json/application; charset=utf-8",
         dataType: "json",
         success: function(data) {
-            logout();
+
+            var msg = JSON.parse(data.M);
+                            if (msg) {
+                                if (msg.status === 0 && validateTimeStamp(data.T)) {
+                                    logout();
+                                } else if (msg.status === -1) {
+                                    $(".error_box").text("重置失败！");
+                                } else {
+                                    alert("未知错误");
+                                }
+                            }
         },
         error: function(data) {
             alert("密钥重置失败");

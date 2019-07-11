@@ -51,6 +51,7 @@ function showProfileTab() {
     $('#profile-link').addClass('active');
     $('.tab-content .active').removeClass('show').removeClass('active');
     $('#profile-tab').addClass('show').addClass('active');
+    update();
 }
 
 function showReferencesTab() {
