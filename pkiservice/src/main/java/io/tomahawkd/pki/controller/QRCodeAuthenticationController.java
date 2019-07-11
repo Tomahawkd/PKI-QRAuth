@@ -141,6 +141,10 @@ public class QRCodeAuthenticationController {
 	public String updateQRStatus(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException {
 
+		systemLogService.insertLogRecord(QRCodeAuthenticationController.class.getName(),
+				"updateQRStatus", SystemLogModel.INFO,
+				"Start update qr code status.");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService,
 				userLogService, userKeyService,

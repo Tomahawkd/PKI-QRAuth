@@ -191,6 +191,10 @@ public class TokenValidationController {
 	public String tokenValidation(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
 
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenValidation", SystemLogModel.INFO,
+				"Token validation start.");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
@@ -223,6 +227,10 @@ public class TokenValidationController {
 	@PostMapping("/deinit")
 	public String tokenRevoke(@RequestBody String data)
 			throws MalformedJsonException, IOException, CipherErrorException, NotFoundException {
+
+		systemLogService.insertLogRecord(TokenValidationController.class.getName(),
+				"tokenRevoke", SystemLogModel.INFO,
+				"Token revoke start.");
 
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,

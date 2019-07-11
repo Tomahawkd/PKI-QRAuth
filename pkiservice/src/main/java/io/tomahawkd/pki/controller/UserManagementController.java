@@ -61,14 +61,15 @@ public class UserManagementController {
 	 */
 	@PostMapping("/log")
 	public String getUserLogById(@RequestBody String data) throws MalformedJsonException, IOException {
+
+		systemLogService.insertLogRecord(UserManagementController.class.getName(),
+				"getUserLogById", SystemLogModel.INFO,
+				"Start to collect user log");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, List.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
-
-					systemLogService.insertLogRecord(UserManagementController.class.getName(),
-							"getUserLogById", SystemLogModel.INFO,
-							"Start to collect user log");
 
 					List<UserLogModel> logModelList =
 							userLogService.getUserActivitiesById(userKeyModel.getUserId(),
@@ -102,14 +103,15 @@ public class UserManagementController {
 	 */
 	@PostMapping("/token/list")
 	public String listToken(@RequestBody String data) throws MalformedJsonException, IOException {
+
+		systemLogService.insertLogRecord(UserManagementController.class.getName(),
+				"getUserLogById", SystemLogModel.INFO,
+				"Start collect user token");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, List.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
-
-					systemLogService.insertLogRecord(UserManagementController.class.getName(),
-							"getUserLogById", SystemLogModel.INFO,
-							"Start collect user token");
 
 					List<Map<String, String>> tokenIdList =
 							tokenService.getTokenListByUserId(userKeyModel.getUserId());
@@ -145,14 +147,15 @@ public class UserManagementController {
 	 */
 	@PostMapping("/token/revoke")
 	public String revokeToken(@RequestBody String data) throws MalformedJsonException, IOException {
+
+		systemLogService.insertLogRecord(UserManagementController.class.getName(),
+				"getUserLogById", SystemLogModel.INFO,
+				"Start revoke user token");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
 				(requestMessage, userKeyModel, tokenModel, systemKeyModel, tokenMessage, device, ip) -> {
-
-					systemLogService.insertLogRecord(UserManagementController.class.getName(),
-							"getUserLogById", SystemLogModel.INFO,
-							"Start revoke user token");
 
 					try {
 						String token = requestMessage.getMessage().getMessage();
@@ -206,6 +209,11 @@ public class UserManagementController {
 	 */
 	@PostMapping("/keys/regen")
 	public String regenerateKeys(@RequestBody String data) throws MalformedJsonException, IOException {
+
+		systemLogService.insertLogRecord(UserManagementController.class.getName(),
+				"regenerateKeys", SystemLogModel.INFO,
+				"Start reset user key pair");
+
 		return TokenUtils.tokenValidate(data,
 				systemLogService, tokenService, userLogService,
 				userKeyService, systemKeyService, userIndexService, String.class,
