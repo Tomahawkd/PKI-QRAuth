@@ -115,7 +115,7 @@ public class Token {
             Map<String, Object> ereceive = request(new Gson().toJson(requestMap), target_url);
             if ((boolean) ereceive.get("status")) {
                 responseMap.put("M",
-                        new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
+                        new Message<String>().setStatus(-3).setMessage((String) ereceive.get("message")).toJson());
                 return new Gson().toJson(responseMap);
             }
             Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -150,7 +150,7 @@ public class Token {
             } else throw new Exception("Message status error");
         } catch (Exception e) {
             onerror.delete(userid);
-            responseMap.put("M", new Message<String>().setStatus(1).setMessage("failed").toJson());
+            responseMap.put("M", new Message<String>().setStatus(-4).setMessage("failed").toJson());
             e.printStackTrace();
             return new Gson().toJson(responseMap);
         }
@@ -190,7 +190,7 @@ public class Token {
 
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(2).setMessage((String) ereceive.get("message")).toJson());
+                    new Message<String>().setStatus(-3).setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
         TokenResponseMessage<String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -232,10 +232,10 @@ public class Token {
                     responseMap.put("payload", data);
                 }
             } else {
-                responseMap.put("M", new Message<String>().setStatus(2).setMessage("time auth failed").toJson());
+                responseMap.put("M", new Message<String>().setStatus(-4).setMessage("time auth failed").toJson());
             }
         } else {
-            responseMap.put("M", new Message<String>().setStatus(2).setMessage("failed").toJson());
+            responseMap.put("M", new Message<String>().setStatus(-4).setMessage("failed").toJson());
         }
         return new Gson().toJson(responseMap);
 
@@ -271,7 +271,7 @@ public class Token {
         Map<String, String> responseMap = new HashMap<>();
 
         if ((boolean) result.get("status")) {
-            responseMap.put("M", new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
+            responseMap.put("M", new Message<String>().setStatus(-3).setMessage((String) result.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -283,7 +283,7 @@ public class Token {
         }.getType());
 
         if (message.isError()) {
-            responseMap.put("M", new Message<String>().setStatus(1).setMessage(message.getMessage()).toJson());
+            responseMap.put("M", new Message<String>().setStatus(-4).setMessage(message.getMessage()).toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -292,7 +292,7 @@ public class Token {
 
         if (t1 != t + 1) {
             responseMap.put("M",
-                    new Message<String>().setStatus(1).setMessage("time authentication failed").toJson());
+                    new Message<String>().setStatus(-4).setMessage("time authentication failed").toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -337,7 +337,7 @@ public class Token {
 
         if ((boolean) result.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
+                    new Message<String>().setStatus(-3).setMessage((String) result.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
         TokenResponseMessage<String> receive = new Gson().fromJson((String) result.get("message"),
@@ -362,12 +362,12 @@ public class Token {
                 return new Gson().toJson(responseMap);
             }
             responseMap.put("M",
-                    new Message<String>().setError().setMessage("Time authentication failed").toJson());
+                    new Message<String>().setStatus(-4).setMessage("Time authentication failed").toJson());
             return new Gson().toJson(responseMap);
 
         } else {
             responseMap.put("M",
-                    new Message<String>().setError().setMessage(message.getMessage()).toJson());
+                    new Message<String>().setStatus(-4).setMessage(message.getMessage()).toJson());
             return new Gson().toJson(responseMap);
         }
     }
@@ -400,7 +400,7 @@ public class Token {
 
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(-2).setMessage((String) ereceive.get("message")).toJson());
+                    new Message<String>().setStatus(-3).setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
         Map<String, String> receive = new Gson().fromJson((String) ereceive.get("message"),
@@ -410,7 +410,7 @@ public class Token {
         String timeString = receive.get("T");
         if (timeString == null || timeString.isEmpty()) {
             responseMap.put("M",
-                    new Message<String>().setStatus(-2).setMessage("Time Authentication Failed").toJson());
+                    new Message<String>().setStatus(-4).setMessage("Time Authentication Failed").toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -431,7 +431,7 @@ public class Token {
             return new Gson().toJson(responseMap);
         } else {
             responseMap.put("M",
-                    new Message<String>().setStatus(-2).setMessage("Time Authentication Failed").toJson());
+                    new Message<String>().setStatus(-4).setMessage("Time Authentication Failed").toJson());
             return new Gson().toJson(responseMap);
         }
     }
@@ -459,7 +459,7 @@ public class Token {
 
         if ((boolean) result.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(2).setMessage((String) result.get("message")).toJson());
+                    new Message<String>().setStatus(-3).setMessage((String) result.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
 
@@ -488,7 +488,7 @@ public class Token {
 
                 } else {
                     responseMap.put("M",
-                            new Message<String>().setStatus(-2).setMessage(message.getMessage()).toJson());
+                            new Message<String>().setStatus(-4).setMessage(message.getMessage()).toJson());
                 }
                 return new Gson().toJson(responseMap);
             }

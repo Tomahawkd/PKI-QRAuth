@@ -45,7 +45,7 @@ public class TokenUtils {
 
         if ((boolean) ereceive.get("status")) {
             responseMap.put("M",
-                    new Message<String>().setStatus(2)
+                    new Message<String>().setStatus(-3)
                             .setMessage((String) ereceive.get("message")).toJson());
             return new Gson().toJson(responseMap);
         }
@@ -65,7 +65,7 @@ public class TokenUtils {
             responseMap.put("T", time);
 
         } else {
-            responseMap.put("M", new Message<String>().setStatus(1)
+            responseMap.put("M", new Message<String>().setStatus(-4)
                     .setMessage("time authentiaction failed").toJson());
         }
         return new Gson().toJson(responseMap);
