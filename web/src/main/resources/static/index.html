@@ -9,35 +9,13 @@
     <script type="text/javascript" src="js/jquery.validate.js"></script>
     <script type="text/javascript" src="js/jquery-qrcode.js"></script>
     <script type="text/javascript" src="js/jquery.form.js"></script>
-    <script type="text/javascript" src="js/myvalidate.js"></script>
+    <script type="text/javascript" src="js/webpage/index.js"></script>
     <script type="text/javascript" src="js/security/jsencrypt.js"></script>
     <script type="text/javascript" src="js/security/pkiapi.js"></script>
     <script type="text/javascript" src="js/security/jquery.base64.js"></script>
     <script type="text/javascript" src="js/security/jquery.md5.js"></script>
     <script type="text/javascript" src="js/security/sha256.js"></script>
     <script type="text/javascript" src="js/security/aes.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            var $tab_li = $('#login_tab ul li');
-            $tab_li.click(function () {
-                $(this).addClass('selected').siblings().removeClass('selected');
-                var index = $tab_li.index(this);
-                $('div.tab_box > div').eq(index).show().siblings().hide();
-            });
-
-            $('#login_with_qrcode').click(function () {
-                QRAuthentation("/server/qr/gener", "/server/qr/roll", "home.html", $('#qrcode'));
-                $("#login_with_password").click(function () {
-                    if ($("#login_with_qrcode").hasClass("selected")) clearPolling();
-                });
-            });
-
-            $('#go_to_register').click(function () {
-                $('#login_tab').addClass('hide');
-                $('#register_tab').removeClass('hide');
-            });
-        });
-    </script>
     <script type="text/javascript">
         $(function () {
             //根据窗口宽度生成图片宽度
@@ -121,7 +99,7 @@
 </div>
 <div class="screenbg">
     <ul>
-        <li><a href="javascript:;"><img src="images/background.png"></a></li>
+        <li><a href="javascript:"><img src="images/background.png"></a></li>
     </ul>
 </div>
 </body>

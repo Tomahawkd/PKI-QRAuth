@@ -3,6 +3,32 @@
  */
 $(document).ready(function () {
     initialize();
+
+    if (localStorage.getItem("token") !== null && localStorage.getItem("Kcpub") !== null && localStorage.getItem("Kcpri") !== null) {
+        $(".error_box").text("检测到账号信息，即将自动登录");
+        setInterval(function() {window.location.href = "home.html";}, 2000);
+    }
+
+
+    var $tab_li = $('#login_tab ul li');
+    $tab_li.click(function () {
+        $(this).addClass('selected').siblings().removeClass('selected');
+        var index = $tab_li.index(this);
+        $('div.tab_box > div').eq(index).show().siblings().hide();
+    });
+
+    $('#login_with_qrcode').click(function () {
+        QRAuthentation("/server/qr/gener", "/server/qr/roll", "home.html", $('#qrcode'));
+        $("#login_with_password").click(function () {
+            if ($("#login_with_qrcode").hasClass("selected")) clearPolling();
+        });
+    });
+
+    $('#go_to_register').click(function () {
+        $('#login_tab').addClass('hide');
+        $('#register_tab').removeClass('hide');
+    });
+
     /**
      * set the display location of error message.
      */
@@ -10,8 +36,7 @@ $(document).ready(function () {
         debug: false,
         errorElement: 'div',
         errorPlacement: function (error) {
-            $('.error_box').empty();
-            $('.error_box').append(error);
+            $('.error_box').text(error);
         }
     });
 
@@ -22,24 +47,24 @@ $(document).ready(function () {
         rules: {
             username: {
                 required: true,
-                rangelength: [6, 18],
+                rangelength: [6, 18]
             },
 
             password: {
                 required: true,
-                rangelength: [6, 18],
+                rangelength: [6, 18]
             }
         },
 
         messages: {
             username: {
                 required: '请输入用户名',
-                rangelength: '用户名长度必须为6-18个字符',
+                rangelength: '用户名长度必须为6-18个字符'
             },
 
             password: {
                 required: '请输入密码',
-                rangelength: '密码长度必须为6-18个字符',
+                rangelength: '密码长度必须为6-18个字符'
             }
         },
 
@@ -81,6 +106,10 @@ $(document).ready(function () {
                         $(".error_box").text("用户名不存在！");
                     } else if (data.status === -2) {
                         $(".error_box").text("密码错误！");
+                    } else if (data.status === -3) {
+                        $(".error_box").text("服务器内部错误， 请重试！");
+                    } else if (data.status === -4) {
+                        $(".error_box").text("登录失败，请重试");
                     }
                 }
             },
@@ -166,6 +195,10 @@ $(document).ready(function () {
                         $(".error_box").text("该用户名已存在！");
                     } else if (msg.status === -2) {
                         $(".error_box").text("注册失败！");
+                    } else if (msg.status === -3) {
+                        $(".error_box").text("服务器内部错误，请重试");
+                    } else if (msg.status === -4) {
+                        $(".error_box").text("注册失败，请重试");
                     }
                 }
             },
