@@ -15,14 +15,14 @@ public class ServerApplication {
 
 	public static void main(String[] args) throws Exception {
 
-		Token.setApiKey("0f727b2b2e27480a87b30bce8ed8e459");
+		Token.setApiKey("cab4af0fc499491eb9bb16120e3ae195");
 
 		byte[] pubBytes = Base64.getDecoder().decode(
-				FileUtil.readFile("./web/src/main/resources/public.pub"));
+				FileUtil.readFile("./web/src/main/resources/server.pub"));
 		Token.readPublicKey(pubBytes);
 
 		byte[] priBytes = Utils.base64Decode(
-				FileUtil.readFile("./web/src/main/resources/private.pri"));
+				FileUtil.readFile("./web/src/main/resources/server.pri"));
 		Token.readPrivateKey(priBytes);
 
 

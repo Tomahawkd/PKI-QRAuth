@@ -103,7 +103,7 @@ public class SecurityFunctions {
 
     private static PrivateKey readServerPrivateKey() throws IOException, CipherErrorException {
         byte[] priBytes = Utils.base64Decode(
-                FileUtil.readFile(FileUtil.rootPath + "/resources/private.pri"));
+                FileUtil.readFile(FileUtil.rootPath + "/resources/server.pri"));
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(priBytes));
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
