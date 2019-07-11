@@ -455,7 +455,7 @@ public class Token {
         String content = new Gson().toJson(requestMap);
         Map<String, String> responseMap = new HashMap<>();
 
-        Map<String, Object> result = request(content, "/token/deinit");
+        Map<String, Object> result = request(content, IP+"/token/deinit");
 
         if ((boolean) result.get("status")) {
             responseMap.put("M",
