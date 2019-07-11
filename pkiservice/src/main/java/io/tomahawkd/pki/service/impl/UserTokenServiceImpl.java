@@ -49,7 +49,7 @@ public class UserTokenServiceImpl implements UserTokenService {
 	}
 
 	@Override
-	public boolean validateToken(TokenModel token, int nonce) {
+	public synchronized boolean validateToken(TokenModel token, int nonce) {
 
 		TokenModel model = dao.getByTokenId(token.getTokenId());
 
