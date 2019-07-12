@@ -1,8 +1,7 @@
 /**
  * get the SPub and TPub from server, store it in localStorage
- * @param serverUrl the url of the server.
  */
-function initialize() {
+function initialize1() {
     localStorage.removeItem("SPub");
     localStorage.removeItem("TPub");
     if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
@@ -23,6 +22,44 @@ function initialize() {
         $.ajax({
             url: "key/dist/tpub",
             type: "get",
+            success: function (data) {
+                localStorage.setItem("TPub", data);
+                console.log("success to get public keys of server");
+            },
+            error: function () {
+                console.log("failed to get public keys of server");
+            }
+        })
+    }
+}
+
+
+/**
+ * get the SPub and TPub from server, store it in localStorage
+ */
+function initialize2() {
+    localStorage.removeItem("SPub");
+    localStorage.removeItem("TPub");
+    if (localStorage.getItem("SPub") === null || localStorage.getItem("SPub") === "undefined") {
+        $.ajax({
+            url: "key/dist/spub",
+            type: "get",
+            async: false,
+            success: function (data) {
+                localStorage.setItem("SPub", data);
+                console.log("success to get public keys of server");
+            },
+            error: function () {
+                console.log("failed to get public keys of server");
+            }
+        })
+    }
+
+    if (localStorage.getItem("TPub") === null || localStorage.getItem("TPub") === "undefined") {
+        $.ajax({
+            url: "key/dist/tpub",
+            type: "get",
+            async: false,
             success: function (data) {
                 localStorage.setItem("TPub", data);
                 console.log("success to get public keys of server");
@@ -188,7 +225,12 @@ function QRAuthentation(QRCodeUrl, pollingUrl, targetUrl, QRCodeElement, click_f
         success: function (data) {
             QRCodeElement.empty();
             decryptNonce2(data.nonce2);
-            generateQRCode(sessionStorage.getItem("QRCodeNonce"), QRCodeElement);
+            var nonce2 = sessionStorage.getItem("QRCodeNonce");
+            if (isNaN(nonce2) || nonce2 === null) {
+                QRCodeElement.innerHTML = "<p>获取二维码失败，点击刷新</p>";
+                return;
+            }
+            generateQRCode(nonce2, QRCodeElement);
             poller = setInterval(function () {
                 polling(pollingUrl, targetUrl, QRCodeElement);
             }, 1000);
@@ -233,7 +275,7 @@ function generateKctAndIv() {
 /**
  * generate a package(place as the payload) used to login with username and password
  * @param data the username and password of the user.
- * @returns {{message: json, T: string, K: string, iv: string}} the request package for login
+ * @returns {{payload: string, T: string, K: string, iv: string}} the request package for login
  */
 function generateInitialPackage(data) {
     var TPub = localStorage.getItem("TPub");
@@ -426,17 +468,6 @@ function generateInteractionPackage(data) {
     var timeStamp = generateTimeStamp();
     var eToken = generateEToken();
     return {payload: JSON.stringify(data), T:timeStamp, EToken: eToken};
-}
-
-
-/**
- * parse the interaction package with server, validate timeStamp
- * @param data data the package containing the business data and timeStamp
- * @returns {null} after passing validation, return the business data
- */
-function parseInteractionPackage(data) {
-    if (!validateTimeStamp(data.T)) return null;
-    return JSON.parse(data.payload);
 }
 
 

@@ -1,6 +1,3 @@
-/**
- * Created by Administrator on 2019/6/22.
- */
 $(document).ready(function () {
     $('.content-inner').load('profile.html');
     $('#header').css('background-color', 'green');
@@ -33,7 +30,7 @@ function logout() {
         url: "/user/logout",
         type: "post",
         data: JSON.stringify(generateInteractionPackage({})),
-        contentType: "json/applicetion; charset=utf-8",
+        contentType: "json/application; charset=utf-8",
         dataType: "json"
     });
     sessionStorage.clear();

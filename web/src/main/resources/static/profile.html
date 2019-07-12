@@ -12,10 +12,14 @@
                                 class="fa fa-cog"></i></span>信息修改</a>
                     </li>
                 </ul>
-
                 <!-- Tab panes -->
                 <div class="tab-content tabs">
                     <div role="tabpanel" class="tab-pane fade show active" id="profile-tab">
+                        <div class="row mt-3">
+                            <div class="col-4"></div>
+                            <div class="error_box col-4"></div>
+                            <div class="col-4"></div>
+                        </div>
                         <p id="bio-display"></p>
                         <div class="row mt-3">
                             <h5 class="col-12 mb-2">User Info</h5>
@@ -38,6 +42,11 @@
                         </div>
                     </div>
                     <div role="tabpanel" class="tab-pane fade" id="references-tab">
+                        <div class="row mt-3">
+                            <div class="col-4"></div>
+                            <div class="error_box col-4"></div>
+                            <div class="col-4"></div>
+                        </div>
                         <div class="row mx-2">
                             <div class="col-md-12 panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-comment"></i>编辑信息</h3><br>
@@ -54,14 +63,16 @@
                                 </div>
                             </div>
                             <form id="update-info-form" class="col-md-12">
+                                <div class="row mx-2">
                                 <div class="col-md-12">
                                     <div class="form-group row">
                                         <label for="bio-input" style="width: 85px;"
                                                class=" col-form-label">个人简介</label>
-                                        <div class="col-9">
+                                        <div class="col-10">
                                             <input class="form-control" type="text" id="bio-input" name="bio">
                                         </div>
                                     </div>
+                                </div>
                                 </div>
                                 <div class="row mx-2">
                                     <div class="col-md-6">
@@ -111,4 +122,4 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="js/profile.js"></script>
+<script type="text/javascript" src="js/webpage/profile.js"></script>
