@@ -209,6 +209,6 @@ Temporary Items
 
 
 
-private.pri
-public.pub
+*.pri
+*.pub
 application.properties
