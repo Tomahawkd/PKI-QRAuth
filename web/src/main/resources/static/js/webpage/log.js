@@ -15,8 +15,10 @@ $(document).ready(function () {
                             "<td>" + list[index].ip + "</td>" + "<td>" + list[index].device + "</td>" +
                             "<td>" + list[index].message + "</td></tr>");
                     }
-                } else {
+                } else if (msg.status === -4 || msg.status === 1) {
                     logout();
+                } else {
+                    $(".error_box").text("获取日志失败，请刷新页面重试");
                 }
             }
         },
