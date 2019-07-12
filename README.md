@@ -48,3 +48,7 @@ This project is divided into several permissions:
 3. **Check repo update and merge into your code**
 
 4. pull request
+
+### Note
+
+With the summer internship ends, the repo will hardly be updated. And I will maintain the repo from time to time when I get free.
