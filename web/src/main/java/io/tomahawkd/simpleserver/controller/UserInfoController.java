@@ -37,8 +37,8 @@ public class UserInfoController {
     @Resource
     private UserPasswordService userPasswordService;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate;
 
 
     @PostMapping("/data")

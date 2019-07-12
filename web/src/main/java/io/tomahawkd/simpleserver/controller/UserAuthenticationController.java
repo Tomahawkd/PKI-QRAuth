@@ -34,8 +34,8 @@ public class UserAuthenticationController {
     private UserPasswordService userPasswordService;
     @Resource
     private SystemLogService systemLogService;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate;
 
     @PostMapping("/register")
     public String userRegister(@RequestBody String data, HttpServletRequest request) throws UnsupportedEncodingException, MalformedJsonException, Exception {
