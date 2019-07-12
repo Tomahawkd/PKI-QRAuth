@@ -1,21 +1,19 @@
 $(document).ready(function () {
     update();
 
-    $("#image-file").change(function (e) {
-        console.log("change image");
-        var file = e.target.files[0] || e.dataTransfer.files[0];
-        console.log(file);
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                $("#show-image").attr("src", this.result);
-            }
-            reader.readAsDataURL(file);
-        }
-        console.log("change image finish");
-    });
+    // $("#image-file").change(function (e) {
+    //     var file = e.target.files[0] || e.dataTransfer.files[0];
+    //     if (file) {
+    //         var reader = new FileReader();
+    //         reader.onload = function () {
+    //             $("#show-image").attr("src", this.result);
+    //         }
+    //         reader.readAsDataURL(file);
+    //     }
+    // });
 
     $("#save-profile-btn").click(function () {
+        $(".error_box").empty();
         var formArray = $("#update-info-form").serializeArray();
         var formObject = {};
         var sex = {"未知": 0, "男": 1, "女": 2};
@@ -26,20 +24,29 @@ $(document).ready(function () {
                 formObject[item.name] = item.value;
 
         });
-        console.log(formObject);
 
         $.ajax({
             url: "/user/info/update/info",
             type: "post",
             data: JSON.stringify(generateInteractionPackage(formObject)),
             contentType: "application/json; charset=utf-8",
-            processData: false,
+            dataType: "json",
             success: function (data) {
-                update();
-                window.location.href = "home.html";
+                var msg = JSON.parse(data.M);
+                if (msg) {
+                    if (msg.status === 0 && validateTimeStamp(data.T)) {
+                        $(".error_box").text("修改成功！");
+                        update();
+                        window.location.href = "home.html";
+                    } else if (data.status === -4) {
+                        logout();
+                    } else if (data.status === -3) {
+                        $(".error_box").text("修改失败，请刷新页面后重试");
+                    }
+                }
             },
             error: function (data) {
-                console.log(data);
+                $(".error_box").text("连接失败！");
             }
         });
     });
@@ -47,6 +54,7 @@ $(document).ready(function () {
 
 
 function showProfileTab() {
+    $(".error_box").empty();
     $('.nav-link.active').removeClass('active');
     $('#profile-link').addClass('active');
     $('.tab-content .active').removeClass('show').removeClass('active');
@@ -55,6 +63,7 @@ function showProfileTab() {
 }
 
 function showReferencesTab() {
+    $(".error_box").empty();
     $('.nav-link.active').removeClass('active');
     $('#references-link').addClass('active');
     $('.tab-content .active').removeClass('show').removeClass('active');
@@ -62,7 +71,8 @@ function showReferencesTab() {
 }
 
 function update() {
-$.ajax({
+    $(".error_box").empty();
+    $.ajax({
         url: "/user/info/data",
         type: "post",
         contentType: "application/json; charset=utf-8",
@@ -71,17 +81,17 @@ $.ajax({
         success: function (data) {
             var msg = JSON.parse(data.M);
             if (msg) {
-                if (msg.status === 0) {
-                    var payload = parseInteractionPackage(data);
+                if (msg.status === 0 && validateTimeStamp(data.T)) {
+                    var payload = JSON.parse(data.payload);
                     if (payload !== {}) {
                         var sex = ["未知", "男", "女"]; //the mapping of number and sex.
 
                         // store the information to storage
-                        sessionStorage.setItem("username", payload.name);
-                        sessionStorage.setItem("bio", payload.bio);
-                        sessionStorage.setItem("phone", payload.phone);
-                        sessionStorage.setItem("email", payload.email);
-                        sessionStorage.setItem("sex", sex[payload.sex]);
+                        // sessionStorage.setItem("username", payload.name);
+                        // sessionStorage.setItem("bio", payload.bio);
+                        // sessionStorage.setItem("phone", payload.phone);
+                        // sessionStorage.setItem("email", payload.email);
+                        // sessionStorage.setItem("sex", sex[payload.sex]);
 
                         //display the infomation
                         $("#name-display").append(payload.name);
@@ -96,14 +106,16 @@ $.ajax({
                         $("#email-input").val(payload.email);
                         $("#sex-input").val(sex[payload.sex]);
                     }
-                } else if (msg.status === 1) {
-                    $(".error_box").text("注册失败！");
+                } else if (msg.status === -4) {
+                    logout();
+                } else if (msg.status === -3) {
+                    $(".error_box").text("获取个人信息失败，请刷新页面重试！");
                 }
             }
 
         },
         error: function (e) {
-            alert("错误！");
+            $(".error_box").text("连接错误,请刷新页面重试！");
         }
     });
 }
