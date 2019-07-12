@@ -29,18 +29,40 @@ PKI based QR code authentication system
    | -- android (for android client)
           | -- app
                 | -- build
-                | -- release
+                | -- libs
+                       | -- clientAPI.jar
                 | --  src (source code)
                        | -- main
+                              | -- assets
+                                     | -- URLconfig (store server address)
                               | -- java
                                      | -- com.Vshows.PKI
+                                             | -- fragment
+                                                   | -- userInfoFragment 
+                                                   | -- userLogFragment 
+                                             | -- util
+                                                   | -- DBHelper (create SQLite)
+                                                   | -- keyManager (database operation)
+                                                   | -- StringToKey 
+                                                   | -- SystemUtil (get device infomation)
+                                                   | -- TokenList
+                                                   | -- TokenListAdapter (show token list ListView)
+                                                   | -- URLUtil (get url from URLConfig)
+                                                   | -- UserLog
+                                                   | -- UserLogAdapter (show user log ListView)
+                                             | -- BottomBar
+                                             | -- changepsw
+                                             | -- ChangeSelfInfo
+                                             | -- ChangeToken
                                              | -- Check (confirm login)
+                                             | -- index
                                              | -- Login 
                                              | -- Register 
                                              | -- Scan 
+                                             | -- welcome
                               | -- res
                                      | -- drawable
-                                     | -- layout
+                                     | -- layout (xml dir)
                                      | -- mipmap-anydpi-v26
                                      | -- mipmap-hdpi
                                      | -- mipmap-mdpi
@@ -55,17 +77,16 @@ PKI based QR code authentication system
                 | -- proguard-rules.pro
                 | -- zxing.jks
           | -- gradle
-          | -- img
           | -- zxinglibrary (library for scanning QRcode)
           | -- .gitignore
-          | -- build.properties
+          | -- build.gradle
+          | -- gradle.properties
           | -- gradlew
           | -- gradlew.bat
           | -- local.properties
-          | -- PKI_SCAN.iml
+          | -- OWENERS
           | -- README.md
           | -- settings.gradle
-          | -- sh.exe.stackdump
                                      
 ```
 ## Permission
