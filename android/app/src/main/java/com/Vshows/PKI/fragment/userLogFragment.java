@@ -58,8 +58,6 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
     private String name;
     private Handler handler = null;
 
-    private boolean isFirstLoading = true;
-
     private static List<UserLog> userLogList = new ArrayList<>();
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -74,23 +72,9 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
 
         listView = (ListView)view.findViewById(R.id.userlogListView);
         init();
-        Log.d("loglist",userLogList.toString());
-
 
         return view;
     }
-
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//
-//        if (!isFirstLoading) {
-//            //如果不是第一次加载，刷新数据
-//            updateUI();
-//        }
-//
-//        isFirstLoading = false;
-//    }
 
     public void init(){
         new Thread(new Runnable() {
@@ -125,9 +109,7 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                         List<Map<String,String>> logList = new ArrayList<>();
                         logList = (List<Map<String, String>>) result.get("logList");
 
-                        Log.d("logmessage",logList.toString());
                         int n  = logList.size();
-                        Log.d("logsize",n + "");
                         for(int i = 0;i<n;i++){
                             Map<String,String> m = logList.get(i);
                             Log.d("mapfor",m.toString());
@@ -137,7 +119,6 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                             String message = m.get("message");
 
                             userLogList.add(new UserLog(time,ip,device,message));
-                            Log.d("logfor",userLogList.toString());
                         }
 
                         new Thread() {
@@ -155,13 +136,10 @@ public class userLogFragment extends Fragment implements View.OnClickListener {
                     }
                 }catch (Exception e){
                     e.printStackTrace();
-                    Log.d("loginit",e.getMessage());
                 }
 
             }
         }).start();
-//        UserLog userLog = new UserLog(1,1,"127.0.0.1","pct-sl00","change password");
-//        userLogList.add(userLog);
     }
 
     Runnable changeLogList = new Runnable() {

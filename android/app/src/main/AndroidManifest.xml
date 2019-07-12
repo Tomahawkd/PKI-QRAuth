@@ -19,9 +19,7 @@
         <activity android:name=".ChangeSelfInfo"></activity>
         <activity android:name=".changeToken"></activity>
         <activity android:name=".changepsw"></activity>
-        <activity android:name=".Scan">
 
-        </activity>
         <activity android:name=".Register">
 
         </activity>

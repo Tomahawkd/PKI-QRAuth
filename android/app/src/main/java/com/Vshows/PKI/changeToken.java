@@ -101,9 +101,7 @@ public class changeToken extends AppCompatActivity {
                         List<Map<String,String>> tokenList = new ArrayList<>();
                         tokenList = (List<Map<String, String>>) result.get("tokenList");
 
-                        Log.d("tokenlist",tokenList.toString());
                         int n  = tokenList.size();
-                        Log.d("tokenlistnum",n + "");
 
                         for(int i = 0;i<n;i++){
                             Map<String,String> m = tokenList.get(i);
@@ -188,10 +186,6 @@ public class changeToken extends AppCompatActivity {
                                     Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
                                     Looper.loop();
                                 }
-//                                String s = (String)v.getTag();
-//                                Looper.prepare();
-//                                Toast.makeText(getBaseContext(),"ua: " + s, Toast.LENGTH_LONG).show();
-//                                Looper.loop();
                             }catch (Exception e){
                                 e.printStackTrace();
                             }

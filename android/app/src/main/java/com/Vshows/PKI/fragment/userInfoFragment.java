@@ -43,10 +43,6 @@ import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -55,13 +51,8 @@ import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
 import io.tomahawkd.pki.api.client.util.Utils;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+
 
 import static android.app.Activity.RESULT_OK;
 
@@ -88,8 +79,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
 
     private String username,name,email,phone,bio,imagepath;
     private int sex;
-
-//    private boolean isFirstLoading = true;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @Override
@@ -122,18 +111,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         return view;
     }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//
-//        if (!isFirstLoading) {
-//            //如果不是第一次加载，刷新数据
-//            init_info();
-//        }
-//
-//        isFirstLoading = false;
-//    }
-
     public void init_info(){
 
         new Thread(new Runnable() {
@@ -150,7 +127,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                     String Spub = manager.getSpub(context);
                     String Cpri = manager.getCpri(context,ID);
                     byte[] token = Utils.base64Decode(manager.getToken(context,ID));
-                    Log.d("Token" ,Utils.base64Encode(token));
                     int nonce = manager.getNonce(context,ID);
                     manager.updateNonce(context,ID,nonce+1);
                     String payload = null;
@@ -172,7 +148,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                         /**
                          * change UI
                          */
-                        Log.d("selfinfo:",data);
                         Map<String,Object> info = new HashMap<>();
                         info = gson.fromJson(data,info.getClass());
                         username = ID;
@@ -199,7 +174,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                     }
                 }catch (Exception e){
                     e.printStackTrace();
-                    Log.d("getselfinfo",e.getMessage());
                 }
             }
         }).start();
@@ -274,49 +248,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
 
     }
 
-//    Runnable reGenKey = new Runnable() {
-//        @Override
-//        public void run() {
-//            try {
-//                Context context = getContext();
-//                Connecter connecter = new Connecter();
-//                keyManager manager = new keyManager();
-//                String ua = SystemUtil.getSystemModel();
-//                String url = URLUtil.getReGenKeyURL(context);
-//
-//                String Tpub = manager.getTpub(context);
-//                String Spub = manager.getSpub(context);
-//                String Cpri = manager.getCpri(context,ID);
-//                byte[] token = manager.getToken(context,ID).getBytes();
-//                int nonce = manager.getNonce(context,ID);
-//                manager.updateNonce(context,ID,nonce+1);
-//
-//                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-//                PublicKey SPub = StringToPKey.getPublicKey(Spub);
-//                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-//
-//                String resultJson = connecter.regenerateKeys(url,token,nonce,TPub,SPub,ua,CPri);
-//
-//                Gson gson = new Gson();
-//                Map<String,Object> result = new HashMap<>();
-//                result = gson.fromJson(resultJson,result.getClass());
-//
-//                int check = (int) result.get("check");
-//                if(check == 0){
-//
-//                } else {
-//                    String message = (String) result.get("message");
-//                    Looper.prepare();
-//                    Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
-//                    Looper.loop();
-//                }
-//            }catch (Exception e){
-//                e.printStackTrace();
-//                Log.d("loginit",e.getMessage());
-//            }
-//        }
-//    };
-
     private void showAlerDialog() {
         final AlertDialog dialog = new AlertDialog.Builder(this.getContext()).create();
 
@@ -373,8 +304,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                             int nonce1 = manager.getNonce(context,ID);
                             manager.updateNonce(context,ID,nonce1+1);
                             String nonce2 = data.getStringExtra(Constant.CODED_CONTENT);
-                            Log.d("scannonce",nonce1 + "");
-                            Log.d("scantoken",Utils.base64Encode(token));
 
                             PublicKey TPub = StringToPKey.getPublicKey(Tpub);
                             PublicKey SPub = StringToPKey.getPublicKey(Spub);
@@ -387,7 +316,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
 
                             int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                             if(check == 0){
-                                Log.d("nounce2",nonce2);
                                 Intent intent = new Intent(getContext(), Check.class);
                                 intent.putExtra("Extra", nonce2);
                                 intent.putExtra("username",ID);
@@ -402,12 +330,9 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                             }
                         }catch (Exception e){
                             e.printStackTrace();
-                            Log.d("scanerror",e.getMessage());
                         }
                     }
                 }).start();
-
-
             }
         }
     }

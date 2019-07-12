@@ -78,9 +78,6 @@ public class Connecter{
         String json = gson.toJson(map);
         String res = httpUtil.getJsonData(json,url,ua);
 
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
-
-
         Map<String, String> result =
                 new Gson().fromJson(res, new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -161,7 +158,6 @@ public class Connecter{
         String json = new Gson().toJson(reqMap);
 
         String res = httpUtil.getJsonData(json,url,ua);
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
 
         Map<String,String> result = new Gson().fromJson(res, new TypeToken<Map<String,String>>() {}.getType());
         String m = result.get("M");
@@ -238,7 +234,6 @@ public class Connecter{
         String json = gson.toJson(map);
 
         String res = httpUtil.getJsonData(json,url,ua);
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
 
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
@@ -304,7 +299,6 @@ public class Connecter{
 
         String res = httpUtil.getJsonData(json,url,ua);
 
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
 
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());        //assertThat(result.get("M")).contains("\"status\":0");
 
@@ -360,8 +354,6 @@ public class Connecter{
 
         String res = httpUtil.getJsonData(json,url,ua);
 
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
-
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
@@ -371,12 +363,8 @@ public class Connecter{
         Message<List<Map<String,String>>> message = new Gson().fromJson(M2,new TypeToken<Message<List<Map<String,String>>>>(){}.getType());
         if(t1 == t+1){
             if(message.isOk()){
-                // *******************************************
-                //List<UserLogModel>
-
                 List<Map<String,String>> logList = new ArrayList<>();
                 logList = message.getMessage();
-                System.out.println("message+++++++++++++++++++" + message.toJson());
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
                 map3.put("message","Success");
@@ -425,7 +413,6 @@ public class Connecter{
 
         String res = httpUtil.getJsonData(json,url,ua);
 
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
 
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
@@ -437,10 +424,8 @@ public class Connecter{
         Message<List<Map<String, String>>> message = new Gson().fromJson(M2,new TypeToken<Message<List<Map<String, String>>>>(){}.getType());
         if(t1 == t+1){
             if(message.isOk()){
-                // *******************************************
                 List<Map<String,String>> tokenList = new ArrayList<>();
                 tokenList = message.getMessage();
-                System.out.println("message+++++++++++++++++++" + message.toJson());
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
                 map3.put("message",message.getMessage());
@@ -508,7 +493,6 @@ public class Connecter{
 
         if(t1 == t+1){
             if(message.isOk()){
-                // *******************************************
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
                 map3.put("message",message.getMessage());
@@ -564,7 +548,6 @@ public class Connecter{
 
         if(t1 == t+1){
             if(message.isOk()){
-                // *******************************************
 
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);

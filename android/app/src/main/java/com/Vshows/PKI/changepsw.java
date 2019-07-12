@@ -144,8 +144,6 @@ public class changepsw extends AppCompatActivity implements View.OnClickListener
                 .setMessage("请输入正确的原密码")
                 .create();
 
-//        View dialogView = View.inflate(this,R.layout.confirm_to_quit,null);
-//        dialog.setView(dialogView);
         dialog.show();
 
         new Handler().postDelayed(new Runnable() {
