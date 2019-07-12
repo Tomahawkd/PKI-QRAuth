@@ -28,14 +28,13 @@ public class UserLogAdapter extends ArrayAdapter {
         UserLog userLog = (UserLog) getItem(position);
         View view = LayoutInflater.from(getContext()).inflate(layoutID,null);
 
-        TextView userID = (TextView)view.findViewById(R.id.userID);
-        TextView systemID = (TextView)view.findViewById(R.id.systemID);
+        TextView time = (TextView)view.findViewById(R.id.time1);
         TextView Ip = (TextView)view.findViewById(R.id.ip);
         TextView device = (TextView)view.findViewById(R.id.device);
         TextView message = (TextView)view.findViewById(R.id.doinfo);
 
-        userID.setText(String.valueOf(userLog.getUserId()));
-        systemID.setText(String.valueOf(userLog.getSystemId()));
+
+       time.setText(userLog.getTime());
         Ip.setText(userLog.getIp());
         device.setText(userLog.getDevice());
         message.setText(userLog.getMessage());

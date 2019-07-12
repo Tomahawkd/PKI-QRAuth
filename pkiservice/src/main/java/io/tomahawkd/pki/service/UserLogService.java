@@ -10,3 +10,6 @@ public interface UserLogService {
 
 	void insertUserActivity(int userId, int systemId, String device, String ip, String message);
 }
+
+
+

@@ -14,57 +14,100 @@
         android:layout_marginBottom="5dp"
         android:background="@drawable/linearlayout_line">
 
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#ffffff"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="5dp"
-                android:gravity="center|end"
-                android:text="登录设备:"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/ua"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
-                android:gravity="start|center_vertical"
-                android:text="user-agent"
-                android:textSize="18sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
             android:background="#ffffff"
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="match_parent"
-                android:layout_gravity="start"
                 android:layout_marginLeft="5dp"
                 android:gravity="center|end"
-                android:text="Token："
-                android:textSize="18sp" />
+                android:text="date:"
+                android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/token"
+                android:id="@+id/token_date"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
+                android:layout_marginRight="20dp"
                 android:gravity="start|center_vertical"
-                android:textSize="18sp" />
+                android:textSize="16sp" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:background="#ffffff"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:gravity="center|end"
+                android:text="ip:"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/token_ip"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="20dp"
+                android:gravity="start|center_vertical"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:background="#ffffff"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:gravity="center|end"
+                android:text="device:"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/token_device"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="20dp"
+                android:gravity="start|center_vertical"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#ffffff"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:gravity="center|end"
+                android:text="ID:"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/token_ID"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="20dp"
+                android:gravity="start|center_vertical"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,10 +115,10 @@
             android:gravity="end">
 
             <Button
-                android:layout_width="60dp"
                 android:id="@+id/revoke"
+                android:layout_width="60dp"
                 android:layout_height="30dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginRight="20dp"
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/del_token_btn"
                 android:text="删除"

@@ -58,6 +58,18 @@ public class keyManager {
         sqLiteDatabase.close();
     }
 
+    public void deleteClientTable(Context context){
+        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
+        sqLiteDatabase.delete(CLIENT_TABLE,null,null);
+        sqLiteDatabase.close();
+    }
+
+    public void deleteSeverTable(Context context){
+        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
+        sqLiteDatabase.delete(SERVER_TABLE,null,null);
+        sqLiteDatabase.close();
+    }
+
     public String getSpub(Context context){
         SQLiteDatabase sqLiteDatabase = getReadableDB(context);
 
@@ -152,6 +164,16 @@ public class keyManager {
         cursor.close();
         sqLiteDatabase.close();
         return Nonce;
+    }
+
+    public void updateNonce(Context context,String id,int Nonce){
+        SQLiteDatabase sqLiteDatabase = getWritableDB(context);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(nonce ,Nonce);
+        sqLiteDatabase.update(CLIENT_TABLE,contentValues,"id = ?",new String[] {id });
+        Log.d("updateNonce", "Nonce:" + Nonce);
+        sqLiteDatabase.close();
     }
 
     public void getAllServerKey(Context context){

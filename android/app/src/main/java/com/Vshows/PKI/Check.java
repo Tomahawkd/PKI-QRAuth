@@ -15,6 +15,7 @@ import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
 import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
+import com.Vshows.zxinglibrary.common.Constant;
 import com.google.gson.Gson;
 
 import java.security.PrivateKey;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.Utils;
 
 public class Check extends AppCompatActivity implements View.OnClickListener{
     private Button checkBtn;
@@ -53,17 +55,18 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.checkBtn:
-                Toast.makeText(this, nonce2, Toast.LENGTH_LONG).show();
-
+                //Toast.makeText(this, nonce2, Toast.LENGTH_LONG).show();
+                confirmToLogin("1");
                 break;
             case R.id.cancelBtn:
-                Toast.makeText(this, "you type cancel", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "you type cancel", Toast.LENGTH_LONG).show();
+                confirmToLogin("0");
                 break;
             default:
         }
     }
 
-    private void confirmToLogin(final int type){
+    private void confirmToLogin(final String type){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -77,26 +80,29 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
                     String Tpub = manager.getTpub(context);
                     String Spub = manager.getSpub(context);
                     String Cpri = manager.getCpri(context,name);
-                    byte[] token = manager.getToken(context,name).getBytes();
+                    byte[] token = Utils.base64Decode(manager.getToken(context,name));
                     int nonce1 = manager.getNonce(context,name);
+                    manager.updateNonce(context,name,nonce1+1);
 
                     PublicKey TPub = StringToPKey.getPublicKey(Tpub);
                     PublicKey SPub = StringToPKey.getPublicKey(Spub);
                     PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
 
-                    String resultJson = connecter.updateQRStatusConfirm(url,token,nonce1,nonce2,TPub,SPub,CPri,type,ua);
+                    String resultJson = connecter.updateQRStatusConfirm(url,token,nonce1,TPub,SPub,CPri,type,ua);
 
                     Gson gson = new Gson();
                     Map<String,Object> result = new HashMap<>();
                     result = gson.fromJson(resultJson,result.getClass());
 
-                    int check = (int) result.get("check");
-                    if (type == 1){
+                    int check = (int) Math.round(Double.parseDouble(result.get("check").toString()));
+                    if (type.equals("1")){
                         if(check == 0){
-                            Intent intent = new Intent(getBaseContext(),index.class);
-                            intent.putExtra("Extra", nonce2);
-                            intent.putExtra("username", name);
-                            startActivity(intent);
+//                            Intent intent = new Intent(getBaseContext(),index.class);
+//                            intent.putExtra("Extra", nonce2);
+//                            intent.putExtra("username", name);
+//                            startActivity(intent);
+//
+                            finish();
                         } else {
                             String message = (String) result.get("message");
                             Looper.prepare();
@@ -104,17 +110,21 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
                             Looper.loop();
                         }
                     } else {
-                        if(check == 0){
-                            Intent intent = new Intent(getBaseContext(), index.class);
-                            intent.putExtra("Extra", nonce2);
-                            intent.putExtra("username", name);
-                            startActivity(intent);
-                        } else {
-                            String message = (String) result.get("message");
-                            Looper.prepare();
-                            Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
-                            Looper.loop();
-                        }
+                        Intent intent = new Intent(getBaseContext(), index.class);
+                        intent.putExtra("Extra", nonce2);
+                        intent.putExtra("username", name);
+                        startActivity(intent);
+//                        if(check == 0){
+//                            Intent intent = new Intent(getBaseContext(), index.class);
+//                            intent.putExtra("Extra", nonce2);
+//                            intent.putExtra("username", name);
+//                            startActivity(intent);
+//                        } else {
+//                            String message = (String) result.get("message");
+//                            Looper.prepare();
+//                            Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+//                            Looper.loop();
+//                        }
                     }
 
                 }catch (Exception e){

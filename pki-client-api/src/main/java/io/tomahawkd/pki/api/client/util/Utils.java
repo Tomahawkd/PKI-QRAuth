@@ -42,7 +42,6 @@ public class Utils {
 			for (String param : params) {
 				if (!map.containsKey(param)) throw new ParamNotFoundException("Json key not exist: " + json);
 			}
-
 			return map;
 		} catch (JsonSyntaxException e) {
 			throw new MalformedJsonException("Malformed Json: " + json);
