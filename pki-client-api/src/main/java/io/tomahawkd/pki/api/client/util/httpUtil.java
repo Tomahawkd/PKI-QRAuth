@@ -73,6 +73,8 @@ public class httpUtil {
                     sb.append(var10.getMessage());
                 }
             } else {
+                System.out.println(conn.getResponseCode());
+                System.out.println(conn.getResponseMessage());
                 sb.append("connect error");
             }
         } catch (Exception var11) {

@@ -132,8 +132,11 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 
                                     manager.restoreClientInfo(context,username,Cpub,Cpri,token,nonce);
 
+                                    Looper.prepare();
+                                    Toast.makeText(getBaseContext(),"注册成功！", Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(context,Login.class);
                                     startActivity(intent);
+                                    Looper.loop();
                                 } else {
                                     String message = (String) result.get("message");
                                     Looper.prepare();

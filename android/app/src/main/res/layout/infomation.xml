@@ -253,37 +253,6 @@
             </LinearLayout>
 
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
-                android:orientation="horizontal"
-                android:background="@drawable/linearlayout_line">
-
-                <!--<ImageView-->
-                <!--android:layout_width="30dp"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:layout_gravity="left"-->
-                <!--android:layout_marginLeft="20dp"-->
-                <!--android:layout_marginRight="20dp"-->
-                <!--android:src="@mipmap/changekey" />-->
-
-                <Button
-                    android:id="@+id/changekey"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="start|center_vertical"
-
-                    android:drawableLeft="@mipmap/changekey"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:text="          重置密钥"
-                    android:background="@null"/>
-            </LinearLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -306,10 +275,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
-                    android:drawableStart="@mipmap/changepsw"
+                    android:drawableStart="@mipmap/changekey"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-                    android:text="          修改Token"
+                    android:text="          查看登录设备"
                     android:background="@null"/>
             </LinearLayout>
 

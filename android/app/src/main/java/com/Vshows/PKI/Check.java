@@ -15,6 +15,7 @@ import com.Vshows.PKI.util.StringToPKey;
 import com.Vshows.PKI.util.SystemUtil;
 import com.Vshows.PKI.util.URLUtil;
 import com.Vshows.PKI.util.keyManager;
+import com.Vshows.zxinglibrary.common.Constant;
 import com.google.gson.Gson;
 
 import java.security.PrivateKey;
@@ -96,10 +97,12 @@ public class Check extends AppCompatActivity implements View.OnClickListener{
                     int check = (int) Math.round(Double.parseDouble(result.get("check").toString()));
                     if (type.equals("1")){
                         if(check == 0){
-                            Intent intent = new Intent(getBaseContext(),index.class);
-                            intent.putExtra("Extra", nonce2);
-                            intent.putExtra("username", name);
-                            startActivity(intent);
+//                            Intent intent = new Intent(getBaseContext(),index.class);
+//                            intent.putExtra("Extra", nonce2);
+//                            intent.putExtra("username", name);
+//                            startActivity(intent);
+//
+                            finish();
                         } else {
                             String message = (String) result.get("message");
                             Looper.prepare();

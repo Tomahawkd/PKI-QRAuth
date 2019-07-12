@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.Utils;
 
 public class changepsw extends AppCompatActivity implements View.OnClickListener {
     private String session,ID;
@@ -50,9 +51,7 @@ public class changepsw extends AppCompatActivity implements View.OnClickListener
         setContentView(R.layout.changepsw);
 
         Intent intent = getIntent();
-//        session = intent.getStringExtra("session");
         ID = intent.getStringExtra("username");
-       // Log.d("changepswsession" ,session);
 
         handler = new Handler();
         initView();
@@ -86,47 +85,47 @@ public class changepsw extends AppCompatActivity implements View.OnClickListener
                     @Override
                     public void run() {
                         try {
-//                            Context context = getBaseContext();
-//                            Connecter connecter = new Connecter();
-//                            keyManager manager = new keyManager();
-//                            String ua = SystemUtil.getSystemModel();
-//                            String url = URLUtil.getChangePasswordURL(context);
-//
-//                            String Tpub = manager.getTpub(context);
-//                            String Spub = manager.getSpub(context);
-//                            String Cpri = manager.getCpri(context,ID);
-//                            byte[] token = manager.getToken(context,ID).getBytes();
-//                            int nonce = manager.getNonce(context,ID);
-//
-//                            Gson gson = new Gson();
-//                            Map<String,Object> info = new HashMap<>();
-//                            info.put("username",ID);
-//                            info.put("oldpassword",oPsw);
-//                            info.put("newpassword",nPsw);
-//                            String payload = gson.toJson(info);
-//
-//                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
-//                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
-//                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
-//
-//                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
-//
-//                            Map<String,Object> result = new HashMap<>();
-//                            result = gson.fromJson(resultJson,result.getClass());
-//
-//                            int check = (int) result.get("check");
-//                            if(check == 0){
-//
-//                            } else {
-//                                String message = (String) result.get("message");
-//                                Looper.prepare();
-//                                Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
-//                                Looper.loop();
-//                            }
+                            Context context = getBaseContext();
+                            Connecter connecter = new Connecter();
+                            keyManager manager = new keyManager();
+                            String ua = SystemUtil.getSystemModel();
+                            String url = URLUtil.getChangePasswordURL(context);
 
-                            Looper.prepare();
-                            Toast.makeText(getBaseContext(),"修改失败\n请输入正确的原密码", Toast.LENGTH_LONG).show();
-                            Looper.loop();
+                            String Tpub = manager.getTpub(context);
+                            String Spub = manager.getSpub(context);
+                            String Cpri = manager.getCpri(context,ID);
+                            byte[] token = Utils.base64Decode(manager.getToken(context,ID));
+                            int nonce = manager.getNonce(context,ID);
+                            manager.updateNonce(context,ID,nonce+1);
+
+                            Gson gson = new Gson();
+                            Map<String,String> info = new HashMap<>();
+                            info.put("password",oPsw);
+                            info.put("new_password",nPsw);
+                            String payload = gson.toJson(info);
+
+                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                            String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
+
+                            Map<String,Object> result = new HashMap<>();
+                            result = gson.fromJson(resultJson,result.getClass());
+
+                            int check = (int) Math.round(Double.parseDouble(result.get("check").toString()));
+                            if(check == 0){
+                                Intent intent = new Intent(context,Login.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                            } else {
+                                String message = (String) result.get("message");
+                                Looper.prepare();
+                                Toast.makeText(getBaseContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                                Looper.loop();
+                            }
+
 
                         }catch (Exception e){
                             e.printStackTrace();

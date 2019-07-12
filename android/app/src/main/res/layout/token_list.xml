@@ -86,7 +86,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="30dp"
+            android:layout_height="50dp"
             android:background="#ffffff"
             android:orientation="horizontal">
 
@@ -118,7 +118,7 @@
                 android:id="@+id/revoke"
                 android:layout_width="60dp"
                 android:layout_height="30dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginRight="20dp"
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/del_token_btn"
                 android:text="删除"

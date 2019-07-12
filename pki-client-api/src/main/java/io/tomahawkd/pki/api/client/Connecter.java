@@ -360,6 +360,8 @@ public class Connecter{
 
         String res = httpUtil.getJsonData(json,url,ua);
 
+        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
+
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
@@ -423,6 +425,8 @@ public class Connecter{
 
         String res = httpUtil.getJsonData(json,url,ua);
 
+        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
+
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
@@ -472,7 +476,7 @@ public class Connecter{
      * }
      */
 
-    public String revokeToken(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String revokeToken(String tokenid,String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
 
         Gson gson = new Gson();
         // generate the EToken
@@ -482,6 +486,12 @@ public class Connecter{
         String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
         Map<String,Object> map = new HashMap<>();
+
+        Map<String,String> tokenidmap = new HashMap<>();
+        tokenidmap.put("tokenid",tokenid);
+        String payload = gson.toJson(tokenidmap);
+
+        map.put("payload",payload);
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);

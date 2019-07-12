@@ -172,6 +172,7 @@ public class keyManager {
         ContentValues contentValues = new ContentValues();
         contentValues.put(nonce ,Nonce);
         sqLiteDatabase.update(CLIENT_TABLE,contentValues,"id = ?",new String[] {id });
+        Log.d("updateNonce", "Nonce:" + Nonce);
         sqLiteDatabase.close();
     }
 

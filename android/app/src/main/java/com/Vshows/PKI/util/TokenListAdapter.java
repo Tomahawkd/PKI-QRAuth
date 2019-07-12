@@ -28,16 +28,12 @@ import io.tomahawkd.pki.api.client.Connecter;
 
 public class TokenListAdapter extends ArrayAdapter implements View.OnClickListener {
     private int layoutID;
-    private String ID;
-    private String session;
 
     private InnerItemOnclickListener mylistener;
 
-    public TokenListAdapter(Context context, int layout, List<TokenList> tList,String username,String session){
+    public TokenListAdapter(Context context, int layout, List<TokenList> tList){
         super(context,layout,tList);
         layoutID = layout;
-        ID = username;
-        this .session = session;
     }
 
     @NonNull
