@@ -11,7 +11,6 @@ import com.Vshows.PKI.fragment.userInfoFragment;
 import com.Vshows.PKI.fragment.userLogFragment;
 
 public class index extends AppCompatActivity {
-    public String session;
     Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fl_container);
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     protected void onCreate(Bundle savedInstanceState) {

@@ -36,7 +36,7 @@
                     android:layout_height="90dp"
                     android:layout_marginTop="10dp"
                     android:layout_gravity="center"
-                    android:src="@mipmap/u77" />
+                    android:src="@mipmap/dalao2" />
 
                 <TextView
                     android:id="@+id/username_information"
@@ -44,7 +44,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="Vshows"
                     android:textColor="#ffffff"
                     android:textSize="20sp" />
 
@@ -54,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="个性签名，此处限制25字以内。个性签名，此处限制25字以内。"
+                    android:hint="个人信息，限定25字"
                     android:textColor="#ffffff"
                     android:textSize="12sp" />
 
@@ -100,7 +99,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="Vshows"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -129,7 +127,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="男"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -159,7 +156,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="18340019029"
                         android:textSize="16sp" />
                 </LinearLayout>
 
@@ -189,7 +185,6 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="1"
                         android:gravity="end|center_vertical"
-                        android:text="930657665@qq.com"
                         android:textSize="16sp" />
                 </LinearLayout>
                 <View
@@ -258,37 +253,6 @@
             </LinearLayout>
 
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
-                android:orientation="horizontal"
-                android:background="@drawable/linearlayout_line">
-
-                <!--<ImageView-->
-                <!--android:layout_width="30dp"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:layout_gravity="left"-->
-                <!--android:layout_marginLeft="20dp"-->
-                <!--android:layout_marginRight="20dp"-->
-                <!--android:src="@mipmap/changekey" />-->
-
-                <Button
-                    android:id="@+id/changekey"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="start|center_vertical"
-
-                    android:drawableLeft="@mipmap/changekey"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:text="          重置密钥"
-                    android:background="@null"/>
-            </LinearLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -311,10 +275,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
-                    android:drawableStart="@mipmap/changepsw"
+                    android:drawableStart="@mipmap/changekey"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-                    android:text="          修改Token"
+                    android:text="          查看登录设备"
                     android:background="@null"/>
             </LinearLayout>
 

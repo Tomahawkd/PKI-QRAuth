@@ -1,27 +1,31 @@
 package com.Vshows.PKI.util;
 
 public class TokenList {
-    private String ua;
-    private String token;
+    private String date;
+    private String ip;
+    private String device;
+    private String ID;
 
-    public TokenList(String ua,String token){
-        this.ua = ua;
-        this.token = token;
+    public TokenList(String date,String ip,String device,String id){
+        this.date = date;
+        this.ip = ip;
+        this.device = device;
+        this.ID = id;
     }
 
-    public String getUa() {
-        return ua;
+    public String getDate() {
+        return date;
     }
 
-    public String getToken() {
-        return token;
+    public String getDevice() {
+        return device;
     }
 
-    public void setUa(String ua) {
-        this.ua = ua;
+    public String getID() {
+        return ID;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public String getIp() {
+        return ip;
     }
 }

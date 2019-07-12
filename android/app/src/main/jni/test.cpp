@@ -5,7 +5,7 @@
 #include <jni.h>
 #include <string.h>
 
-const char keyValue[] = {
+const char keyValue[] = {    //32 bit
         21, 25, 21, -45, 25, 98, -55, -45, 10, 35, -45, 35,
         26, -5, 25, -65, -78, -99, 85, 45, -5, 10, -0, 11,
         -35, -48, -98, 65, -32, 14, -67, 25
@@ -16,12 +16,11 @@ const char iv[] =  {    //16 bit
         23, 45, -26, 32, 5,16
 };
 
-const int RELEASE_SIGN_HASHCODE = -1717205002;
+const int RELEASE_SIGN_HASHCODE = -1717205003;
 
 extern "C"
 jbyteArray Java_com_Vshows_PKI_util_JniUtils_getKeyValue(JNIEnv *env, jclass jclazz)
 {
-
     jbyteArray kvArray = env->NewByteArray(sizeof(keyValue));
     jbyte *bytes = env->GetByteArrayElements(kvArray,0);
 
@@ -32,7 +31,6 @@ jbyteArray Java_com_Vshows_PKI_util_JniUtils_getKeyValue(JNIEnv *env, jclass jcl
 
     env->SetByteArrayRegion(kvArray, 0, sizeof(keyValue),bytes);
     env->ReleaseByteArrayElements(kvArray,bytes,0);
-
     return kvArray;
 }
 

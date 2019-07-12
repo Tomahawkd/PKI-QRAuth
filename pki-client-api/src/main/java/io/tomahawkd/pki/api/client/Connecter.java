@@ -5,9 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_ADDPeer;
 import io.tomahawkd.pki.api.client.exceptions.*;
-import io.tomahawkd.pki.api.client.util.SecurityFunctions;
-import io.tomahawkd.pki.api.client.util.Utils;
-import io.tomahawkd.pki.api.client.util.httpUtil;
+import io.tomahawkd.pki.api.client.util.*;
 import io.tomahawkd.pki.api.client.util.Utils;
 import sun.rmi.runtime.Log;
 
@@ -21,6 +19,7 @@ import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +32,10 @@ public class Connecter{
      *
      */
     public String getAuthenticationServerPublicKey(String url,String ua){
-        //String uri = "http://192.168.43.159/key/dist/tpub";
         return httpUtil.getJsonData(url,ua);
     }
 
     public String getServerPublicKey(String url,String ua){
-        //String uri = "http://192.168.43.192:8000/serverkey/";
         return  httpUtil.getJsonData(url,ua);
     }
 
@@ -59,15 +56,7 @@ public class Connecter{
      *  }
      */
 
-    public String initalizeAuthentication(String url,String user, String pass, PublicKey Tpub,PublicKey Spub,String ua) throws Exception {
-
-        String username = user;
-        String password = pass;
-        Gson gson = new Gson();
-        Map<String, Object> map1 = new HashMap<>();
-        map1.put("username", username);
-        map1.put("password", password);
-        String json1 = gson.toJson(map1);
+    public String initalizeAuthentication(String url,String user_json, PublicKey Tpub,PublicKey Spub,String ua) throws Exception {
 
         //generate the symmetric ky between C and T
         byte[] Kct = SecurityFunctions.generateRandom(32);
@@ -80,32 +69,26 @@ public class Connecter{
         String K = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub, Kct));
         String IV = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub, iv));
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("payload", json1);
+        Map<String, String> map = new HashMap<>();
+        map.put("payload", user_json);
         map.put("T", T1);
         map.put("K", K);
         map.put("iv", IV);
+        Gson gson = new Gson();
         String json = gson.toJson(map);
         String res = httpUtil.getJsonData(json,url,ua);
-//        String resultarray[] = httpUtil.getJsonData(json, url, ua);
-//        String session = resultarray[0];
-//        String res = resultarray[1];
-//        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
-
 
         Map<String, String> result =
                 new Gson().fromJson(res, new TypeToken<Map<String, String>>() {
                 }.getType());
-        String m = new String(result.get("M"));
-        Map<String, Object> message = new Gson().fromJson(m, new TypeToken<Map<String, Object>>() {
+        String m = result.get("M");
+        Message<String> message = new Gson().fromJson(m, new TypeToken<Message<String>>() {
         }.getType());
 
         String[] kp =
                 new String(SecurityFunctions.decryptSymmetric(Kct, iv, Utils.base64Decode(result.get("KP"))))
                         .split(";");
-        System.out.println("KP" + kp[1] + "\n" + kp[0]);
         KeyPair keyPair = SecurityFunctions.readKeysFromString(kp[1], kp[0]);
-        System.out.println(keyPair.getPublic().toString() + "\n" + keyPair.getPrivate().toString());
         // 收到的T
         byte[] T = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(), Utils.base64Decode(result.get("T")));
         // 转化
@@ -114,7 +97,7 @@ public class Connecter{
         System.out.println("t" + t);
 
         if (t1 == t + 1) {
-            if ((int)Math.round(Double.parseDouble(message.get("status").toString())) == 0) {
+            if (message.isOk()) {
 
                 byte[] etoken = SecurityFunctions.decryptAsymmetric(keyPair.getPrivate(),
                         Utils.base64Decode(result.get("EToken")));
@@ -123,23 +106,22 @@ public class Connecter{
                 System.arraycopy(etoken, Integer.BYTES, token, 0, etoken.length - Integer.BYTES);
                 Map<String, Object> re = new HashMap<>();
                 re.put("nonce", nonce);
-                re.put("Token", new String(token));
+                re.put("Token", Utils.base64Encode(token));
                 re.put("Cpri", kp[1]);
                 re.put("Cpub", kp[0]);
                 re.put("check", 0);
-                re.put("message", "success");
-//                re.put("session",session);
+                re.put("message",message.getMessage());
                 return gson.toJson(re);
             } else {
                 Map<String, Object> map3 = new HashMap<>();
                 map3.put("check", 2);
-                map3.put("message", (String) message.get("message"));
+                map3.put("message", message.getMessage());
                 return gson.toJson(map3);
             }
         } else {
             Map<String, Object> re = new HashMap<>();
             re.put("check", 1);
-            re.put("message", "timestamp error!");
+            re.put("message", message.getMessage());
             return gson.toJson(re);
         }
 
@@ -160,46 +142,53 @@ public class Connecter{
      *  }
      */
 
-    public String interactAuthentication(String url,String data,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri,String ua) throws Exception{
+    public String interactAuthentication(String url,String user_json,PublicKey Tpub,PublicKey Spub,byte[] token,int nonce,PrivateKey Cpri,String ua) throws Exception{
         Gson gson = new Gson();
-        String payload = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,data.getBytes()));
         String EToken = Utils.generateEtoken(token,nonce,Tpub);
         int t = SecurityFunctions.generateRandom();
         String tStringReq = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Spub,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array()));
 
         Map<String, String> reqMap = new HashMap<>();
-        reqMap.put("payload",payload);
+        reqMap.put("payload",user_json);
         reqMap.put("EToken", EToken);
         reqMap.put("T", tStringReq);
         String json = new Gson().toJson(reqMap);
 
         String res = httpUtil.getJsonData(json,url,ua);
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
-        Map<String,String> result = new Gson().fromJson(res, new TypeToken<Map<String, String>>() {}.getType());
+
+        Map<String,String> result = new Gson().fromJson(res, new TypeToken<Map<String,String>>() {}.getType());
         String m = result.get("M");
-        Map<String,Object> message = new Gson().fromJson(m,new TypeToken<Map<String,Object>>(){}.getType());
+        Message<String> message = new Gson().fromJson(m,new TypeToken<Message<String>>(){}.getType());
+
+        if(message.getStatus()!=0){
+            Map<String, Object> map3 = new HashMap<>();
+            map3.put("check", "5");
+            map3.put("message", "Token同步失败！请重新登录");
+            return gson.toJson(map3);
+        }
+
         byte[] T = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T).order(ByteOrder.LITTLE_ENDIAN).getInt();
         if(t1 == t+1){
-            if ((int)Math.round(Double.parseDouble(message.get("status").toString()))==0) {
-                String data1 = new String(Utils.base64Decode(new String(SecurityFunctions.decryptAsymmetric(Cpri,result.get("payload").getBytes()))));
-                Map<String, Object> map3 = new HashMap<>();
+            if (message.isOk()) {
+                String data1 = result.get("payload");
+                Map<String, String> map3 = new HashMap<>();
                 map3.put("data",data1);
-                map3.put("check", 0);
-                map3.put("message","sucess");
+                map3.put("check", "0");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             }else {
-                Map<String, Object> map3 = new HashMap<>();
-                map3.put("check", 2);
-                map3.put("message", "认证错误");
+                Map<String, String> map3 = new HashMap<>();
+                map3.put("check", "2");
+                map3.put("message", message.getMessage());
                 return gson.toJson(map3);
             }
         }
         else {
-            Map<String, Object> map4 = new HashMap<>();
-            map4.put("check", 1);
-            map4.put("mssage", "time check error!");
+            Map<String, String> map4 = new HashMap<>();
+            map4.put("check","1");
+            map4.put("mssage", message.getMessage());
             return gson.toJson(map4);
         }
     }
@@ -227,46 +216,47 @@ public class Connecter{
         String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
                 ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
         //generate message
-        String message = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,nonce2.getBytes()));
+
+        String QRString = Utils.base64Encode(SecurityFunctions.encryptAsymmetric(Tpub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(Integer.parseInt(nonce2)).array()));
 
         Map<String,Object> M = new HashMap<>();
         M.put("status",1);
-        M.put("message",message);
+        M.put("message",QRString);
         String M1 = gson.toJson(M);
 
-        Map<String,Object> map = new HashMap<>();
+        Map<String,String> map = new HashMap<>();
         map.put("EToken",EToken);
         map.put("T",T);
         map.put("M",M1);
         String json = gson.toJson(map);
 
         String res = httpUtil.getJsonData(json,url,ua);
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" + res);
 
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         String m = result.get("M");
-        Map<String,Object> m1 = new Gson().fromJson(m,new TypeToken<Map<String,Object>>(){}.getType());
+        Message<String> message = new Gson().fromJson(m,new TypeToken<Message<String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(m1.get("status").toString()))==0){
+            if(message.isOk()){
                 Map<String,Object> map2 = new HashMap<>();
                 map2.put("check",0);
-                map2.put("message","Success");
+                map2.put("message",message.getMessage());
                 return gson.toJson(map2);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",2);
-                map3.put("message","验证扫描失败！");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             }
         } else {
             Map<String,Object> map3 = new HashMap<>();
             map3.put("check",1);
-            map3.put("message","time check error!");
+            map3.put("message",message.getMessage());
             return gson.toJson(map3);
         }
     }
@@ -286,50 +276,48 @@ public class Connecter{
      *          }
      */
 
-    public String updateQRStatusConfirm(String url,byte[] token, int nonce, String nounce2, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,int confirm,String ua) throws Exception{
+    public String updateQRStatusConfirm(String url,byte[] token, int nonce, PublicKey Tpub, PublicKey Spub, PrivateKey Cpri,String confirm,String ua) throws Exception{
         Gson gson = new Gson();
         // generate the EToken
         String EToken = Utils.generateEtoken(token,nonce,Tpub);
         // generate T
         int t = SecurityFunctions.generateRandom();
-        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
 
         Map<String,Object> map2 = new HashMap<>();
         map2.put("status",2);
         map2.put("message",confirm);
         String M = gson.toJson(map2);
-        Map<String,Object> map = new HashMap<>();
+        Map<String,String> map = new HashMap<>();
         map.put("M",M);
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
-
         String res = httpUtil.getJsonData(json,url,ua);
-
-        Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());        //assertThat(result.get("M")).contains("\"status\":0");
+        Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         String M2 = result.get("M");
-        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());        //assertThat(result.get("M")).contains("\"status\":0");
+        Message<String> message = new Gson().fromJson(M2,new TypeToken<Message<String>>(){}.getType());        //assertThat(result.get("M")).contains("\"status\":0");
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(M3.get("status").toString()))==0){
+            if(message.isOk()){
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
-                map3.put("message","Success");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",2);
-                map3.put("message","验证登录失败！");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             }
         } else {
             Map<String,Object> map3 = new HashMap<>();
             map3.put("check",1);
-            map3.put("message","time check error!");
+            map3.put("message",message.getMessage());
             return gson.toJson(map3);
         }
     }
@@ -351,28 +339,25 @@ public class Connecter{
         String EToken = Utils.generateEtoken(token,nonce,Tpub);
         // generate T
         int t = SecurityFunctions.generateRandom();
-        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
 
         Map<String,Object> map = new HashMap<>();
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
-
         String res = httpUtil.getJsonData(json,url,ua);
-
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         String M2 = result.get("M");
-        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());
+        Message<List<Map<String,String>>> message = new Gson().fromJson(M2,new TypeToken<Message<List<Map<String,String>>>>(){}.getType());
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(M3.get("status").toString()))==0){
-                // *******************************************
-                //List<UserLogModel>
-                List<Map<String,String>> logList = (List) M3.get("message");
+            if(message.isOk()){
+                List<Map<String,String>> logList = new ArrayList<>();
+                logList = message.getMessage();
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
                 map3.put("message","Success");
@@ -412,41 +397,39 @@ public class Connecter{
 
         // generate T
         int t = SecurityFunctions.generateRandom();
-        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
         Map<String,Object> map = new HashMap<>();
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
-
         String res = httpUtil.getJsonData(json,url,ua);
 
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
-
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
-
         String M2 = result.get("M");
-        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());
+
+        Message<List<Map<String, String>>> message = new Gson().fromJson(M2,new TypeToken<Message<List<Map<String, String>>>>(){}.getType());
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(M3.get("status").toString()))==0){
-                // *******************************************
-                List<Map<String,String>> tokenList = (List) M3.get("message");
+            if(message.isOk()){
+                List<Map<String,String>> tokenList = new ArrayList<>();
+                tokenList = message.getMessage();
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
-                map3.put("message","Success");
+                map3.put("message",message.getMessage());
                 map3.put("tokenList",tokenList);
                 return gson.toJson(map3);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",2);
-                map3.put("message","Token列表获取失败，请重试！");
+                map3.put("message","Get token list failed!");
                 return gson.toJson(map3);
             }
         } else {
             Map<String,Object> map3 = new HashMap<>();
             map3.put("check",1);
-            map3.put("message","time check error!");
+            map3.put("message","time stamp fail!");
             return gson.toJson(map3);
         }
 
@@ -467,16 +450,22 @@ public class Connecter{
      * }
      */
 
-    public String revokeToken(String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
+    public String revokeToken(String tokenid,String url,byte[] token,int nonce,PublicKey Tpub,PublicKey Spub,String ua,PrivateKey Cpri) throws CipherErrorException, UnsupportedEncodingException {
 
         Gson gson = new Gson();
         // generate the EToken
         String EToken = Utils.generateEtoken(token,nonce,Tpub);
         // generate T
         int t = SecurityFunctions.generateRandom();
-        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
         Map<String,Object> map = new HashMap<>();
+
+        Map<String,String> tokenidmap = new HashMap<>();
+        tokenidmap.put("tokenid",tokenid);
+        String payload = gson.toJson(tokenidmap);
+
+        map.put("payload",payload);
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
@@ -489,25 +478,24 @@ public class Connecter{
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         String M2 = result.get("M");
-        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());
+        Message<String> message = new Gson().fromJson(M2,new TypeToken<Message<String>>(){}.getType());
 
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(M3.get("status").toString()))==0){
-                // *******************************************
+            if(message.isOk()){
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
-                map3.put("message","Success");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",2);
-                map3.put("message","Token列表获取失败，请重试！");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             }
         } else {
             Map<String,Object> map3 = new HashMap<>();
             map3.put("check",1);
-            map3.put("message","time check error!");
+            map3.put("message",message.getMessage());
             return gson.toJson(map3);
         }
     }
@@ -530,41 +518,37 @@ public class Connecter{
 
         // generate T
         int t = SecurityFunctions.generateRandom();
-        String T = new String((SecurityFunctions.encryptAsymmetric(Spub,
-                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())),"UTF-8");
+        String T = Utils.base64Encode((SecurityFunctions.encryptAsymmetric(Spub,
+                ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(t).array())));
         Map<String,Object> map = new HashMap<>();
         map.put("EToken",EToken);
         map.put("T",T);
         String json = gson.toJson(map);
-
         String res = httpUtil.getJsonData(json,url,ua);
-
         Map<String,String> result = new Gson().fromJson(res,new TypeToken<Map<String,String>>(){}.getType());
 
         byte[] T1 = SecurityFunctions.decryptAsymmetric(Cpri,Utils.base64Decode(result.get("T")));
         int t1 = ByteBuffer.wrap(T1).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         String M2 = result.get("M");
-        Map<String,Object> M3 = new Gson().fromJson(M2,new TypeToken<Map<String,String>>(){}.getType());
+        Message<String> message = new Gson().fromJson(M2,new TypeToken<Message<String>>(){}.getType());
 
         if(t1 == t+1){
-            if((int)Math.round(Double.parseDouble(M3.get("status").toString()))==0){
-                // *******************************************
-
+            if(message.isOk()){
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",0);
-                map3.put("message","Success");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             } else {
                 Map<String,Object> map3 = new HashMap<>();
                 map3.put("check",2);
-                map3.put("message","Token列表获取失败，请重试！");
+                map3.put("message",message.getMessage());
                 return gson.toJson(map3);
             }
         } else {
             Map<String,Object> map3 = new HashMap<>();
             map3.put("check",1);
-            map3.put("message","time check error!");
+            map3.put("message",message.getMessage());
             return gson.toJson(map3);
         }
     }

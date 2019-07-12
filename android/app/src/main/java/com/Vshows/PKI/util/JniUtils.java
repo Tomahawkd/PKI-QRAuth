@@ -31,7 +31,6 @@ public class JniUtils {
     public native static byte[] getIv();
     // 0 : sucess  1: fail
     public native static int checkSign(Object object);
-
     private static byte[]keyValue;
     private static byte[]iv;
 

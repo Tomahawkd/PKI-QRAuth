@@ -28,16 +28,12 @@ import io.tomahawkd.pki.api.client.Connecter;
 
 public class TokenListAdapter extends ArrayAdapter implements View.OnClickListener {
     private int layoutID;
-    private String ID;
-    private String session;
 
     private InnerItemOnclickListener mylistener;
 
-    public TokenListAdapter(Context context, int layout, List<TokenList> tList,String username,String session){
+    public TokenListAdapter(Context context, int layout, List<TokenList> tList){
         super(context,layout,tList);
         layoutID = layout;
-        ID = username;
-        this .session = session;
     }
 
     @NonNull
@@ -47,15 +43,22 @@ public class TokenListAdapter extends ArrayAdapter implements View.OnClickListen
         View view = LayoutInflater.from(getContext()).inflate(layoutID,null);
         RecyclerView.ViewHolder viewHolder;
 
-        final TextView ua1 = (TextView)view.findViewById(R.id.ua);
-        TextView token1 = (TextView)view.findViewById(R.id.token);
+        TextView date = (TextView)view.findViewById(R.id.token_date);
+        TextView Ip = (TextView)view.findViewById(R.id.token_ip);
+        TextView device = (TextView)view.findViewById(R.id.token_device);
+        TextView id = (TextView)view.findViewById(R.id.token_ID);
         Button revoke = (Button) view.findViewById(R.id.revoke);
 
-        ua1.setText(tokenList.getUa());
-        token1.setText(tokenList.getToken());
+
+        date.setText(tokenList.getDate());
+        Ip.setText(tokenList.getIp());
+        device.setText(tokenList.getDevice());
+        id.setText(tokenList.getID());
+
+
         revoke.setOnClickListener(this);
 
-        revoke.setTag(ua1.getText().toString());
+        revoke.setTag(id.getText().toString());
 
         return view;
     }
