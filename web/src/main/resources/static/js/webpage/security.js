@@ -160,8 +160,8 @@ function deleteToken(btn) {
                     getKeys();
                 } else if (msg.status === -3) {
                     $(".error_box").text("删除失败！");
-                } else if (msg.status === -4 || msg.status === -3) {
-                    alert("未知错误");
+                } else if (msg.status === -4 || msg.status === 1) {
+                    logout();
                 }
             }
         },
