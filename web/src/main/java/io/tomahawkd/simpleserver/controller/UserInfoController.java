@@ -5,24 +5,22 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import io.tomahawkd.pki.api.server.Token;
 import io.tomahawkd.simpleserver.exceptions.MalformedJsonException;
-
 import io.tomahawkd.simpleserver.model.SystemLogModel;
 import io.tomahawkd.simpleserver.model.UserInfoModel;
 import io.tomahawkd.simpleserver.model.UserPasswordModel;
 import io.tomahawkd.simpleserver.service.SystemLogService;
 import io.tomahawkd.simpleserver.service.UserInfoService;
 import io.tomahawkd.simpleserver.service.UserPasswordService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 

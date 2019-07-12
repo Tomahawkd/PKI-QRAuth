@@ -3,7 +3,6 @@ package io.tomahawkd.simpleserver.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import io.tomahawkd.pki.api.server.ThrowableFunction;
 import io.tomahawkd.pki.api.server.Token;
 import io.tomahawkd.pki.api.server.util.Message;
 import io.tomahawkd.simpleserver.exceptions.MalformedJsonException;
@@ -11,8 +10,6 @@ import io.tomahawkd.simpleserver.model.SystemLogModel;
 import io.tomahawkd.simpleserver.model.UserPasswordModel;
 import io.tomahawkd.simpleserver.service.SystemLogService;
 import io.tomahawkd.simpleserver.service.UserPasswordService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,10 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
-
 import java.util.Map;
 
 @RestController
