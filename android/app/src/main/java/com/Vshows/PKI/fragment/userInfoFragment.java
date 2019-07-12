@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.tomahawkd.pki.api.client.Connecter;
+import io.tomahawkd.pki.api.client.util.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -82,12 +83,13 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
     TextView phone_information;
     TextView mail_information;
 
-    private String session;
     private String ID;
     private Handler handler = null;
 
     private String username,name,email,phone,bio,imagepath;
     private int sex;
+
+//    private boolean isFirstLoading = true;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     @Override
@@ -102,8 +104,6 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         changeSelfInfo.setOnClickListener(this);
         changePsw = (Button) view.findViewById(R.id.changepsw);
         changePsw.setOnClickListener(this);
-        changeKey = (Button) view.findViewById(R.id.changekey);
-        changeKey.setOnClickListener(this);
         quit = (Button) view.findViewById(R.id.quit);
         quit.setOnClickListener(this);
         changeToken = (Button) view.findViewById(R.id.changetoken);
@@ -115,62 +115,26 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         phone_information  = (TextView)view.findViewById(R.id.phone_infomation);
         mail_information = (TextView)view.findViewById(R.id.mail_information);
 
-//        session = getActivity().getIntent().getStringExtra("session");
         ID = getActivity().getIntent().getStringExtra("username");
 
-        //Log.d("sessin" ,session);
-
-        //init_info();
+        init_info();
 
         return view;
     }
 
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//
+//        if (!isFirstLoading) {
+//            //如果不是第一次加载，刷新数据
+//            init_info();
+//        }
+//
+//        isFirstLoading = false;
+//    }
+
     public void init_info(){
-//        String url ="http://192.168.43.159/user/info/data/";
-//
-//        OkHttpClient client = new OkHttpClient();
-//
-//        final Request request = new Request.Builder()
-//                .addHeader("cookie",session)
-//                .url(url)
-//                .get()
-//                .build();
-//
-//        Call call = client.newCall(request);
-//        call.enqueue(new Callback() {
-//            public void onFailure(Call call, IOException e) {
-//                Log.d("getInfoError","<<<<e="+e);
-//            }
-//
-//            @Override
-//            public void onResponse(Call call, Response response) throws IOException {
-//                if(response.isSuccessful()) {
-//                    String jsonString = response.body().string();
-//                    try {
-//                        JSONObject mesJson = new JSONObject(jsonString);
-//                        String json = mesJson.getString("message");
-//                        JSONObject resultJson = new JSONObject(mesJson.getString("message"));
-//                        username = resultJson.getString("username");
-//                        name = resultJson.getString("name");
-//                        sex = resultJson.getInt("sex");
-//                        email = resultJson.getString("email");
-//                        phone = resultJson.getString("phone");
-//                        bio = resultJson.getString("bio");
-//                        //imagepath = resultJson.getString("imagepath");
-//
-//                        new Thread() {
-//                            @Override
-//                            public void run() {
-//                                //super.run();
-//                                handler.post(changeInfoUI);
-//                            }
-//                        }.start();
-//                    } catch (JSONException e){
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
 
         new Thread(new Runnable() {
             @Override
@@ -185,8 +149,10 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                     String Tpub = manager.getTpub(context);
                     String Spub = manager.getSpub(context);
                     String Cpri = manager.getCpri(context,ID);
-                    byte[] token = manager.getToken(context,ID).getBytes();
+                    byte[] token = Utils.base64Decode(manager.getToken(context,ID));
+                    Log.d("Token" ,Utils.base64Encode(token));
                     int nonce = manager.getNonce(context,ID);
+                    manager.updateNonce(context,ID,nonce+1);
                     String payload = null;
 
 
@@ -197,20 +163,38 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                     String resultJson = connecter.interactAuthentication(url,payload,TPub,SPub,token,nonce,CPri,ua);
 
                     Gson gson = new Gson();
-                    Map<String,Object> result = new HashMap<>();
+                    Map<String,String> result = new HashMap<>();
                     result = gson.fromJson(resultJson,result.getClass());
 
-                    int check = (int) result.get("check");
-                    if(check == 0){
-                        String data = (String)result.get("data");
+                    String check = result.get("check");
+                    if(check.equals("0")){
+                        String data = result.get("data");
                         /**
                          * change UI
                          */
+                        Log.d("selfinfo:",data);
+                        Map<String,Object> info = new HashMap<>();
+                        info = gson.fromJson(data,info.getClass());
+                        username = ID;
+                        sex = (int)Math.round(Double.parseDouble(info.get("sex").toString()));
+                        name = (String)info.get("name");
+                        email = (String)info.get("email");
+                        phone = (String)info.get("phone");
+                        bio = (String)info.get("bio");
+                        imagepath = (String)info.get("image_path");
 
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                handler.post(changeInfoUI);
+                            }
+                        }.start();
                     } else {
-                        String message = (String) result.get("message");
+                        String message = result.get("message");
                         Looper.prepare();
                         Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(context,Login.class);
+                        startActivity(intent);
                         Looper.loop();
                     }
                 }catch (Exception e){
@@ -247,7 +231,8 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                         .onGranted(new Action() {
                             @Override
                             public void onAction(List<String> permissions) {
-                                Intent intent = new Intent(getActivity(), CaptureActivity.class);                                ZxingConfig config = new ZxingConfig();
+                                Intent intent = new Intent(getActivity(), CaptureActivity.class);
+                                ZxingConfig config = new ZxingConfig();
                                 config.setFullScreenScan(false);
                                 intent.putExtra(Constant.INTENT_ZXING_CONFIG, config);
                                 startActivityForResult(intent, REQUEST_CODE_SCAN);
@@ -268,24 +253,19 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.changeinfo:
                 Intent intent3 = new Intent(getActivity(), ChangeSelfInfo.class);
-                intent3.putExtra("session",session);
                 intent3.putExtra("username",ID);
                 startActivity(intent3);
                 break;
             case R.id.changepsw:
                 Intent intent4 = new Intent(getActivity(), changepsw.class);
-                intent4.putExtra("session",session);
                 intent4.putExtra("username",ID);
                 startActivity(intent4);
                 break;
             case R.id.quit:
                 showAlerDialog();
                 break;
-            case R.id.changekey:
-                break;
             case R.id.changetoken:
                 Intent intent5 = new Intent(getActivity(), changeToken.class);
-//                intent5.putExtra("session",session);
                 intent5.putExtra("username",ID);
                 startActivity(intent5);
                 break;
@@ -293,6 +273,49 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
         }
 
     }
+
+//    Runnable reGenKey = new Runnable() {
+//        @Override
+//        public void run() {
+//            try {
+//                Context context = getContext();
+//                Connecter connecter = new Connecter();
+//                keyManager manager = new keyManager();
+//                String ua = SystemUtil.getSystemModel();
+//                String url = URLUtil.getReGenKeyURL(context);
+//
+//                String Tpub = manager.getTpub(context);
+//                String Spub = manager.getSpub(context);
+//                String Cpri = manager.getCpri(context,ID);
+//                byte[] token = manager.getToken(context,ID).getBytes();
+//                int nonce = manager.getNonce(context,ID);
+//                manager.updateNonce(context,ID,nonce+1);
+//
+//                PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+//                PublicKey SPub = StringToPKey.getPublicKey(Spub);
+//                PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+//
+//                String resultJson = connecter.regenerateKeys(url,token,nonce,TPub,SPub,ua,CPri);
+//
+//                Gson gson = new Gson();
+//                Map<String,Object> result = new HashMap<>();
+//                result = gson.fromJson(resultJson,result.getClass());
+//
+//                int check = (int) result.get("check");
+//                if(check == 0){
+//
+//                } else {
+//                    String message = (String) result.get("message");
+//                    Looper.prepare();
+//                    Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+//                    Looper.loop();
+//                }
+//            }catch (Exception e){
+//                e.printStackTrace();
+//                Log.d("loginit",e.getMessage());
+//            }
+//        }
+//    };
 
     private void showAlerDialog() {
         final AlertDialog dialog = new AlertDialog.Builder(this.getContext()).create();
@@ -314,6 +337,8 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onClick(View view) {
                 Intent intent2 = new Intent(getActivity(), Login.class);
+                intent2.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent2.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent2);
             }
         });
@@ -326,16 +351,62 @@ public class userInfoFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode,final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // 扫描二维码/条码回传
         if (requestCode == REQUEST_CODE_SCAN && resultCode == RESULT_OK) {
             if (data != null) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Context context = getContext();
+                            Connecter connecter = new Connecter();
+                            keyManager manager = new keyManager();
+                            String ua = SystemUtil.getSystemModel();
+                            String url = URLUtil.getScanQRCodeURL(context);
 
-                String content = data.getStringExtra(Constant.CODED_CONTENT);
-                Intent intent = new Intent(getActivity(), Check.class);
-                intent.putExtra("Extra", content);
-                startActivity(intent);
+                            String Tpub = manager.getTpub(context);
+                            String Spub = manager.getSpub(context);
+                            String Cpri = manager.getCpri(context,ID);
+                            byte[] token = Utils.base64Decode(manager.getToken(context,ID));
+                            int nonce1 = manager.getNonce(context,ID);
+                            manager.updateNonce(context,ID,nonce1+1);
+                            String nonce2 = data.getStringExtra(Constant.CODED_CONTENT);
+                            Log.d("scannonce",nonce1 + "");
+                            Log.d("scantoken",Utils.base64Encode(token));
+
+                            PublicKey TPub = StringToPKey.getPublicKey(Tpub);
+                            PublicKey SPub = StringToPKey.getPublicKey(Spub);
+                            PrivateKey CPri = StringToPKey.getPrivateKey(Cpri);
+
+                            String resultJson = connecter.updateQRStatus(url,token,nonce1,nonce2,TPub,SPub,CPri,ua);
+                            Gson gson = new Gson();
+                            Map<String,Object> result = new HashMap<>();
+                            result = gson.fromJson(resultJson,result.getClass());
+
+                            int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
+                            if(check == 0){
+                                Log.d("nounce2",nonce2);
+                                Intent intent = new Intent(getContext(), Check.class);
+                                intent.putExtra("Extra", nonce2);
+                                intent.putExtra("username",ID);
+                                startActivity(intent);
+                            } else {
+                                String message = (String) result.get("message");
+                                Looper.prepare();
+                                Toast.makeText(getContext(),"check: " + check + "\nmessage: " + message, Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(context,Login.class);
+                                startActivity(intent);
+                                Looper.loop();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Log.d("scanerror",e.getMessage());
+                        }
+                    }
+                }).start();
+
 
             }
         }

@@ -104,32 +104,39 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                                 Context context = getBaseContext();
                                 Connecter connecter = new Connecter();
                                 keyManager manager = new keyManager();
+                                manager.deleteClientTable(context);
                                 String ua = SystemUtil.getSystemModel();
                                 String registerURL = URLUtil.getRegisterURL(context);
 
                                 PublicKey TpublicKey = SecurityFunctions.readPublicKey(manager.getTpub(context));
                                 PublicKey SpublicKey = SecurityFunctions.readPublicKey(manager.getSpub(context));
-//                                PublicKey TpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-//                                PublicKey SpublicKey = SecurityFunctions.generateKeyPair().getPublic();
-
-                                String resultJson = connecter.initalizeAuthentication(registerURL,username,password1,TpublicKey,SpublicKey,ua);
-                                Log.d("resultjson",resultJson);
 
                                 Gson gson = new Gson();
+                                Map<String, Object> map1 = new HashMap<>();
+                                map1.put("username", username);
+                                map1.put("password", password1);
+                                String data = gson.toJson(map1);
+
+                                String resultJson = connecter.initalizeAuthentication(registerURL,data,TpublicKey,SpublicKey,ua);
+                                Log.d("resultjson",resultJson);
+
                                 Map<String,Object> result = new HashMap<>();
                                 result = gson.fromJson(resultJson,result.getClass());
 
                                 int check = (int)Math.round(Double.parseDouble(result.get("check").toString()));
                                 if(check == 0){
                                     int nonce = (int) Math.round(Double.parseDouble(result.get("nonce").toString()));
-                                    String token = (String)(result.get("Token"));
+                                    String token =(String) result.get("Token");
                                     String Cpub = (String) result.get("Cpub");
                                     String Cpri = (String) result.get("Cpri");
 
                                     manager.restoreClientInfo(context,username,Cpub,Cpri,token,nonce);
 
+                                    Looper.prepare();
+                                    Toast.makeText(getBaseContext(),"注册成功！", Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(context,Login.class);
                                     startActivity(intent);
+                                    Looper.loop();
                                 } else {
                                     String message = (String) result.get("message");
                                     Looper.prepare();

@@ -1,34 +1,20 @@
 package com.Vshows.PKI.util;
 
 public class UserLog {
-    private transient int userId;
-    private transient int systemId;
+    private String time;
     private String ip;
     private String device;
     private String message;
 
-    public UserLog(int userId, int systemId, String ip, String device, String message) {
-        this.userId = userId;
-        this.systemId = systemId;
+    public UserLog(String time, String ip, String device, String message) {
+        this.time = time;
         this.ip = ip;
         this.device = device;
         this.message = message;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public int getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(int systemId) {
-        this.systemId = systemId;
+    public String getTime() {
+        return time;
     }
 
     public String getIp() {
