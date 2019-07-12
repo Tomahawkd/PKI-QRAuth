@@ -53,4 +53,4 @@ This project is divided into several permissions:
 
 1. With the summer internship ends, the repo will hardly be updated. And I will maintain the repo from time to time when I get free.
 
-2. Considering the effeciency of the authentication server, I would transfer to use TCP protocol by project [netty](https://github.com/netty/netty) for smaller transfering bytes and high performance.
+2. Considering the effeciency of the authentication server, I would transfer to use TCP protocol by project [netty](https://github.com/netty/netty) for smaller transfering bytes and higher performance.
