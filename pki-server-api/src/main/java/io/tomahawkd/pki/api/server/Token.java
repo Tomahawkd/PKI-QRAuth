@@ -24,8 +24,7 @@ public class Token {
     private static String systemid;
 
 
-    // private static final String IP = "http://39.106.80.38";
-    private static final String IP = "http://192.168.43.69";
+    private static final String IP = "http://127.0.0.1";
 
     private static Token instance;
 
