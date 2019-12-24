@@ -22,7 +22,24 @@ PKI based QR code authentication system
           | -- README.md (Directory explanation)
           | -- .gitignore
           | -- OWNERS (Directory permission controll)
-   | -- pkiservice (third party key/token distribution and management)
+   | -- pkiservice (third party key/token distribution and management, and user authentication)
+             | -- src (source code)
+                | -- main
+                       | -- java
+                              | -- io/tomahawkd/pki
+                                        | -- controller (backend request interface)
+                                        | -- dao (database interface)
+                                        | -- model (database model)
+                                        | -- service
+                                        | -- util (Token handling and encoding stuff)
+                                        | -- PkiApplication.java (Startup class)
+                       | -- resources
+                              | -- service keys
+                | -- test
+          | -- pom.xml (dependency)
+          | -- README.md (Directory explanation)
+          | -- .gitignore
+          | -- OWNERS (Directory permission controll)
    | -- pki-client-api (client api part for pkiservice)
    | -- pki-server-api (server api part for pkiservice)
    | -- pki-api-common (common class in client and server)
